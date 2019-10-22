@@ -68,6 +68,8 @@ class ParserCache(CacheStats):
         Clear all the internal variables
         :return: None
         """
+        om.out.debug('Called clear() on ParserCache')
+
         # Stop any workers
         mp_doc_parser.stop_workers()
 

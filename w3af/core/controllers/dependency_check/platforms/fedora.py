@@ -19,8 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import subprocess
 import platform
+import subprocess
 
 from .base_platform import Platform
 from ..requirements import CORE, GUI
@@ -31,8 +31,8 @@ class Fedora(Platform):
     PKG_MANAGER_CMD = 'sudo yum install'
     PIP_CMD = 'python-pip'
 
-    CORE_SYSTEM_PACKAGES = ['python-pip','npm', 'python-devel', 'python2-setuptools',
-                            'libsqlite3x-devel', 'git', 'libxml2-devel',
+    CORE_SYSTEM_PACKAGES = ['python-pip', 'npm', 'python-devel', 'python2-setuptools',
+                            'libsqlite3x-devel', 'git', 'libxml2-devel', 'gcc-c++',
                             'libxslt-devel', 'openssl-devel', 'libffi-devel']
 
     GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]

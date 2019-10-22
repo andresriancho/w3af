@@ -31,7 +31,9 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.user_agent.random_user_agent import get_random_user_agent
 
 
-GOOGLE_SORRY_PAGE = 'http://www.google.com/support/bin/answer.py?answer=86640'
+GOOGLE_SORRY_PAGES = {'http://www.google.com/support/bin/answer.py?answer=86640',
+                      'http://www.google.com/sorry/index?continue',
+                      'Our systems have detected unusual traffic from'}
 
 # Set the order in which the Google API searchers will be called by the
 # google class
@@ -99,10 +101,10 @@ class google(SearchEngine):
             if len_res >= count:
                 break
 
-        om.out.debug("Google search for: '%s' returned %s results." %
-                    (query, len(res)))
-        om.out.debug("Google search for: '%s' returned %s results." %
-                    (query, len(set(res))))
+        msg = "Google search for: '%s' returned %s unique results"
+        args = (query, len(set(res)))
+        om.out.debug(msg % args)
+
         return res
 
 
@@ -291,8 +293,10 @@ class GStandardSearch(GoogleAPISearch):
         there_is_more = True
 
         while start < max_start and there_is_more:
-            params = urllib.urlencode({'hl': 'en', 'q': self._query,
-                                       'start': start, 'sa': 'N'})
+            params = urllib.urlencode({'hl': 'en',
+                                       'q': self._query,
+                                       'start': start,
+                                       'sa': 'N'})
 
             google_url_instance = URL(self.GOOGLE_SEARCH_URL + params)
             response = self._do_GET(google_url_instance, with_rand_ua=False)
@@ -300,9 +304,10 @@ class GStandardSearch(GoogleAPISearch):
             # Remember that HTTPResponse objects have a faster "__in__" than
             # the one in strings; so string in response.get_body() is slower
             # than string in response
-            if GOOGLE_SORRY_PAGE in response:
-                msg = 'Google is telling us to stop doing automated tests.'
-                raise BaseFrameworkException(msg)
+            for google_sorry_page in GOOGLE_SORRY_PAGES:
+                if google_sorry_page in response:
+                    msg = 'Google is telling us to stop doing automated tests.'
+                    raise BaseFrameworkException(msg)
 
             if not self._has_more_items(response.get_body()):
                 there_is_more = False
@@ -389,9 +394,10 @@ class GMobileSearch(GStandardSearch):
             gm_url_instance = URL(gm_url)
             response = self._do_GET(gm_url_instance, with_rand_ua=False)
 
-            if GOOGLE_SORRY_PAGE in response:
-                msg = 'Google is telling us to stop doing automated tests.'
-                raise BaseFrameworkException(msg)
+            for google_sorry_page in GOOGLE_SORRY_PAGES:
+                if google_sorry_page in response:
+                    msg = 'Google is telling us to stop doing automated tests.'
+                    raise BaseFrameworkException(msg)
 
             if not self._has_more_items(response.get_body()):
                 there_is_more = False

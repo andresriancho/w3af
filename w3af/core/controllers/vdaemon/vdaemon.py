@@ -22,8 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import tempfile
 import random
-import subprocess
 import time
+
+import subprocess32 as subprocess
 
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om

@@ -107,7 +107,7 @@ class AuditPlugin(Plugin):
             if self._audit_return_vulns_in_caller():
                 self._newly_found_vulns.append(info)
         
-        super(AuditPlugin, self).kb_append_uniq(location_a, location_b, info)
+        return super(AuditPlugin, self).kb_append_uniq(location_a, location_b, info)
         
     def kb_append(self, location_a, location_b, info):
         """
@@ -173,21 +173,19 @@ class AuditPlugin(Plugin):
         :param kb_varname: The name of the variable in the kb, where
                            the vulnerability was saved. Defaults to self.name.
         """
-        with self._plugin_lock:
-            pname = pname or self.get_name()
-            kb_varname = kb_varname or pname
+        pname = pname or self.get_name()
+        kb_varname = kb_varname or pname
+        varname = varname or mutant.get_token_name()
 
-            if not varname:
-                varname = mutant.get_token_name()
+        query_location_tuple = (varname, mutant.get_url())
 
-            vulns = kb.kb.get(pname, kb_varname)
+        for vuln in kb.kb.get_iter(pname, kb_varname):
+            vuln_location_tuple = (vuln.get_token_name(), vuln.get_url())
 
-            for vuln in vulns:
-                if vuln.get_token_name() == varname and \
-                mutant.get_url() == vuln.get_url():
-                    return False
-                
-            return True
+            if vuln_location_tuple == query_location_tuple:
+                return False
+
+        return True
 
     def get_type(self):
         return 'audit'

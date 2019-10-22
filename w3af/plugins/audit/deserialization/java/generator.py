@@ -1,8 +1,9 @@
 import base64
 import json
 import difflib
-import subprocess
 import shlex
+
+import subprocess32 as subprocess
 
 # java -jar ysoserial-0.0.6-SNAPSHOT-all.jar -h
 PAYLOADS = ['BeanShell1',

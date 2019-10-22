@@ -14,8 +14,8 @@ use_echo = True
 eq_limit = 0.9
 
 [infrastructure.allowed_methods]
-reportDavOnly = True
-execOneTime = False
+dav_only = True
+run_once = False
 
 [grep.feeds]
 
@@ -80,8 +80,8 @@ ignore_regex = None
 only_forward = False
 
 [audit.ssl_certificate]
-minExpireDays = 30
-caFileName = %ROOT_PATH%/plugins/audit/ssl_certificate/ca.pem
+min_expire_days = 30
+ca_file_name = %ROOT_PATH%/plugins/audit/ssl_certificate/ca.pem
 
 [audit.os_commanding]
 

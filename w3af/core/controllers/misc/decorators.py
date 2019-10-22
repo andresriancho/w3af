@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import math
 import time
 import threading
-import collections
 import functools
 
 from functools import wraps
@@ -136,18 +135,14 @@ class memoized(object):
         self.cache = SynchronizedLRUDict(lru_size)
 
     def __call__(self, *args, **kwargs):
-        if not isinstance(args, collections.Hashable) or\
-        not isinstance(tuple(kwargs.items()), collections.Hashable):
-            # uncacheable. a list, for instance.
-            # better to not cache than blow up.
-            return self.func(*args, **kwargs)
-
         try:
-            return self.cache[(args, tuple(kwargs.items()))]
+            result = self.cache[(args, tuple(kwargs.items()))]
         except KeyError:
             value = self.func(*args, **kwargs)
             self.cache[(args, tuple(kwargs.items()))] = value
             return value
+        else:
+            return result
 
     def __repr__(self):
         """

@@ -239,12 +239,14 @@ class TestURLParser(unittest.TestCase):
         result = [i.url_string for i in URL('http://w3af.com/xyz/def/123/').get_directories()]
         expected = [u'http://w3af.com/xyz/def/123/',
                     u'http://w3af.com/xyz/def/',
-                    u'http://w3af.com/xyz/', u'http://w3af.com/']
+                    u'http://w3af.com/xyz/',
+                    u'http://w3af.com/']
         self.assertEqual(result, expected)
     
     def test_get_directories_path_levels_2(self):
         result = [i.url_string for i in URL('http://w3af.com/xyz/def/').get_directories()]
-        expected = [u'http://w3af.com/xyz/def/', u'http://w3af.com/xyz/',
+        expected = [u'http://w3af.com/xyz/def/',
+                    u'http://w3af.com/xyz/',
                     u'http://w3af.com/']
         self.assertEqual(result, expected)
     
@@ -317,12 +319,17 @@ class TestURLParser(unittest.TestCase):
         encode it.
         """
         u = URL('http://w3af.com/')
-        self.assertRaises(ValueError, u.url_join, "d:url.html")
+        self.assertRaises(ValueError, u.url_join, 'd:url.html')
 
     def test_url_join_case07(self):
         u = URL('http://w3af.com/')
         self.assertEqual(u.url_join('http://w3af.org:8080/abc.html').url_string,
                          u'http://w3af.org:8080/abc.html')
+
+    def test_url_join_with_query_string(self):
+        u = URL('http://w3af.com/abc/?id=1')
+        self.assertEqual(u.url_join('/../def/').url_string,
+                         u'http://w3af.com/def/')
 
     def test_parse_qs_case01(self):
         self.assertEqual(parse_qs('id=3'),
@@ -523,8 +530,8 @@ class TestURLParser(unittest.TestCase):
 
         raise SkipTest(msg)
 
-        url = URL('http://w3af.com/a/b/%E1%BA%BC.php?x=%E1%BA%BC')
-        self.assertEqual(str(url), '#fail')
+        # url = URL('http://w3af.com/a/b/%E1%BA%BC.php?x=%E1%BA%BC')
+        # self.assertEqual(str(url), '#fail')
 
     #
     #    __unicode__
@@ -554,7 +561,11 @@ class TestURLParser(unittest.TestCase):
     #    from_parts
     #
     def test_from_parts(self):
-        u = URL.from_parts('http', 'w3af.com', '/foo/bar.txt', None, 'a=b',
+        u = URL.from_parts('http',
+                           'w3af.com',
+                           '/foo/bar.txt',
+                           None,
+                           'a=b',
                            'frag')
         
         self.assertEqual(u.path, '/foo/bar.txt')
@@ -588,18 +599,24 @@ class TestURLParser(unittest.TestCase):
                          u'http://w3af.com/')
 
     def test_is_valid_domain_valid(self):
-        self.assertTrue(URL("http://1.2.3.4").is_valid_domain())        
-        self.assertTrue(URL("http://aaa.com").is_valid_domain())
-        self.assertTrue(URL("http://aa-bb").is_valid_domain())
-        self.assertTrue(URL("http://w3af.com").is_valid_domain())
-        self.assertTrue(URL("http://w3af.com:39").is_valid_domain())
-        self.assertTrue(URL("http://w3af.com:3932").is_valid_domain())
-        self.assertTrue(URL("http://f.o.o.b.a.r.s.p.a.m.e.g.g.s").is_valid_domain())
-        self.assertTrue(URL("http://abc:3932").is_valid_domain())
+        self.assertTrue(URL('http://www.google.com:80/').is_valid_domain())
+        self.assertTrue(URL('http://1.2.3.4').is_valid_domain())
+        self.assertTrue(URL('http://fe80::1').is_valid_domain())
+        self.assertTrue(URL('http://aaa.com').is_valid_domain())
+        self.assertTrue(URL('http://w3af.com').is_valid_domain())
+        self.assertTrue(URL('http://w3af.com:39').is_valid_domain())
+        self.assertTrue(URL('http://w3af.com:3932').is_valid_domain())
+        self.assertTrue(URL('http://f.o.o.b.a.r.s.p.a.m.e.g.g.s').is_valid_domain())
+        self.assertTrue(URL('http://abc:3932').is_valid_domain())
+        self.assertTrue(URL('http://abc.:3932').is_valid_domain())
+        self.assertTrue(URL('https://_abc:3932').is_valid_domain())
         
     def test_is_valid_domain_invalid(self):
-        self.assertFalse(URL("http://aaa.").is_valid_domain())
-        self.assertFalse(URL("http://aaa*a").is_valid_domain())
+        self.assertFalse(URL('http://aaa*a').is_valid_domain())
+        self.assertFalse(URL('http://-sub.w3af.com:39').is_valid_domain())
+        self.assertFalse(URL('http://sub.-w3af.com:39').is_valid_domain())
+        with self.assertRaises(ValueError):
+            URL('').is_valid_domain()
 
     #
     #    get_path

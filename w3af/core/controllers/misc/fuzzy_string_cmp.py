@@ -162,7 +162,10 @@ def relative_distance(a_str, b_str):
     :param b_str: A string object
     :return: A float with the distance
     """
+    a_split = split_by_sep(a_str)
+    b_split = split_by_sep(b_str)
+
     return difflib.SequenceMatcher(None,
-                                   split_by_sep(a_str),
-                                   split_by_sep(b_str)).quick_ratio()
+                                   a_split,
+                                   b_split).quick_ratio()
 

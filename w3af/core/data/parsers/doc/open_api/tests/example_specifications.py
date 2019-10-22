@@ -44,6 +44,11 @@ class IntParamJson(object):
         return file('%s/data/int_param_json.json' % CURRENT_PATH).read()
 
 
+class IntParamWithExampleJson(object):
+    def get_specification(self):
+        return file('%s/data/int_param_with_example_json.json' % CURRENT_PATH).read()
+
+
 class IntParamNoModelJson(object):
     def get_specification(self):
         return file('%s/data/int_param_no_model_json.json' % CURRENT_PATH).read()

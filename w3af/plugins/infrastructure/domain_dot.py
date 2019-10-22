@@ -43,10 +43,11 @@ class domain_dot(InfrastructurePlugin):
         # Internal variables
         self._already_tested = set()
 
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Sends the special request.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         """

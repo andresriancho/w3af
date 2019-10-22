@@ -131,8 +131,8 @@ def generate_404_by_shuffle(filename, extension, seed):
 
     filename = [c for c in filename]
 
-    mod_filename = random.shuffle(filename)
-    mod_filename = ''.join(mod_filename)
+    random.shuffle(filename)
+    mod_filename = ''.join(filename)
 
     return append_extension_if_exists(mod_filename, extension)
 
@@ -263,12 +263,14 @@ def send_request_generate_404(uri_opener, http_response, debugging_id, exclude=N
             break
 
     response_404 = send_404(uri_opener, url_404, debugging_id=debugging_id)
-    return FourOhFourResponse(response_404)
+    return FourOhFourResponse.from_http_response(response_404)
 
 
 def get_url_for_404_request(http_response, seed=1):
     """
     :param http_response: The HTTP response to modify
+    :param seed: The random number generator initialization seed to use when
+                 generating the filenames
     :return: A new URL with randomly generated filename or path that will
              trigger a 404.
     """
@@ -282,24 +284,25 @@ def get_url_for_404_request(http_response, seed=1):
         url_404.set_file_name(relative_url)
 
     else:
-        relative_url = '../%s/' % rand_alnum(8)
+        relative_url = '../%s/' % rand_alnum(8, seed=seed)
         url_404 = response_url.url_join(relative_url)
 
     return url_404
 
 
 @retry(tries=2, delay=0.5, backoff=2)
-def send_404(uri_opener, url404, debugging_id=None):
+def send_404(uri_opener, url_404, debugging_id=None):
     """
     Sends a GET request to url404.
 
     :return: The HTTP response body.
     """
-    # I don't use the cache, because the URLs are random and the only thing
-    # that cache does is to fill up disk space
     try:
-        response = uri_opener.GET(url404,
-                                  cache=False,
+        # Note that the cache is used for this request because url_404 was
+        # generated using a predictable algorithm, by caching the 404 responses
+        # we might be speeding up other calls to is_404
+        response = uri_opener.GET(url_404,
+                                  cache=True,
                                   grep=False,
                                   debugging_id=debugging_id)
     except HTTPRequestException, hre:
@@ -309,7 +312,7 @@ def send_404(uri_opener, url404, debugging_id=None):
         raise FourOhFourDetectionException(message % args)
     else:
         msg = 'Received response for 404 URL %s (id:%s, did:%s, len:%s)'
-        args = (url404, response.id, debugging_id, len(response.body))
+        args = (url_404, response.id, debugging_id, len(response.body))
         om.out.debug(msg % args)
 
     return response

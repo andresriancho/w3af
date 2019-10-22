@@ -4,7 +4,6 @@ import os
 from multiprocessing.dummy import Process
 from SocketServer import ThreadingMixIn
 from werkzeug._internal import _log
-from werkzeug.serving import select_ip_version
 from werkzeug.serving import ForkingWSGIServer, BaseWSGIServer
 from flask import Flask
 
@@ -117,3 +116,22 @@ class ThreadedWSGIServer(ThreadingMixIn, BaseWSGIServer):
                     args=(request, client_address))
         t.daemon = self.daemon_threads
         t.start()
+
+
+def select_ip_version(host, port):
+    """Returns AF_INET4 or AF_INET6 depending on where to connect to."""
+    # disabled due to problems with current ipv6 implementations
+    # and various operating systems.  Probably this code also is
+    # not supposed to work, but I can't come up with any other
+    # ways to implement this.
+    # try:
+    #     info = socket.getaddrinfo(host, port, socket.AF_UNSPEC,
+    #                               socket.SOCK_STREAM, 0,
+    #                               socket.AI_PASSIVE)
+    #     if info:
+    #         return info[0][0]
+    # except socket.gaierror:
+    #     pass
+    if ':' in host and hasattr(socket, 'AF_INET6'):
+        return socket.AF_INET6
+    return socket.AF_INET

@@ -31,6 +31,9 @@ class TestHeaders(unittest.TestCase):
     def test_empty(self):
         self.assertEquals(Headers([]), Headers([]))
 
+    def test_false(self):
+        self.assertFalse(Headers())
+
     def test_simple(self):
         headers = Headers([('a', 'b')])
 

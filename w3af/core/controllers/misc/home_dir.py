@@ -1,5 +1,5 @@
 """
-homeDir.py
+home_dir.py
 
 Copyright 2008 Andres Riancho
 
@@ -101,7 +101,7 @@ def get_home_dir():
     :return: The location of the w3af directory inside the home directory of
         the current user.
     """
-    return HOME_DIR
+    return os.environ.get('W3AF_HOME_DIR', HOME_DIR)
 
 
 def verify_dir_has_perm(path, perm, levels=0):

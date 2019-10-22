@@ -52,11 +52,15 @@ class http_vs_https_dist(InfrastructurePlugin):
         self._https_port = 443
 
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Discovery task. Uses scapy.traceroute function in order to determine
         the distance between http and https ports for the target.
         Intended to be executed once during the infrastructure process.
+
+        :param debugging_id: A unique identifier for this call to discover()
+        :param fuzzable_request: A fuzzable_request instance that contains
+                                    (among other things) the URL to test.
         """
         if not self._has_permission():
             om.out.error(PERM_ERROR_MSG)

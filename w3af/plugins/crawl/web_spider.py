@@ -41,7 +41,7 @@ from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.options.opt_factory import opt_factory
-from w3af.core.data.options.option_types import BOOL, REGEX
+from w3af.core.data.options.option_types import BOOL, REGEX, LIST
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
@@ -71,14 +71,16 @@ class web_spider(CrawlPlugin):
         self._ignore_regex = ''
         self._follow_regex = '.*'
         self._only_forward = False
+        self._ignore_extensions = []
         self._compile_re()
 
-    def crawl(self, fuzzable_req):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         Searches for links on the html.
 
-        :param fuzzable_req: A fuzzable_req instance that contains
-                             (among other things) the URL to test.
+        :param debugging_id: A unique identifier for this call to discover()
+        :param fuzzable_request: A fuzzable_req instance that contains
+                                 (among other things) the URL to test.
         """
         self._handle_first_run()
 
@@ -86,17 +88,17 @@ class web_spider(CrawlPlugin):
         # If it is a form, then smart_fill the parameters to send something that
         # makes sense and will allow us to cover more code.
         #
-        data_container = fuzzable_req.get_raw_data()
+        data_container = fuzzable_request.get_raw_data()
         if isinstance(data_container, Form):
 
-            if fuzzable_req.get_url() in self._already_filled_form:
+            if fuzzable_request.get_url() in self._already_filled_form:
                 return
 
-            self._already_filled_form.add(fuzzable_req.get_url())
+            self._already_filled_form.add(fuzzable_request.get_url())
             data_container.smart_fill()
 
         # Send the HTTP request
-        resp = self._uri_opener.send_mutant(fuzzable_req)
+        resp = self._uri_opener.send_mutant(fuzzable_request)
 
         # Nothing to do here...
         if resp.get_code() == http_constants.UNAUTHORIZED:
@@ -110,8 +112,8 @@ class web_spider(CrawlPlugin):
         if is_404(resp):
             return
 
-        self._extract_html_forms(resp, fuzzable_req)
-        self._extract_links_and_verify(resp, fuzzable_req)
+        self._extract_html_forms(resp, fuzzable_request)
+        self._extract_links_and_verify(resp, fuzzable_request)
 
     def _extract_html_forms(self, resp, fuzzable_req):
         """
@@ -282,6 +284,12 @@ class web_spider(CrawlPlugin):
             om.out.debug(msg % args)
             return False
 
+        if self._has_ignored_extension(ref):
+            msg = 'web_spider will ignore %s (match ignore extensions)'
+            args = (ref.url_string,)
+            om.out.debug(msg % args)
+            return False
+
         # Implementing only forward
         if self._only_forward and not self._is_forward(ref):
             msg = 'web_spider will ignore %s (is not forward)'
@@ -290,6 +298,12 @@ class web_spider(CrawlPlugin):
             return False
 
         return True
+
+    def _has_ignored_extension(self, new_url):
+        if not self._ignore_extensions:
+            return False
+
+        return new_url.get_extension().lower() in self._ignore_extensions
 
     def _should_verify_extracted_url(self, ref, resp):
         """
@@ -460,21 +474,27 @@ class web_spider(CrawlPlugin):
         """
         ol = OptionList()
 
-        d = ('When crawling only follow links to paths inside the one given'
-             ' as target.')
+        d = 'Only crawl links to paths inside the URL given as target.'
         o = opt_factory('only_forward', self._only_forward, d, BOOL)
         ol.add(o)
 
-        d = ('When crawling only follow which that match this regular'
-             ' expression. Please note that ignore_regex has precedence over'
-             ' follow_regex.')
+        d = ('Only crawl links that match this regular expression.'
+             ' Note that ignore_regex has precedence over follow_regex.')
         o = opt_factory('follow_regex', self._follow_regex, d, REGEX)
         ol.add(o)
 
-        d = ('When crawling, DO NOT follow links that match this regular'
-             ' expression. Please note that ignore_regex has precedence over'
-             ' follow_regex.')
+        d = ('DO NOT crawl links that match this regular expression.'
+             ' Note that ignore_regex has precedence over follow_regex.')
         o = opt_factory('ignore_regex', self._ignore_regex, d, REGEX)
+        ol.add(o)
+
+        d = 'DO NOT crawl links that use these extensions.'
+        h = ('This configuration parameter is commonly used to ignore'
+             ' static files such as zip, pdf, jpeg, etc. It is possible to'
+             ' ignore these files using `ignore_regex`, but configuring'
+             ' this parameter is easier and performs case insensitive'
+             ' matching.')
+        o = opt_factory('ignore_extensions', self._ignore_extensions, d, LIST, help=h)
         ol.add(o)
 
         return ol
@@ -488,9 +508,13 @@ class web_spider(CrawlPlugin):
         :return: No value is returned.
         """
         self._only_forward = options_list['only_forward'].get_value()
+
         self._ignore_regex = options_list['ignore_regex'].get_value()
         self._follow_regex = options_list['follow_regex'].get_value()
         self._compile_re()
+
+        self._ignore_extensions = options_list['ignore_extensions'].get_value()
+        self._ignore_extensions = [ext.lower() for ext in self._ignore_extensions]
 
     def _compile_re(self):
         """
@@ -520,21 +544,22 @@ class web_spider(CrawlPlugin):
         This plugin is a classic web spider, it will request a URL and extract
         all links and forms from the response.
 
-        Three configurable parameter exist:
+        Four configurable parameter exist:
             - only_forward
-            - ignore_regex
             - follow_regex
+            - ignore_regex
+            - ignore_extensions
 
         ignore_regex and follow_regex are commonly used to configure the
-        web_spider to spider all URLs except the "logout" or some other more
-        exciting link like "Reboot Appliance" that would make the w3af run
-        finish without the expected result.
+        web_spider to crawl all URLs except "/logout" or some more
+        exciting link like "Reboot Appliance" that would greatly reduce
+        the scan test coverage.
 
         By default ignore_regex is an empty string (nothing is ignored) and
         follow_regex is '.*' (everything is followed). Both regular expressions
-        are normal regular expressions that are compiled with Python's re
-        module.
-
-        The regular expressions are applied to the URLs that are found using the
-        match function.
+        are compiled with Python's re module and applied to URLs (with query
+        string included).
+        
+        The ignore_extensions configuration parameter is commonly used to ignore
+        static files such as zip, jpeg, pdf, etc.
         """

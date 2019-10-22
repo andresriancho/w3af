@@ -53,11 +53,12 @@ class digit_sum(CrawlPlugin):
         self._fuzz_images = False
         self._max_digit_sections = 4
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         Searches for new URLs by adding and subtracting numbers to the file
         and the parameters.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                      (among other things) the URL to test.
         """

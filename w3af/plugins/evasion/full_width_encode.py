@@ -22,7 +22,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib
 
 from w3af.core.controllers.plugins.evasion_plugin import EvasionPlugin
-from w3af.core.data.url.HTTPRequest import HTTPRequest as HTTPRequest
 from w3af.core.data.parsers.doc.url import parse_qs
 
 
@@ -32,10 +31,6 @@ class full_width_encode(EvasionPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-
-    def __init__(self):
-        EvasionPlugin.__init__(self)
-
     def modify_request(self, request):
         """
         Mangles the request
@@ -45,11 +40,6 @@ class full_width_encode(EvasionPlugin):
         :return: The modified request
 
         """
-        # This is a test URL
-        # http://172.16.1.132/index.asp?q=%uFF1Cscript%3Ealert(%22Hello%22)%3C/script%3E
-        # This is the content of index.asp :
-        # <%=Request.QueryString("q")%>
-
         # First we mangle the URL
         path = request.url_object.get_path()
         path = self._mutate(path)
@@ -57,7 +47,6 @@ class full_width_encode(EvasionPlugin):
         # Now we mangle the postdata
         data = request.get_data()
         if data:
-
             try:
                 # Only mangle the postdata if it is a url encoded string
                 parse_qs(data)
@@ -71,20 +60,22 @@ class full_width_encode(EvasionPlugin):
         new_url = request.url_object.copy()
         new_url.set_path(path)
 
-        new_req = HTTPRequest(new_url, data, request.headers,
-                              request.get_origin_req_host(),
-                              retries=request.retries_left)
+        new_req = request.copy()
+        new_req.set_data(data)
+        new_req.set_uri(new_url)
 
         return new_req
 
     def _mutate(self, to_mutate):
         to_mutate = urllib.unquote(to_mutate)
         mutant = ''
+
         for char in to_mutate:
             if char not in ['?', '/', '&', '\\', '=', '%', '+']:
                 # The "- 0x20" was taken from UFF00.pdf
                 char = "%%uFF%02x" % (ord(char) - 0x20)
             mutant += char
+
         return mutant
 
     def get_priority(self):
@@ -106,5 +97,5 @@ class full_width_encode(EvasionPlugin):
 
         Example:
             Input:      '/bar/foo.asp'
-            Output :    '/b%uFF61r/%uFF66oo.asp'
+            Output:     '/b%uFF61r/%uFF66oo.asp'
         """

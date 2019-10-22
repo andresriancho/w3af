@@ -27,7 +27,7 @@ import ConfigParser
 
 from w3af.core.controllers.core_helpers.target import CoreTarget
 from w3af.core.controllers.misc.factory import factory
-from w3af.core.controllers.misc.homeDir import get_home_dir
+from w3af.core.controllers.misc.home_dir import get_home_dir
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.controllers.exceptions import BaseFrameworkException
 

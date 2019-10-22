@@ -65,8 +65,11 @@ def get_plugin_time(scan_log_filename, scan):
 
         spent_time_items = spent_time_by_plugin_one_type.items()
         spent_time_items.sort(sort_by_value)
-        spent_time_items = spent_time_items[:10]
+        spent_time_items = spent_time_items[:15]
         spent_time_dict = dict(spent_time_items)
+
+        # round
+        spent_time_dict = dict((plugin_name, round(took)) for plugin_name, took in spent_time_dict.iteritems())
 
         title = 'Top10 wall time used by %s plugins (seconds)'
         output.append(ListOutputItem(title % plugin_type, spent_time_dict))

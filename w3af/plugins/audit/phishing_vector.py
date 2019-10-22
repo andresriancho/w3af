@@ -100,7 +100,10 @@ class phishing_vector(AuditPlugin):
             return
 
         for tag in parser_cache.dpc.get_tags_by_filter(response, self.TAGS):
+            # pylint: disable=E1101
             src_attr = tag.attrib.get('src', None)
+            # pylint: enable=E1101
+
             if src_attr is None:
                 continue
 

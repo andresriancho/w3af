@@ -49,6 +49,18 @@ def create_temp_profile(scan_profile):
     return scan_profile_file, tempdir
 
 
+def remove_temp_profile(scan_profile_file_name):
+    """
+    Remove temp profile after using
+    :param scan_profile_file_name: path to the temp profile
+    :return: None
+    """
+    try:
+        os.remove(scan_profile_file_name)
+    except OSError:
+        pass
+
+
 def start_scan_helper(scan_info):
     """
     Start scan from scan_info

@@ -56,11 +56,12 @@ class archive_dot_org(CrawlPlugin):
         # User configured parameters
         self._max_depth = 3
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
         Does a search in archive.org and searches for links on the html. Then
         searches those URLs in the target site. This is a time machine !
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """

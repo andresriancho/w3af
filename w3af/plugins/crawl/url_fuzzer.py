@@ -60,10 +60,11 @@ class url_fuzzer(CrawlPlugin):
         self._fuzz_images = False
         self._seen = ScalableBloomFilter()
 
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
-        Searches for new Url's using fuzzing.
+        Searches for new URLs using fuzzing.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """

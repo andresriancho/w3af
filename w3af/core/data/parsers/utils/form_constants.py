@@ -34,9 +34,14 @@ INPUT_TYPE_PASSWD = 'password'
 # Not exactly an <input>, but close enough:
 INPUT_TYPE_TEXTAREA = 'textarea'
 
-ALL_INPUT_TYPES = (INPUT_TYPE_FILE, INPUT_TYPE_CHECKBOX, INPUT_TYPE_RADIO,
-                   INPUT_TYPE_TEXT, INPUT_TYPE_HIDDEN, INPUT_TYPE_SUBMIT,
-                   INPUT_TYPE_SELECT, INPUT_TYPE_PASSWD)
+ALL_INPUT_TYPES = (INPUT_TYPE_FILE,
+                   INPUT_TYPE_CHECKBOX,
+                   INPUT_TYPE_RADIO,
+                   INPUT_TYPE_TEXT,
+                   INPUT_TYPE_HIDDEN,
+                   INPUT_TYPE_SUBMIT,
+                   INPUT_TYPE_SELECT,
+                   INPUT_TYPE_PASSWD)
 
 MODE_ALL = 'all'
 MODE_TB = 'tb'

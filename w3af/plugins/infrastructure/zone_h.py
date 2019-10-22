@@ -38,14 +38,13 @@ class zone_h(InfrastructurePlugin):
 
     :author: Jordan Santarsieri ( jsantarsieri@cybsec.com )
     """
-    def __init__(self):
-        InfrastructurePlugin.__init__(self)
 
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Search zone_h and parse the output.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """
@@ -55,8 +54,7 @@ class zone_h(InfrastructurePlugin):
         # http://www.zone-h.org/archive/domain=cyprus-stones.com
 
         # TODO: Keep this URL updated!
-        zone_h_url_str = 'http://www.zone-h.org/archive/domain=' + \
-            target_domain
+        zone_h_url_str = 'http://www.zone-h.org/archive/domain=%s' % target_domain
         zone_h_url = URL(zone_h_url_str)
 
         try:
