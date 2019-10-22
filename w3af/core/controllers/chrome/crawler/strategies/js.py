@@ -27,7 +27,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.misc.xml_bones import get_xml_bones
 from w3af.core.controllers.chrome.instrumented.exceptions import EventException, EventTimeout
-from w3af.core.controllers.chrome.crawler.state import CrawlerState
+from w3af.core.controllers.chrome.crawler.state import CrawlerState, EventDispatchLogUnit
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 
@@ -603,39 +603,6 @@ class ChromeCrawlerJS(object):
 
         self._ignore_event(event)
         return False
-
-
-class EventDispatchLogUnit(object):
-    IGNORED = 0
-    SUCCESS = 1
-    FAILED = 2
-
-    __slots__ = (
-        'state',
-        'event',
-        'uri'
-    )
-
-    def __init__(self, event, state, uri):
-        assert state in (self.IGNORED, self.SUCCESS, self.FAILED), 'Invalid state'
-
-        self.state = state
-        self.event = event
-        self.uri = uri
-
-    def get_state_as_string(self):
-        if self.state == EventDispatchLogUnit.IGNORED:
-            return 'IGNORED'
-
-        if self.state == EventDispatchLogUnit.SUCCESS:
-            return 'SUCCESS'
-
-        if self.state == EventDispatchLogUnit.FAILED:
-            return 'FAILED'
-
-    def __repr__(self):
-        state = self.get_state_as_string()
-        return '<EventDispatchLogUnit %s %s>' % (state, self.event)
 
 
 class MaxPageReload(Exception):

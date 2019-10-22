@@ -54,3 +54,36 @@ class CrawlerState(object):
     def __iter__(self):
         for event_dispatch_log_unit in self._event_dispatch_log:
             yield event_dispatch_log_unit
+
+
+class EventDispatchLogUnit(object):
+    IGNORED = 0
+    SUCCESS = 1
+    FAILED = 2
+
+    __slots__ = (
+        'state',
+        'event',
+        'uri'
+    )
+
+    def __init__(self, event, state, uri):
+        assert state in (self.IGNORED, self.SUCCESS, self.FAILED), 'Invalid state'
+
+        self.state = state
+        self.event = event
+        self.uri = uri
+
+    def get_state_as_string(self):
+        if self.state == EventDispatchLogUnit.IGNORED:
+            return 'IGNORED'
+
+        if self.state == EventDispatchLogUnit.SUCCESS:
+            return 'SUCCESS'
+
+        if self.state == EventDispatchLogUnit.FAILED:
+            return 'FAILED'
+
+    def __repr__(self):
+        state = self.get_state_as_string()
+        return '<EventDispatchLogUnit %s %s>' % (state, self.event)
