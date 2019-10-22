@@ -38,8 +38,10 @@ from httplib import _is_legal_header_name, _is_illegal_header_value
 
 from .utils import debug, error, to_utf8_raw
 from .connection_manager import ConnectionManager
-from .connections import (ProxyHTTPConnection, ProxyHTTPSConnection,
-                          HTTPConnection, HTTPSConnection)
+from .connections import (ProxyHTTPConnection,
+                          ProxyHTTPSConnection,
+                          HTTPConnection,
+                          HTTPSConnection)
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               HTTPRequestException,
                                               ConnectionPoolException)
