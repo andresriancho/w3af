@@ -16,11 +16,12 @@ License, Version 2.0 for this file.
 import ssl
 import time
 import socket
-import select
 import OpenSSL
 
 from ndg.httpsclient.subj_alt_name import SubjectAltName
 from pyasn1.codec.der.decoder import decode as der_decoder
+
+from w3af.core.controllers.misc.poll import poll
 
 CERT_NONE = ssl.CERT_NONE
 CERT_OPTIONAL = ssl.CERT_OPTIONAL
@@ -128,7 +129,7 @@ class SSLSocket(object):
             # should be done on this socket
             return ''
         except OpenSSL.SSL.WantReadError:
-            rd, wd, ed = select.select([self.sock], [], [], self.sock.gettimeout())
+            rd, wd, ed = poll([self.sock], [], [], self.sock.gettimeout())
             if not rd:
                 # empty string signalling that the other side has closed the
                 # connection or that some kind of error happen and no more reads
@@ -147,7 +148,7 @@ class SSLSocket(object):
             try:
                 return self.ssl_conn.send(data)
             except OpenSSL.SSL.WantWriteError:
-                _, wlist, _ = select.select([], [self.sock], [], self.sock.gettimeout())
+                _, wlist, _ = poll([], [self.sock], [], self.sock.gettimeout())
                 if not wlist:
                     raise socket.timeout()
                 continue
@@ -271,7 +272,7 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
             cnx.do_handshake()
             break
         except OpenSSL.SSL.WantReadError:
-            in_fds, out_fds, err_fds = select.select([sock, ], [], [], timeout)
+            in_fds, out_fds, err_fds = poll([sock, ], [], [], timeout)
             if len(in_fds) == 0:
                 raise ssl.SSLError('do_handshake timed out')
             else:

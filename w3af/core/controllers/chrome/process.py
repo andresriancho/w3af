@@ -23,7 +23,6 @@ import os
 import re
 import time
 import signal
-import select
 import threading
 import subprocess32 as subprocess
 
@@ -32,6 +31,7 @@ import psutil
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
+from w3af.core.controllers.misc.poll import poll
 from w3af.core.controllers.dependency_check.external.chrome import get_chrome_path, get_chrome_version
 
 
@@ -185,12 +185,12 @@ class ChromeProcess(object):
         while self.proc is not None and self.proc.poll() is None:
 
             try:
-                read_ready, write_ready, _ = select.select([stdout_r, stderr_r],
-                                                           [],
-                                                           [],
-                                                           0.2)
+                read_ready, write_ready, _ = poll([stdout_r, stderr_r],
+                                                  [],
+                                                  [],
+                                                  0.2)
             except ValueError as e:
-                msg = 'Failed to read ChromeProcess stdout / stderr using select.select(): %s'
+                msg = 'Failed to read ChromeProcess stdout / stderr using poll(): %s'
                 args = (e, )
                 om.out.debug(msg % args)
                 break

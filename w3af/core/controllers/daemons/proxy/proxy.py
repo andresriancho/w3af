@@ -201,7 +201,9 @@ class Proxy(Process):
 
         # Start to handle requests
         self._running = True
+
         self._master.run()
+
         self._running = False
 
     def stop(self):
