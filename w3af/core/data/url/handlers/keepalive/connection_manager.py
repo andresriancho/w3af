@@ -26,7 +26,7 @@ class ConnectionManager(object):
     GET_AVAILABLE_CONNECTION_RETRY_MAX_TIME = 60.00
 
     # Used to cleanup the connection pool
-    FORCEFULLY_CLOSE_CONN_TIME = GET_AVAILABLE_CONNECTION_RETRY_MAX_TIME * 2
+    FORCEFULLY_CLOSE_CONN_TIME = 45.0
 
     # Log stats once every N requests
     LOG_STATS_EVERY = 25
