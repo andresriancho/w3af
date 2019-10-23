@@ -66,6 +66,13 @@ class InstrumentedChromeBase(object):
         self.chrome_process = self.start_chrome_process()
         self.chrome_conn = self.connect_to_chrome()
 
+    def set_traffic_queue(self, http_traffic_queue):
+        self.http_traffic_queue = http_traffic_queue
+        self.proxy.set_traffic_queue(http_traffic_queue)
+
+    def get_traffic_queue(self):
+        return self.http_traffic_queue
+
     def start_proxy(self):
         proxy = LoggingProxy(self.PROXY_HOST,
                              0,

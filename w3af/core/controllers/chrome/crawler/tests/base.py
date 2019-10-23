@@ -29,6 +29,10 @@ from w3af.core.controllers.chrome.tests.helpers import set_debugging_in_output_m
 from w3af.core.controllers.chrome.crawler.main import ChromeCrawler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
+from w3af.core.data.url.HTTPResponse import HTTPResponse
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.dc.headers import Headers
 
 
 class BaseChromeCrawlerTest(unittest.TestCase):
@@ -56,6 +60,13 @@ class BaseChromeCrawlerTest(unittest.TestCase):
         self.server_thread = t
         self.server = s
         self.server_port = p
+
+        self.url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
+        self.url = URL(self.url)
+
+        headers = Headers([('content-type', 'text/html')])
+        self.http_response = HTTPResponse(200, '', headers, self.url, self.url, _id=1)
+        self.fuzzable_request = FuzzableRequest(self.url)
 
     def tearDown(self):
         while not self.http_traffic_queue.empty():

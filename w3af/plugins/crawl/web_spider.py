@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
+import Queue
 import itertools
 
 import w3af.core.controllers.output_manager as om
@@ -31,7 +32,7 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.itertools_toolset import unique_justseen
 from w3af.core.controllers.exceptions import BaseFrameworkException
-from w3af.core.controllers.chrome.crawler.main import ChromeCrawler, ChromeCrawlerException
+from w3af.core.controllers.chrome.crawler.main import ChromeCrawler
 from w3af.core.controllers.chrome.pool import ChromePool
 
 from w3af.core.data.parsers.utils.header_link_extract import headers_url_generator
@@ -70,8 +71,8 @@ class web_spider(CrawlPlugin):
         self._variant_db = VariantDB()
 
         # Chrome crawler
-        self._chrome_crawler = None
-        self._crawled_with_chrome = DiskSet(table_prefix='crawled_with_chrome')
+        self._chrome_crawler_inst = None
+        self._http_traffic_queue = Queue.Queue()
 
         # User configured variables
         self._ignore_regex = ''
@@ -195,17 +196,24 @@ class web_spider(CrawlPlugin):
         :param resp: HTTP response object
         :param fuzzable_req: The HTTP request that generated the response
         """
-        gen = itertools.chain(self._url_path_url_generator(resp, fuzzable_req),
-                              self._body_url_generator(resp, fuzzable_req),
-                              headers_url_generator(resp, fuzzable_req))
+        chain = itertools.chain(self._url_path_url_generator(resp, fuzzable_req),
+                                self._body_url_generator(resp, fuzzable_req),
+                                headers_url_generator(resp, fuzzable_req))
         
-        for ref, fuzzable_req, original_resp, possibly_broken in gen:
-            if self.should_verify_extracted_url(ref, original_resp):
-                yield (ref,
-                       fuzzable_req,
-                       original_resp,
-                       possibly_broken,
-                       debugging_id)
+        for url, fuzzable_req, original_resp, possibly_broken in chain:
+
+            # Ignore self reference
+            if url == resp.get_uri():
+                continue
+
+            if not self._should_verify_extracted_url(url):
+                continue
+
+            yield (url,
+                   fuzzable_req,
+                   original_resp,
+                   possibly_broken,
+                   debugging_id)
 
     def _url_path_url_generator(self, resp, fuzzable_req):
         """
@@ -277,41 +285,41 @@ class web_spider(CrawlPlugin):
                 possibly_broken = resp_is_404 or (ref in only_re_refs)
                 yield ref, fuzzable_req, resp, possibly_broken
 
-    def _should_analyze_url(self, ref):
+    def _should_analyze_url(self, url):
         """
         :param ref: A URL instance to match against the user configured filters
         :return: True if we should navigate to this URL
         """
         # I don't want w3af sending requests to 3rd parties!
-        if ref.get_domain() != self._target_domain:
+        if url.get_domain() != self._target_domain:
             msg = 'web_spider will ignore %s (different domain name)'
-            args = (ref.get_domain(),)
+            args = (url.get_domain(),)
             om.out.debug(msg % args)
             return False
 
         # Filter the URL according to the configured regular expressions
-        if not self._compiled_follow_re.match(ref.url_string):
+        if not self._compiled_follow_re.match(url.url_string):
             msg = 'web_spider will ignore %s (not match follow regex)'
-            args = (ref.url_string,)
+            args = (url.url_string,)
             om.out.debug(msg % args)
             return False
 
-        if self._compiled_ignore_re.match(ref.url_string):
+        if self._compiled_ignore_re.match(url.url_string):
             msg = 'web_spider will ignore %s (match ignore regex)'
-            args = (ref.url_string,)
+            args = (url.url_string,)
             om.out.debug(msg % args)
             return False
 
-        if self._has_ignored_extension(ref):
+        if self._has_ignored_extension(url):
             msg = 'web_spider will ignore %s (match ignore extensions)'
-            args = (ref.url_string,)
+            args = (url.url_string,)
             om.out.debug(msg % args)
             return False
 
         # Implementing only forward
-        if self._only_forward and not self._is_forward(ref):
+        if self._only_forward and not self._is_forward(url):
             msg = 'web_spider will ignore %s (is not forward)'
-            args = (ref.url_string,)
+            args = (url.url_string,)
             om.out.debug(msg % args)
             return False
 
@@ -323,19 +331,14 @@ class web_spider(CrawlPlugin):
 
         return new_url.get_extension().lower() in self._ignore_extensions
 
-    def should_verify_extracted_url(self, ref, resp):
+    def _should_verify_extracted_url(self, url):
         """
-        :param ref: A newly found URL
-        :param resp: The HTTP response where the URL was found
+        :param url: A newly found URL
 
         :return: Boolean indicating if I should send this new reference to the
                  core.
         """
-        # Ignore myself
-        if ref == resp.get_uri():
-            return False
-
-        if not self._should_analyze_url(ref):
+        if not self._should_analyze_url(url):
             return False
 
         #
@@ -348,11 +351,11 @@ class web_spider(CrawlPlugin):
         #
         # If I remove the web_spider VariantDB and just leave the one in the
         # core the framework keeps working but this method
-        # (should_verify_extracted_url) will return True much more often, which
+        # (_should_verify_extracted_url) will return True much more often, which
         # leads to extra HTTP requests for URLs which we already checked and the
         # core will dismiss anyway
         #
-        fuzzable_request = FuzzableRequest(ref)
+        fuzzable_request = FuzzableRequest(url)
         if self._variant_db.append(fuzzable_request):
             return True
 
@@ -371,68 +374,113 @@ class web_spider(CrawlPlugin):
             self._verify_reference,
             self._urls_to_verify_generator(resp, fuzzable_req, debugging_id))
 
-    def _should_crawl_with_chrome(self, response, fuzzable_req):
-        """
-        :return: True if we should crawl this fuzzable request with Chrome
-        """
-        if not self._enable_js_crawler:
-            return False
+    @property
+    def _chrome_crawler(self):
+        if self._chrome_crawler_inst is None:
+            #
+            # The ChromeCrawler instance, only one should be used during the whole
+            # scan. State is stored in the instance to reduce the number of events
+            # being sent
+            #
+            self._chrome_crawler_inst = ChromeCrawler(self._uri_opener,
+                                                      max_instances=self._chrome_processes)
 
-        # TODO: Add support for fuzzable requests with POST
-        if fuzzable_req.get_method() != 'GET':
-            return False
+        return self._chrome_crawler_inst
 
-        # Only crawl responses that will be rendered
-        if 'html' not in response.content_type.lower():
-            return False
-
-        # Only crawl URIs once
-        uri = fuzzable_req.get_uri()
-        if uri in self._crawled_with_chrome:
-            return False
-
-        self._crawled_with_chrome.add(uri)
-        return True
-
-    def _get_chrome_crawler(self):
-        if self._chrome_crawler is None:
-            self._chrome_crawler = ChromeCrawler(self._uri_opener,
-                                                 max_instances=self._chrome_processes,
-                                                 web_spider=self)
-
-        return self._chrome_crawler
-
-    def _crawl_with_chrome(self, response, fuzzable_req, debugging_id):
+    def _crawl_with_chrome(self, http_response, fuzzable_req, debugging_id):
         """
         Crawl the URL using Chrome.
 
-        :param response: The HTTP response for fuzzable_req (retrieved with uri opener)
+        :param http_response: The HTTP response for fuzzable_req (retrieved with uri opener)
         :param fuzzable_req: The HTTP request to use as starting point
         :param debugging_id: A unique identifier for this call to discover()
         :return: None, new fuzzable requests are written to the output queue
         """
-        if not self._should_crawl_with_chrome(response, fuzzable_req):
+        if not self._enable_js_crawler:
             return
 
-        chrome_crawler = self._get_chrome_crawler()
-        uri = fuzzable_req.get_uri()
+        # Before sending more tasks to the ChromeCrawler make sure that the
+        # queue which is used to receive the messages is empty
+        self._process_chrome_queue()
 
-        http_traffic_queue = CrawlFilterQueue(self.output_queue,
-                                              self,
-                                              response)
+        self._chrome_crawler.crawl(fuzzable_req,
+                                   http_response,
+                                   self._http_traffic_queue,
+                                   debugging_id=debugging_id,
+                                   _async=True)
 
-        try:
-            chrome_crawler.crawl(uri,
-                                 http_traffic_queue,
-                                 debugging_id=debugging_id)
-        except ChromeCrawlerException, cce:
-            args = (uri, cce)
-            msg = 'Failed to crawl %s using chrome crawler: "%s"'
-            om.out.debug(msg % args)
-        except Exception:
-            # Any other exception will be raised here and handled by the
-            # framework's exception handler
-            raise
+        self._chrome_crawler.log_pending_tasks()
+
+    def has_pending_work(self):
+        """
+        Plugins might start tasks in async threads. Those tasks might be running
+        after the call to audit() or discover() exits. This method is called by
+        the framework to check if any of those tasks is still running.
+
+        self._chrome_crawler.crawl(...) does start async threads to crawl the
+        site using Chrome.
+
+        :return: True if there are async threads started by the plugin still running
+        """
+        processed_items = self._process_chrome_queue()
+
+        if processed_items:
+            return True
+
+        return self._chrome_crawler.has_pending_work()
+
+    def _process_chrome_queue(self):
+        """
+        Process HTTP requests and responses that were found by Chrome
+
+        :return: None
+        """
+        processed_items = 0
+
+        while not self._http_traffic_queue.empty():
+
+            try:
+                queue_data = self._http_traffic_queue.get_nowait()
+            except Queue.Empty:
+                break
+
+            b = queue_data[1]
+
+            if isinstance(b, Exception):
+                self._handle_exception_from_chrome_queue(queue_data)
+            else:
+                self._handle_http_traffic_from_chrome_queue(queue_data)
+
+            processed_items += 1
+
+        msg = 'The web_spider processed %s items from ChromeCrawler queue'
+        om.out.debug(msg % processed_items)
+
+        return processed_items
+
+    def _handle_http_traffic_from_chrome_queue(self, queue_data):
+        request, response, debugging_id = queue_data
+
+        if response.get_code() in (404, 403, 401):
+            return False
+
+        if not self._should_verify_extracted_url(response.get_uri()):
+            return False
+
+        self.extract_html_forms(response, request)
+        self.extract_links_and_verify(response, request, debugging_id)
+        return True
+
+    def _handle_exception_from_chrome_queue(self, queue_data):
+        fuzzable_request, exception, debugging_id = queue_data
+
+        args = (fuzzable_request.get_uri(), exception, debugging_id)
+        msg = 'Failed to crawl %s using chrome crawler: "%s" (did: %s)'
+        om.out.debug(msg % args)
+
+        # Any other exception will be raised here and handled by the
+        # framework's exception handler
+        raise exception
 
     def _verify_reference(self, reference, original_request,
                           original_response, possibly_broken,
@@ -533,9 +581,9 @@ class web_spider(CrawlPlugin):
         """
         Called when the process ends, prints out the list of broken links.
         """
-        if self._chrome_crawler is not None:
-            self._chrome_crawler.terminate()
-            self._chrome_crawler = None
+        if self._chrome_crawler_inst is not None:
+            self._chrome_crawler_inst.terminate()
+            self._chrome_crawler_inst = None
 
         self._log_broken_links()
 
@@ -696,27 +744,3 @@ class web_spider(CrawlPlugin):
         will increase the crawl speed, but also consume more resources (mainly
         memory usage).
         """
-
-
-class CrawlFilterQueue(object):
-    def __init__(self, output_queue, _web_spider, response):
-        self._output_queue = output_queue
-        self._response = response
-        self._web_spider = _web_spider
-
-    def put(self, (request, response)):
-        """
-        The chrome crawler adds requests and responses to the queue via
-        this method.
-
-        :return: True if the item was sent to the core.
-        """
-        if response.get_code() in (404, 403, 401):
-            return False
-
-        ref = request.get_uri()
-        if not self._web_spider.should_verify_extracted_url(ref, self._response):
-            return False
-
-        self._output_queue.put(request)
-        return True

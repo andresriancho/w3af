@@ -36,9 +36,8 @@ class ChromeCrawlerDOMDump(object):
 
     RENDERED_VS_RAW_RATIO = 0.1
 
-    def __init__(self, pool, web_spider, debugging_id):
-        self._pool = pool
-        self._web_spider = web_spider
+    def __init__(self, pool, debugging_id):
+        self._chrome_pool = pool
         self._debugging_id = debugging_id
 
     def get_name(self):
@@ -73,10 +72,7 @@ class ChromeCrawlerDOMDump(object):
         :return: None, the new URLs and forms are sent to the chrome instance
                  http_traffic_queue.
         """
-        # In some cases (mostly unittests) we don't have a web spider instance,
-        # so we can't parse the DOM. Just ignore all this method.
-        if self._web_spider is None:
-            return
+        http_traffic_queue = chrome.get_traffic_queue()
 
         try:
             dom = chrome.get_dom()
@@ -87,7 +83,7 @@ class ChromeCrawlerDOMDump(object):
 
             # Since we got an error we remove this chrome instance from the
             # pool, it might be in an error state
-            self._pool.remove(chrome)
+            self._chrome_pool.remove(chrome, 'failed to get DOM')
 
             raise ChromeCrawlerException('Failed to get the DOM from chrome browser')
 
@@ -98,7 +94,7 @@ class ChromeCrawlerDOMDump(object):
 
             # Since we got an error we remove this chrome instance from the
             # pool, it might be in an error state
-            self._pool.remove(chrome)
+            self._chrome_pool.remove(chrome, 'failed to get DOM')
 
             raise ChromeCrawlerException('Failed to get the DOM from chrome browser')
 
@@ -120,6 +116,12 @@ class ChromeCrawlerDOMDump(object):
         dom_http_response = first_http_response.copy()
         dom_http_response.set_body(dom)
 
-        web_spider = self._web_spider
-        web_spider.extract_html_forms(dom_http_response, first_http_request)
-        web_spider.extract_links_and_verify(dom_http_response, first_http_request, self._debugging_id)
+        # This will call CrawlFilterQueue.put()
+        queue_data = (first_http_request,
+                      dom_http_response,
+                      self._debugging_id)
+
+        http_traffic_queue.put(queue_data)
+
+    def get_debugging_id(self):
+        return self._debugging_id

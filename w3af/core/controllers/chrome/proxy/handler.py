@@ -107,7 +107,11 @@ class LoggingHandler(ProxyHandler):
 
         # Send the request upstream
         fuzzable_request = FuzzableRequest.from_http_request(http_request)
-        self.parent_process.queue.put((fuzzable_request, http_response))
+        queue_data = (fuzzable_request,
+                      http_response,
+                      self.parent_process.debugging_id)
+
+        self.parent_process.queue.put(queue_data)
 
         self.parent_process.set_first_request_response(fuzzable_request, http_response)
 

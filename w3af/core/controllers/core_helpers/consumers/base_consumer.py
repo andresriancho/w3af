@@ -406,9 +406,11 @@ class BaseConsumer(Process):
         if len(self._tasks_in_progress) > 0:
             return True
 
+        #
         # This is a special case which loosely translates to: "If there are any
         # pending tasks in the threadpool, even if they haven't yet called the
         # _add_task method, we know we have pending work to do".
+        #
         if self._threadpool is not None:
 
             if self._threadpool._inqueue.qsize() > 0:
@@ -416,7 +418,21 @@ class BaseConsumer(Process):
 
             if self._threadpool._outqueue.qsize() > 0:
                 return True
-        
+
+        #
+        # Add support to check if plugins have pending work. Some plugins might
+        # start async threads, this is the way to check that those threads have
+        # finished running
+        #
+        for consumer_plugin in self._consumer_plugins:
+            if consumer_plugin.has_pending_work():
+
+                msg = 'Plugin %s has pending work (consumer will not finish)'
+                args = (consumer_plugin.get_name(),)
+                om.out.debug(msg % args)
+
+                return True
+
         return False
 
     @property

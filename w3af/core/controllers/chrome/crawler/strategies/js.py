@@ -108,6 +108,9 @@ class ChromeCrawlerJS(object):
         self._local_crawler_state = CrawlerState()
         self._global_crawler_state = crawler_state
 
+    def get_debugging_id(self):
+        return self._debugging_id
+
     def get_name(self):
         return 'JS events'
 
