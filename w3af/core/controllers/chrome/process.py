@@ -124,6 +124,7 @@ class ChromeProcess(object):
         # flags.append('--disk-cache-size=1')
 
         if self.proxy_port and self.proxy_host:
+            # flags.append('--proxy-server=127.0.0.1:8080')
             flags.append('--proxy-server=%s:%s' % (self.proxy_host, self.proxy_port))
 
             # Route HTTP requests that go to loopback via proxy
