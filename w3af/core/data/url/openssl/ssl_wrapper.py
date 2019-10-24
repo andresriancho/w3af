@@ -18,6 +18,8 @@ import time
 import socket
 import OpenSSL
 
+import w3af.core.controllers.output_manager as om
+
 from ndg.httpsclient.subj_alt_name import SubjectAltName
 from pyasn1.codec.der.decoder import decode as der_decoder
 
@@ -81,7 +83,7 @@ class SSLSocket(object):
 
     def makefile(self, mode, bufsize):
         """
-        We need to use socket._fileobject Because SSL.Connection
+        We need to use socket._fileobject because SSL.Connection
         doesn't have a 'dup'. Not exactly sure WHY this is, but
         this is backed up by comments in socket.py and SSL/connection.c
 
@@ -97,28 +99,30 @@ class SSLSocket(object):
             return
 
         self.close_refcount -= 1
-        if self.close_refcount == 0:
+        if self.close_refcount != 0:
+            return
 
-            try:
-                self.shutdown()
-            except OpenSSL.SSL.Error, ssl_error:
-                message = str(ssl_error)
-                if not message:
-                    # We get here when the remote end already closed the
-                    # connection. The shutdown() call to the OpenSSLConnection
-                    # simply fails with an exception without a message
-                    #
-                    # This was needed to support SSLServer (ssl_daemon.py)
-                    # but will also be useful for other real-life cases
-                    pass
-                else:
-                    # We don't know what's here, raise!
-                    raise
+        self.closed = True
 
-            # Close doesn't seem to mind if the remote end already closed the
-            # connection
-            self.ssl_conn.close()
-            self.closed = True
+        try:
+            self.shutdown()
+        except OpenSSL.SSL.Error as ssl_error:
+            message = str(ssl_error)
+            if not message:
+                # We get here when the remote end already closed the
+                # connection. The shutdown() call to the OpenSSLConnection
+                # simply fails with an exception without a message
+                #
+                # This was needed to support SSLServer (ssl_daemon.py)
+                # but will also be useful for other real-life cases
+                pass
+            else:
+                # We don't know what's here, raise!
+                raise
+
+        # Close doesn't seem to mind if the remote end already closed the
+        # connection
+        self.ssl_conn.close()
 
     def recv(self, *args, **kwargs):
         try:
