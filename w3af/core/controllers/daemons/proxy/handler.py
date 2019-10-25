@@ -64,8 +64,43 @@ class ProxyHandler(Master, EmptyHandler):
 
         :param flow: A mitmproxy flow containing the request
         """
+        #
+        # I'm not sure about all this... but... here it goes!
+        #
+        # mitmproxy will "call" this method in protocol/http.py#L204 [0].
+        #
+        # After calling this method, mitmproxy checks if the flow has a
+        # response attribute set to something different than None, if there
+        # is no response then mitmproxy will send an HTTP request to the
+        # server.
+        #
+        # When there are multiple threads running or the network is slow,
+        # and without the LazyHTTPResponse, the thread running handle_request_in_thread_wrapper
+        # might take a few seconds to set flow.response. During that time
+        # the mitmproxy main thread will check flow.response and since it
+        # is not None another HTTP request will be sent.
+        #
+        # Sending two HTTP requests was bad, but the worse thing was that
+        # mitmproxy left TCP connections in CLOSE_WAIT state. These connections
+        # piled up and ended up breaking other things in the scanner.
+        #
+        # Quickly setting the response attribute in the `flow` guarantees (to
+        # a certain degree) that mitmproxy will not send those HTTP requests.
+        # It might still be possible to see (in some rate situations) HTTP
+        # requests being sent by mitmproxy.
+        #
+        # Tried to fix this in a better way but the mitmproxy tool doesn't seem
+        # to be prepared to handle the case.
+        #
+        # [0] https://github.com/mitmproxy/mitmproxy/blob/v0.18.2/mitmproxy/protocol/http.py#L204
+        # [1] https://github.com/mitmproxy/mitmproxy/blob/v0.18.2/mitmproxy/protocol/http.py#L212
+        #
+        flow.response = LazyHTTPResponse()
+
         # This signals mitmproxy that the request will be handled by us
         flow.reply.take()
+        flow.reply.ack()
+        flow.reply.commit()
 
         self.parent_process.total_handled_requests += 1
 
@@ -86,15 +121,9 @@ class ProxyHandler(Master, EmptyHandler):
 
         http_response = self.handle_request_in_thread(http_request)
 
-        # This signals mitmproxy that we have a response for this request
-        if flow.reply.state == 'taken':
-            if not flow.reply.has_message:
-                flow.reply.ack()
-            flow.reply.commit()
-
         # Send the response (success|error) to the browser
         http_response = self._to_mitmproxy_response(http_response)
-        flow.response = http_response
+        flow.response.set(http_response)
 
     def handle_request_in_thread(self, http_request):
         """
@@ -220,3 +249,35 @@ class ProxyHandler(Master, EmptyHandler):
                                      request.get_uri(),
                                      msg='Server error')
         return http_response
+
+
+class LazyHTTPResponse(object):
+    """
+    An HTTP response holder that will block all calls to the object attributes
+    until the real HTTP response is set. After the HTTP response is set, all
+    attribute methods are forwarded to it.
+    """
+    def __init__(self):
+        self._http_response = None
+        self._set_event = threading.Event()
+
+    def set(self, http_response):
+        self._http_response = http_response
+        self._set_event.set()
+
+    def __str__(self):
+        return '<LazyHTTPResponse %s>' % id(self)
+
+    def __getattr__(self, item):
+        if self._set_event is not None:
+            self._set_event.wait()
+
+        self._set_event = None
+        return getattr(self._http_response, item)
+
+    def __setattr__(self, key, value):
+        if self._set_event is not None:
+            self._set_event.wait()
+
+        self._set_event = None
+        return setattr(self._http_response, key, value)
