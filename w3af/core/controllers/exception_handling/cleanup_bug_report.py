@@ -24,6 +24,8 @@ import os
 
 import w3af.core.data.kb.config as cf
 
+from w3af.core.data.misc.encoding import smart_str_ignore
+
 
 EXPLICIT_CRASH_REPORT = os.environ.get('EXPLICIT_CRASH_REPORT', '0') == '1'
 
@@ -51,6 +53,7 @@ def cleanup_bug_report(_input):
     _input = re.sub(user_re_win, 'C:/user/', _input)
 
     targets = cf.cf.get('targets')
+
     if targets is not None:
         domains = [url.get_domain() for url in targets]
         paths = [url.get_path() for url in targets if len(url.get_path()) >= 3]
@@ -61,4 +64,4 @@ def cleanup_bug_report(_input):
         for path in paths:
             _input = _input.replace(path, '/path/foo/')
 
-    return _input
+    return smart_str_ignore(_input)
