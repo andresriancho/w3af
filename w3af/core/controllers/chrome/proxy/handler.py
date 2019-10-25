@@ -60,7 +60,11 @@ class LoggingHandler(ProxyHandler):
         domain = targets[0].get_domain()
         return is_private_site(domain)
 
-    def _send_http_request(self, http_request, grep=True, debugging_id=None):
+    def _send_http_request(self,
+                           http_request,
+                           grep=True,
+                           cache=False,
+                           debugging_id=None):
         """
         Send a w3af HTTP request to the web server using w3af's HTTP lib,
         capture the HTTP response and send it to the upstream Queue.
@@ -95,6 +99,7 @@ class LoggingHandler(ProxyHandler):
         try:
             http_response = super(LoggingHandler, self)._send_http_request(http_request,
                                                                            grep=grep,
+                                                                           cache=True,
                                                                            debugging_id=self.parent_process.debugging_id)
         finally:
             self.parent_process.decrease_pending_http_request_count()
@@ -120,9 +125,10 @@ class LoggingHandler(ProxyHandler):
                 http_response.get_code(),
                 len(http_response.get_body()),
                 http_response.get_wait_time(),
+                http_response.get_from_cache(),
                 self.parent_process.debugging_id)
         msg = ('Chrome proxy received HTTP response for %s'
-               ' (code: %s, len: %s, rtt: %.2f, did: %s)')
+               ' (code: %s, len: %s, rtt: %.2f, from_cache: %s, did: %s)')
         om.out.debug(msg % args)
 
         return http_response
