@@ -189,7 +189,11 @@ class ProxyHandler(Master, EmptyHandler):
             headers=header_items
         )
 
-    def _send_http_request(self, http_request, grep=True, debugging_id=None):
+    def _send_http_request(self,
+                           http_request,
+                           grep=True,
+                           cache=False,
+                           debugging_id=None):
         """
         Send a w3af HTTP request to the web server using w3af's HTTP lib
 
@@ -203,6 +207,8 @@ class ProxyHandler(Master, EmptyHandler):
                            data=http_request.get_data(),
                            headers=http_request.get_headers(),
                            grep=grep,
+                           cache=cache,
+
                            debugging_id=debugging_id,
 
                            #
