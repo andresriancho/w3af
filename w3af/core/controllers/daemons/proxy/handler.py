@@ -274,10 +274,3 @@ class LazyHTTPResponse(object):
 
         self._set_event = None
         return getattr(self._http_response, item)
-
-    def __setattr__(self, key, value):
-        if self._set_event is not None:
-            self._set_event.wait()
-
-        self._set_event = None
-        return setattr(self._http_response, key, value)
