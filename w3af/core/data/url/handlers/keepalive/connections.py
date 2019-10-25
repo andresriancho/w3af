@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import threading
 import binascii
 import httplib
+import struct
 import urllib
 import socket
 import ssl
@@ -91,29 +92,47 @@ class _HTTPConnection(httplib.HTTPConnection, UniqueID):
         return '<HTTPConnection %s>' % self.host_port
 
 
-def create_connection(address, timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
+def create_connection(address,
+                      timeout=socket._GLOBAL_DEFAULT_TIMEOUT,
                       source_address=None):
     """
     Extends socket.create_connection with the socket options to apply before
     calling connect().
     """
-
     host, port = address
     err = None
+
     for res in socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM):
         af, socktype, proto, canonname, sa = res
         sock = None
         try:
             sock = socket.socket(af, socktype, proto)
 
+            #
             # This is what I've added to the create_connection function
             # https://github.com/andresriancho/w3af/issues/11359
-            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            #
+            sock.setsockopt(socket.SOL_SOCKET,
+                            socket.SO_REUSEADDR,
+                            1)
+
+            #
+            # Turn the SO_LINGER socket option on and set the linger time
+            # to 0 seconds. This will cause TCP to abort the connection when
+            # it is closed, flush the data and send a RST
+            #
+            l_on_off = 1
+            l_linger = 0
+            sock.setsockopt(socket.SOL_SOCKET,
+                            socket.SO_LINGER,
+                            struct.pack('ii', l_on_off, l_linger))
 
             if timeout is not socket._GLOBAL_DEFAULT_TIMEOUT:
                 sock.settimeout(timeout)
+
             if source_address:
                 sock.bind(source_address)
+
             sock.connect(sa)
             return sock
 
