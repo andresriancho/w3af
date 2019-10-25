@@ -132,7 +132,9 @@ class Proxy(Process):
                                     http2=False,
                                     websockets=False,
                                     listen_host=ip,
-                                    listen_port=port)
+                                    listen_port=port,
+                                    add_upstream_certs_to_client_chain=False,
+                                    no_upstream_cert=True)
         except Exception as e:
             raise ProxyException('Invalid proxy daemon options: "%s"' % e)
 
