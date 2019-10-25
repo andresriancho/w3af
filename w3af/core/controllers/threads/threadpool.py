@@ -36,7 +36,7 @@ from .pool276 import ThreadPool, RUN, create_detailed_pickling_error, mapstar
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.threads.decorators import apply_with_return_error
 
-__all__ = ['Pool', 'return_args', 'one_to_many']
+__all__ = ['Pool', 'return_args', 'one_to_many', 'add_traceback_string']
 
 
 class one_to_many(object):

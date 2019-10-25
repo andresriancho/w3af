@@ -24,7 +24,7 @@ import time
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.db.disk_set import DiskSet
-from w3af.core.controllers.threads.threadpool import Pool
+from w3af.core.controllers.threads.threadpool import Pool, add_traceback_string
 from w3af.core.controllers.chrome.pool import ChromePool, ChromePoolException
 from w3af.core.controllers.chrome.crawler.strategies.dom_dump import ChromeCrawlerDOMDump
 from w3af.core.controllers.chrome.crawler.strategies.js import ChromeCrawlerJS
@@ -201,6 +201,7 @@ class ChromeCrawler(object):
             # Sending exceptions to a queue called HTTP traffic queue is not
             # ideal but at this point it is the best way to send the exceptions
             # to the web_spider
+            add_traceback_string(e)
             http_traffic_queue.put((fuzzable_request, e, debugging_id))
             return False
 
