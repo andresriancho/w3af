@@ -50,7 +50,7 @@ class TestInstrumentedChrome(BaseInstrumentedUnittest):
         self.assertEqual(self.ic.get_dom(), ExtendedHttpRequestHandler.RESPONSE_BODY)
         self.assertEqual(self.http_traffic_queue.qsize(), 1)
 
-        request, response = self.http_traffic_queue.get()
+        request, response, debugging_id = self.http_traffic_queue.get()
 
         self.assertEqual(request.get_url().url_string, url)
         self.assertEqual(response.get_url().url_string, url)
