@@ -103,11 +103,15 @@ class ChromeCrawler(object):
         :return: True if the crawling process completed (or started) successfully,
                  otherwise exceptions are raised.
         """
-        debugging_id = debugging_id or rand_alnum(8)
+        if self._worker_pool is None:
+            om.out.debug('ChromeCrawler is in terminate() phase. Ignoring call to crawl()')
+            return False
 
         # Don't run crawling strategies for something that will be rejected anyways
         if not self._should_crawl_with_chrome(fuzzable_request, http_response):
             return False
+
+        debugging_id = debugging_id or rand_alnum(8)
 
         # Run the different crawling strategies
         func = {True: self._crawl_async,
@@ -448,13 +452,59 @@ class ChromeCrawler(object):
         return chrome
 
     def terminate(self):
+        om.out.debug('ChromeCrawler.terminate()')
+
+        self._terminate_worker_pool()
+
         self._chrome_pool.terminate()
         self._chrome_pool = None
 
         self._crawler_state = None
 
         self._uri_opener = None
+
+    def _terminate_worker_pool(self):
+        if self._worker_pool is None:
+            om.out.debug('ChromeCrawler pool is None. No shutdown required.')
+            return
+
+        #
+        # Close the pool and wait for everyone to finish
+        #
+        # Quickly set the thread pool attribute to None to prevent other calls
+        # to this method from running close() or join() twice on the same pool
+        #
+        pool = self._worker_pool
         self._worker_pool = None
+
+        msg_fmt = 'Exception found while %s pool in ChromeCrawler: "%s"'
+
+        try:
+            pool.close()
+        except Exception, e:
+            args = ('closing', e)
+            om.out.debug(msg_fmt % args)
+
+        om.out.debug('ChromeCrawler pool is closed')
+
+        try:
+            pool.join()
+        except Exception, e:
+            args = ('joining', e)
+            om.out.debug(msg_fmt % args)
+
+            # First try to call join(), which is nice and waits for all the
+            # tasks to complete. If that fails, then call terminate()
+            try:
+                pool.terminate()
+            except Exception, e:
+                args = ('terminating', e)
+                om.out.debug(msg_fmt % args)
+            else:
+                msg = 'ChromeCrawler pool has been terminated after failed call to join'
+                om.out.debug(msg)
+
+        om.out.debug('ChromeCrawler pool has been joined')
 
     def print_all_console_messages(self):
         """
