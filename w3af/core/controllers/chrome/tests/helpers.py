@@ -95,7 +95,9 @@ class ExtendedHttpRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         headers = {
             'Content-Type': 'text/html',
             'Content-Length': len(body),
-            'Content-Encoding': 'identity'
+            'Content-Encoding': 'identity',
+            # Enable this header if you want Chrome to cache the response
+            # 'Cache-Control': 'public, max-age=86400'
         }
 
         self.send_response_to_client(code, body, headers)
