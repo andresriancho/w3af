@@ -218,7 +218,7 @@ class ChromePool(object):
                     args = (chrome, debugging_id)
                     om.out.debug(msg % args)
 
-                    msg = 'ChromePool.get() took %.2f seconds to return an instance (did: %s)'
+                    msg = 'ChromePool.get() took %.2f seconds to re-use an instance (did: %s)'
                     spent = time.time() - start_time
                     args = (spent, debugging_id)
                     om.out.debug(msg % args)
@@ -244,7 +244,7 @@ class ChromePool(object):
 
                 spent = time.time() - start_time
                 args = (spent, debugging_id)
-                msg = 'ChromePool.get() took %.2f seconds to return an instance (did: %s)'
+                msg = 'ChromePool.get() took %.2f seconds to create an instance (did: %s)'
                 om.out.debug(msg % args)
 
                 return chrome
