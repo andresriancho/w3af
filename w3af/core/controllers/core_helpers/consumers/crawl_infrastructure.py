@@ -1,5 +1,5 @@
 """
-CrawlInfrastructure.py
+crawl_infrastructure.py
 
 Copyright 2012 Andres Riancho
 
