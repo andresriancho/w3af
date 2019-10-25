@@ -13,12 +13,11 @@ IANAL but I believe that the guys from ssl-sni made a mistake at changing the
 license (basically they can't). So I'm choosing to use the original Apache
 License, Version 2.0 for this file.
 """
+import os
 import ssl
 import time
 import socket
 import OpenSSL
-
-import w3af.core.controllers.output_manager as om
 
 from ndg.httpsclient.subj_alt_name import SubjectAltName
 from pyasn1.codec.der.decoder import decode as der_decoder
@@ -69,8 +68,20 @@ class SSLSocket(object):
         """
         self.ssl_conn = ssl_connection
         self.sock = sock
-        self.close_refcount = 1
+
         self.closed = False
+
+        #
+        # It is important to understand that `refcount` needs to be 1 here
+        # to prevent calls to close() done from within HTTPConnection from
+        # closing the connection
+        #
+        # By setting a +1 refcount here and only closing when refcount is
+        # zero, see close() below, we make sure that the last decision on
+        # when a connection is actually closed is done by the connection
+        # manager when remove_connection() is called
+        #
+        self.refcount = 1
 
     def __getattr__(self, name):
         """
@@ -80,6 +91,9 @@ class SSLSocket(object):
             return getattr(self.ssl_conn, name)
         except AttributeError:
             return getattr(self.sock, name)
+
+    def fileno(self):
+        return self.sock.fileno()
 
     def makefile(self, mode, bufsize):
         """
@@ -91,38 +105,45 @@ class SSLSocket(object):
         socket being duplicated when they close it, we refcount the
         socket object and don't actually close until its count is 0.
         """
-        self.close_refcount += 1
+        self.refcount += 1
         return socket._fileobject(self, mode, bufsize, close=True)
 
     def close(self):
         if self.closed:
             return
 
-        self.close_refcount -= 1
-        if self.close_refcount != 0:
+        self.refcount -= 1
+        if self.refcount != 0:
             return
 
         self.closed = True
 
+        #
+        # We get some errors when the remote end already closed the
+        # connection. The shutdown() call to the OpenSSLConnection
+        # simply fails
+        #
+        # This was needed to support SSLServer (ssl_daemon.py)
+        # but will also be useful for other real-life cases
+        #
         try:
-            self.shutdown()
-        except OpenSSL.SSL.Error as ssl_error:
-            message = str(ssl_error)
-            if not message:
-                # We get here when the remote end already closed the
-                # connection. The shutdown() call to the OpenSSLConnection
-                # simply fails with an exception without a message
-                #
-                # This was needed to support SSLServer (ssl_daemon.py)
-                # but will also be useful for other real-life cases
-                pass
-            else:
-                # We don't know what's here, raise!
-                raise
+            self.sock.shutdown(socket.SHUT_RDWR)
+        except:
+            pass
 
-        # Close doesn't seem to mind if the remote end already closed the
-        # connection
-        self.ssl_conn.close()
+        #
+        # No matter what happen with shutdown(), we attempt to close()
+        # it anyways.
+        #
+        # self.sock.close() blocks in some cases (not sure why) so using
+        # os.close() which should effectively close the connection and
+        # does not block.
+        #
+        try:
+            # os.close(self.sock.fileno())
+            self.sock.close()
+        except:
+            pass
 
     def recv(self, *args, **kwargs):
         try:
@@ -293,4 +314,3 @@ def wrap_socket(sock, keyfile=None, certfile=None, server_side=False,
     ssl_socket.settimeout(timeout)
     
     return ssl_socket
-
