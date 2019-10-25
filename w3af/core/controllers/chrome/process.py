@@ -120,11 +120,10 @@ class ChromeProcess(object):
 
         flags.append('--remote-debugging-port=%s' % self.devtools_port)
         flags.append('--user-data-dir=%s' % self.data_dir)
-        # flags.append('--disk-cache-dir=/dev/null')
-        # flags.append('--disk-cache-size=1')
+        flags.append('--disk-cache-dir=%s' % self.data_dir)
+        flags.append('--disk-cache-size=104857600')
 
         if self.proxy_port and self.proxy_host:
-            # flags.append('--proxy-server=127.0.0.1:8080')
             flags.append('--proxy-server=%s:%s' % (self.proxy_host, self.proxy_port))
 
             # Route HTTP requests that go to loopback via proxy
