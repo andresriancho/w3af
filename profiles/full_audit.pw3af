@@ -77,32 +77,6 @@ only_forward = False
 follow_regex = .*
 ignore_regex = 
 
-[bruteforce.basic_auth]
-users_file = %ROOT_PATH%/core/controllers/bruteforce/users.txt
-passwd_file = %ROOT_PATH%/core/controllers/bruteforce/passwords.txt
-use_svn_users = True
-stop_on_first = True
-pass_eq_user = True
-use_leet_password = True
-use_emails = True
-use_profiling = True
-profiling_number = 50
-combo_file =
-combo_separator = :
-
-[bruteforce.form_auth]
-users_file = %ROOT_PATH%/core/controllers/bruteforce/users.txt
-passwd_file = %ROOT_PATH%/core/controllers/bruteforce/passwords.txt
-use_svn_users = True
-stop_on_first = True
-pass_eq_user = True
-use_leet_password = True
-use_emails = True
-use_profiling = True
-profiling_number = 50
-combo_file =
-combo_separator = :
-
 [grep.symfony]
 override = False
 
