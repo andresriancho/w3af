@@ -126,7 +126,7 @@ class BigArray(list):
             except IOError, ex:
                 errMsg = "exception occurred while retrieving data "
                 errMsg += "from a temporary file ('%s')" % ex.message
-                raise SqlmapSystemException as errMsg
+                raise SqlmapSystemException, errMsg
 
     def __getstate__(self):
         return self.chunks, self.filenames
