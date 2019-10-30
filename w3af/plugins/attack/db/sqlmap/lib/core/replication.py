@@ -63,7 +63,7 @@ class Replication(object):
                         self.execute('CREATE TABLE "%s" (%s)' % (self.name, ','.join('"%s" %s' % (unsafeSQLIdentificatorNaming(colname), coltype) for colname, coltype in self.columns)))
                     else:
                         self.execute('CREATE TABLE "%s" (%s)' % (self.name, ','.join('"%s"' % unsafeSQLIdentificatorNaming(colname) for colname in self.columns)))
-                except Exception as ex:
+                except Exception, ex:
                     errMsg = "problem occurred ('%s') while initializing the sqlite database " % getSafeExString(ex, UNICODE_ENCODING)
                     errMsg += "located at '%s'" % self.parent.dbpath
                     raise SqlmapGenericException(errMsg)
