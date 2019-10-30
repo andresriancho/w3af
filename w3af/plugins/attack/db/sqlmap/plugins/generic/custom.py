@@ -70,7 +70,7 @@ class Custom:
 
                 output = NULL
 
-        except SqlmapNoneDataException as ex:
+        except SqlmapNoneDataException, ex:
             logger.warn(ex)
 
         return output
