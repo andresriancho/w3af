@@ -1984,7 +1984,7 @@ def parseXmlFile(xmlFile, handler):
         errMsg = "something appears to be wrong with "
         errMsg += "the file '%s' ('%s'). Please make " % (xmlFile, getSafeExString(ex))
         errMsg += "sure that you haven't made any changes to it"
-        raise SqlmapInstallationException as errMsg
+        raise SqlmapInstallationException, errMsg
 
 def getSQLSnippet(dbms, sfile, **variables):
     """
@@ -2343,7 +2343,7 @@ def pushValue(value):
             getCurrentThreadData().valueStack.append(copy.deepcopy(value))
             success = True
             break
-        except Exception as ex:
+        except Exception, ex:
             _ = ex
 
     if not success:
@@ -3359,7 +3359,7 @@ def createGithubIssue(errMsg, excMsg):
 
         try:
             content = urllib2.urlopen(req).read()
-        except Exception as ex:
+        except Exception, ex:
             content = None
 
         issueUrl = re.search(r"https://github.com/sqlmapproject/sqlmap/issues/\d+", content or "")
@@ -4082,7 +4082,7 @@ def evaluateCode(code, variables=None):
         exec(code, variables)
     except KeyboardInterrupt:
         raise
-    except Exception as ex:
+    except Exception, ex:
         errMsg = "an error occurred while evaluating provided code ('%s') " % getSafeExString(ex)
         raise SqlmapGenericException(errMsg)
 
