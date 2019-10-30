@@ -1390,7 +1390,7 @@ def identifyWaf():
         try:
             logger.debug("checking for WAF/IPS/IDS product '%s'" % product)
             found = function(_)
-        except Exception as ex:
+        except Exception, ex:
             errMsg = "exception occurred while running "
             errMsg += "WAF script for '%s' ('%s')" % (product, getSafeExString(ex))
             logger.critical(errMsg)
@@ -1474,7 +1474,7 @@ def checkNullConnection():
                     infoMsg = "NULL connection is supported with 'skip-read' method"
                     logger.info(infoMsg)
 
-    except SqlmapConnectionException as ex:
+    except SqlmapConnectionException, ex:
         errMsg = getSafeExString(ex)
         raise SqlmapConnectionException(errMsg)
 
@@ -1523,7 +1523,7 @@ def checkConnection(suppressOutput=False):
         else:
             kb.errorIsNone = True
 
-    except SqlmapConnectionException as ex:
+    except SqlmapConnectionException, ex:
         if conf.ipv6:
             warnMsg = "check connection to a provided "
             warnMsg += "IPv6 address with a tool like ping6 "
