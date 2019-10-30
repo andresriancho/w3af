@@ -424,7 +424,7 @@ class Dump(object):
                     if not os.path.isdir(dumpDbPath):
                         try:
                             os.makedirs(dumpDbPath, 0755)
-                        except Exception as ex:
+                        except Exception, ex:
                             try:
                                 tempDir = tempfile.mkdtemp(prefix="sqlmapdb")
                             except IOError, _:
@@ -621,7 +621,7 @@ class Dump(object):
                                 with open(filepath, "wb") as f:
                                     _ = safechardecode(value, True)
                                     f.write(_)
-                        except magic.MagicException as err:
+                        except magic.MagicException, err:
                             logger.debug(str(err))
 
                     if conf.dumpFormat == DUMP_FORMAT.CSV:
