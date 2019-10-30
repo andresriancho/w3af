@@ -41,7 +41,7 @@ class HashDB(object):
                 threadData.hashDBCursor = connection.cursor()
                 threadData.hashDBCursor.execute("CREATE TABLE IF NOT EXISTS storage (id INTEGER PRIMARY KEY, value TEXT)")
                 connection.commit()
-            except Exception as ex:
+            except Exception, ex:
                 errMsg = "error occurred while opening a session "
                 errMsg += "file '%s' ('%s')" % (self.filepath, getSafeExString(ex))
                 raise SqlmapConnectionException(errMsg)
@@ -92,7 +92,7 @@ class HashDB(object):
                     except sqlite3.DatabaseError, ex:
                         errMsg = "error occurred while accessing session file '%s' ('%s'). " % (self.filepath, getSafeExString(ex))
                         errMsg += "If the problem persists please rerun with `--flush-session`"
-                        raise SqlmapConnectionException as errMsg
+                        raise SqlmapConnectionException, errMsg
                     else:
                         break
 
