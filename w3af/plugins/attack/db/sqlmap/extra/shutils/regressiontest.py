@@ -56,7 +56,7 @@ def send_email(msg):
         s.sendmail(FROM, TO, msg.as_string())
         s.quit()
     # Catch all for SMTP exceptions
-    except smtplib.SMTPException as e:
+    except smtplib.SMTPException, e:
         print "Failure to send email: %s" % str(e)
 
 def failure_email(msg):
