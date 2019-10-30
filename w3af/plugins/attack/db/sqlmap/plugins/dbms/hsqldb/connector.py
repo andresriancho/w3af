@@ -51,7 +51,7 @@ class Connector(GenericConnector):
                                         connection_string,
                                         str(self.user),
                                         str(self.password))
-        except Exception as msg:
+        except Exception, msg:
             raise SqlmapConnectionException(msg[0])
 
         self.initCursor()
@@ -60,7 +60,7 @@ class Connector(GenericConnector):
     def fetchall(self):
         try:
             return self.cursor.fetchall()
-        except Exception as msg:
+        except Exception, msg:
             logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[1])
             return None
 
@@ -70,7 +70,7 @@ class Connector(GenericConnector):
         try:
             self.cursor.execute(query)
             retVal = True
-        except Exception as msg: #todo fix with specific error
+        except Exception, msg: #todo fix with specific error
             logger.log(logging.WARN if conf.dbmsHandler else logging.DEBUG, "(remote) %s" % msg[1])
 
         self.connector.commit()
