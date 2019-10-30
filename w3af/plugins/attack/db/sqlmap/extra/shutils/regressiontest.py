@@ -157,7 +157,7 @@ if __name__ == "__main__":
 
     try:
         main()
-    except Exception as e:
+    except Exception, e:
         log_fd.write("An exception has occurred:\n%s" % str(traceback.format_exc()))
 
     log_fd.write("Regression test finished at %s\n\n" % time.strftime("%H:%M:%S %d-%m-%Y", time.gmtime()))
