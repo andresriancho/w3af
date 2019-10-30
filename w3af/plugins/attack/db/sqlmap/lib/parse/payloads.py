@@ -74,11 +74,11 @@ def parseXmlNode(node):
 def loadBoundaries():
     try:
         doc = et.parse(paths.BOUNDARIES_XML)
-    except Exception as ex:
+    except Exception, ex:
         errMsg = "something appears to be wrong with "
         errMsg += "the file '%s' ('%s'). Please make " % (paths.BOUNDARIES_XML, getSafeExString(ex))
         errMsg += "sure that you haven't made any changes to it"
-        raise SqlmapInstallationException as errMsg
+        raise SqlmapInstallationException, errMsg
 
     root = doc.getroot()
     parseXmlNode(root)
@@ -89,11 +89,11 @@ def loadPayloads():
 
         try:
             doc = et.parse(payloadFilePath)
-        except Exception as ex:
+        except Exception, ex:
             errMsg = "something appears to be wrong with "
             errMsg += "the file '%s' ('%s'). Please make " % (payloadFilePath, getSafeExString(ex))
             errMsg += "sure that you haven't made any changes to it"
-            raise SqlmapInstallationException as errMsg
+            raise SqlmapInstallationException, errMsg
 
         root = doc.getroot()
         parseXmlNode(root)
