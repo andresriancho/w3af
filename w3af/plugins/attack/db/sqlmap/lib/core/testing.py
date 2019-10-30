@@ -271,9 +271,9 @@ def runCase(parse):
         result = start()
     except KeyboardInterrupt:
         pass
-    except SqlmapBaseException as e:
+    except SqlmapBaseException, e:
         handled_exception = e
-    except Exception as e:
+    except Exception, e:
         unhandled_exception = e
     finally:
         sys.stdout.seek(0)
