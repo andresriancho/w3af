@@ -75,7 +75,7 @@ def action():
     if conf.getPasswordHashes:
         try:
             conf.dumper.userSettings("database management system users password hashes", conf.dbmsHandler.getPasswordHashes(), "password hash", CONTENT_TYPE.PASSWORDS)
-        except SqlmapNoneDataException as ex:
+        except SqlmapNoneDataException, ex:
             logger.critical(ex)
         except:
             raise
