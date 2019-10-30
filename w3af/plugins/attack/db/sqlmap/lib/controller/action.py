@@ -83,7 +83,7 @@ def action():
     if conf.getPrivileges:
         try:
             conf.dumper.userSettings("database management system users privileges", conf.dbmsHandler.getPrivileges(), "privilege", CONTENT_TYPE.PRIVILEGES)
-        except SqlmapNoneDataException as ex:
+        except SqlmapNoneDataException, ex:
             logger.critical(ex)
         except:
             raise
@@ -91,7 +91,7 @@ def action():
     if conf.getRoles:
         try:
             conf.dumper.userSettings("database management system users roles", conf.dbmsHandler.getRoles(), "role", CONTENT_TYPE.ROLES)
-        except SqlmapNoneDataException as ex:
+        except SqlmapNoneDataException, ex:
             logger.critical(ex)
         except:
             raise
