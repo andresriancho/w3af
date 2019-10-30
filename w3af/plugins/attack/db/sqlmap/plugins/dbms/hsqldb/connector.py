@@ -41,7 +41,7 @@ class Connector(GenericConnector):
             args = "-Djava.class.path=%s" % jar
             jvm_path = jpype.getDefaultJVMPath()
             jpype.startJVM(jvm_path, args)
-        except Exception as msg:
+        except Exception, msg:
             raise SqlmapConnectionException(msg[0])
 
         try:
