@@ -23,7 +23,7 @@ if __name__ == '__main__':
     args = parse_args()
 
     create_volumes()
-    container_id = start_container(args.tag)
+    container_id = start_container(args.tag, DOCKER_RUN_GUI)
 
     cmd = '/home/w3af/w3af/w3af_gui --no-update'
     extra_ssh_flags = ('-X',)
