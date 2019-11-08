@@ -256,6 +256,7 @@ class wordpress_fingerprint(CrawlPlugin):
         try:
             wordpress_fp_fd = codecs.open(self.WP_VERSIONS_XML, 'r', 'utf-8',
                                           errors='ignore')
+
         except Exception, e:
             msg = 'Failed to open wordpress fingerprint database "%s": "%s".'
             args = (self.WP_VERSIONS_XML, e)
@@ -268,7 +269,7 @@ class wordpress_fingerprint(CrawlPlugin):
         
         try:
             parser.parse(wordpress_fp_fd)
-        except Exception, e:
+        except Exception as e:
             msg = 'XML parsing error in wordpress version DB, exception: "%s".'
             raise BaseFrameworkException(msg % e)
         

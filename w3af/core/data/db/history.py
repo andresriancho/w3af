@@ -400,6 +400,7 @@ class HistoryItem(object):
         except DBException, dbe:
             msg = ('An unexpected error occurred while searching for id "%s"'
                    ' in table "%s". Original exception: "%s".')
+
             raise DBException(msg % (_id, self._DATA_TABLE, dbe))
 
         if row is not None:

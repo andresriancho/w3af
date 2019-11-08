@@ -91,7 +91,7 @@ class ghdb(CrawlPlugin):
             search_term = 'site:%s %s' % (domain, gh.search)
             try:
                 self._classic_worker(gh, search_term)
-            except BaseFrameworkException, w3:
+            except BaseFrameworkException as w3:
                 # Google is saying: "no more automated tests".
                 om.out.error('GHDB exception: "' + str(w3) + '".')
                 break
@@ -130,13 +130,13 @@ class ghdb(CrawlPlugin):
         """
         try:
             ghdb_fd = file(self._ghdb_file)
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to open ghdb file: "%s", error: "%s".'
             raise BaseFrameworkException(msg % (self._ghdb_file, e))
 
         try:
             dom = xml.dom.minidom.parseString(ghdb_fd.read())
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to parse XML file: "%s", error: "%s".'
             raise BaseFrameworkException(msg % (self._ghdb_file, e))
 
@@ -151,6 +151,7 @@ class ghdb(CrawlPlugin):
 
             try:
                 query_string = signature.childNodes[4].childNodes[0].data
+
 
             except Exception, e:
                 msg = ('There is a corrupt signature in the GHDB. No query '

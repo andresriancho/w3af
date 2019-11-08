@@ -120,7 +120,7 @@ class export_request(entries.RememberingWindow):
 
         try:
             exported_request = func(self.http_request.get_text())
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             error_msg = str(w3)
             self.exported_text.set_text(error_msg)
         else:

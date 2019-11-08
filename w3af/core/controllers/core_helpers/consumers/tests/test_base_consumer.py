@@ -38,7 +38,7 @@ class TestBaseConsumer(unittest.TestCase):
         fr = FuzzableRequest(url)
         try:
             raise Exception()
-        except Exception, e:
+        except Exception as e:
             self.bc.handle_exception('audit', 'sqli', fr, e)
 
         exception_data = self.bc.out_queue.get()

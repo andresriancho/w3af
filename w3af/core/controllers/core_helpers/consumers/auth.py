@@ -110,7 +110,7 @@ class auth(BaseConsumer):
             try:
                 if not plugin.has_active_session():
                     plugin.login()
-            except Exception, e:
+            except Exception as e:
                 self.handle_exception('auth', plugin.get_name(), None, e)
 
             took_line.send()

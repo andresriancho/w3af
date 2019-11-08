@@ -75,7 +75,7 @@ class import_results(CrawlPlugin):
 
         try:
             file_handler = file(self._input_base64, 'rb')
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'An error was found while trying to read "%s": "%s".'
             om.out.error(msg % (self._input_base64, e))
             return
@@ -110,7 +110,7 @@ class import_results(CrawlPlugin):
 
         try:
             fuzzable_request_list = self._objs_from_burp_log(self._input_burp)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = ('An error was found while trying to read the Burp log'
                    ' file (%s): "%s".')
             om.out.error(msg % (self._input_burp, e))

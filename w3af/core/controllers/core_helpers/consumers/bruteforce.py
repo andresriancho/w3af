@@ -70,7 +70,7 @@ class bruteforce(BaseConsumer):
                            ' scan must stop exception was raised')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-            except Exception, e:
+            except Exception as e:
                 msg_fmt = ('Spent %.2f seconds running %s.end() until an'
                            ' unhandled exception was found')
                 self._log_end_took(msg_fmt, start_time, plugin)
@@ -92,7 +92,7 @@ class bruteforce(BaseConsumer):
         try:
             for observer in self._observers:
                 observer.bruteforce(self, fuzzable_request)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('bruteforce',
                                   'bruteforce._run_observers()',
                                   'bruteforce._run_observers()', e)
@@ -146,7 +146,7 @@ class bruteforce(BaseConsumer):
         # TODO: Report progress to the core.
         try:
             new_frs = plugin.bruteforce_wrapper(fuzzable_request)
-        except Exception, e:
+        except Exception as e:
             self.handle_exception('bruteforce', plugin.get_name(),
                                   fuzzable_request, e)
         else:

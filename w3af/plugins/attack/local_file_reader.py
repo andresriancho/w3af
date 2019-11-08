@@ -111,7 +111,7 @@ class local_file_reader(AttackPlugin):
         try:
             response_a = self._uri_opener.send_mutant(orig_mutant)
             response_b = self._uri_opener.send_mutant(copy_mutant)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.error(str(e))
             return False
         else:
@@ -138,7 +138,7 @@ class local_file_reader(AttackPlugin):
         try:
             response_a = self._uri_opener.send_mutant(mutant)
             response_b = self._uri_opener.send_mutant(mutant)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.error(str(e))
             return False
 
@@ -231,7 +231,7 @@ class FileReaderShell(ReadShell):
         try:
             #FIXME: This only works in Linux!
             response = self._read_with_b64('/etc/passwd')
-        except Exception, e:
+        except Exception as e:
             msg = 'Not using base64 wrapper for reading because of ' \
                   'exception: "%s"'
             om.out.debug(msg % e)
@@ -259,7 +259,7 @@ class FileReaderShell(ReadShell):
         if self._use_base64_wrapper:
             try:
                 return self._read_with_b64(filename)
-            except Exception, e:
+            except Exception as e:
                 om.out.debug('read_with_b64 failed: "%s"' % e)
 
         return self._read_basic(filename)
@@ -292,7 +292,7 @@ class FileReaderShell(ReadShell):
 
         try:
             response = self._uri_opener.send_mutant(mutant)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'Error "%s" while sending request to remote host. Try again.'
             return msg % e
 

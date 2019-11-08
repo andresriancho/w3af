@@ -113,7 +113,7 @@ class GtkOutput(OutputPlugin):
         for observer in observers.copy():
             try:
                 observer(m)
-            except Exception, e:
+            except Exception as e:
                 msg = 'Observer function at "%s" failed with exception "%s".'\
                       ' Removing observer from list.'
                 om.out.error(msg % (observer, e))

@@ -28,7 +28,7 @@ def is_online(url, match_string):
         content = urllib2.urlopen(url).read()
     except urllib2.HTTPError, e:
         content = e.read()
-    except Exception, e:
+    except Exception as e:
         print('%s is offline (%s)' % (url, e.__class__.__name__))
         return False
 

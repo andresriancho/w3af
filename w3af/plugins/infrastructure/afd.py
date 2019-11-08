@@ -86,6 +86,7 @@ class afd(InfrastructurePlugin):
                                              cache=True,
                                              debugging_id=debugging_id)
         except BaseFrameworkException, bfe:
+
             msg = ('Active filter detection plugin failed to receive a'
                    ' response for the first request. The exception was: "%s".'
                    ' Can not perform analysis.')

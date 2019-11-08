@@ -73,7 +73,9 @@ class dot_listing(CrawlPlugin):
         :return: None, everything is saved to the self.out_queue.
         """
         url = domain_path.url_join('.listing')
+
         response = self._uri_opener.GET(url, cache=True)
+
 
         if is_404(response):
             return

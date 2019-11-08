@@ -60,7 +60,7 @@ class ProfilesMenu(menu):
 
             try:
                 self._w3af.profiles.use_profile(profile, workdir=workdir)
-            except BaseFrameworkException, w3:
+            except BaseFrameworkException as w3:
                 om.out.console(str(w3))
 
             om.out.console('The plugins configured by the scan profile have '
@@ -115,7 +115,7 @@ class ProfilesMenu(menu):
         # Validate the profile name
         try:
             Profile.is_valid_profile_name(profile_name)
-        except BaseFrameworkException, bfe:
+        except BaseFrameworkException as bfe:
             om.out.console('%s' % bfe)
             return
 

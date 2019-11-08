@@ -126,7 +126,9 @@ class grep(BaseConsumer):
 
             try:
                 plugin.end()
+                
             except Exception as exception:
+
                 msg = 'An exception was found while running %s.end(): "%s"'
                 args = (plugin.get_name(), exception)
                 om.out.debug(msg % args)
@@ -290,6 +292,7 @@ class grep(BaseConsumer):
     def _get_plugin_from_name(self, plugin_name):
         plugin = self._consumer_plugin_dict.get(plugin_name, None)
 
+
         if plugin is None:
             msg = ('Internal error in grep consumer: plugin with name %s'
                    ' does not exist in dict.')
@@ -297,6 +300,7 @@ class grep(BaseConsumer):
             om.out.error(msg % args)
 
         return plugin
+
 
     def _run_one_plugin(self, plugin_name, http_response_id):
         """

@@ -236,7 +236,7 @@ class web_spider(CrawlPlugin):
         #
         try:
             doc_parser = parser_cache.dpc.get_document_parser_for(resp)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             om.out.debug('Failed to find a suitable document parser. '
                          'Exception "%s"' % w3)
         else:

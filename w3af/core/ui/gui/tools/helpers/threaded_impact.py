@@ -42,7 +42,7 @@ class ThreadedURLImpact(threading.Thread):
                                                                   self.tlow,
                                                                   self.fixContentLength)
             self.ok = True
-        except Exception, e:
+        except Exception as e:
             self.exception = e
         finally:
             self.event.set()

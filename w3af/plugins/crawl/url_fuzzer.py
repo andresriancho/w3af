@@ -131,6 +131,7 @@ class url_fuzzer(CrawlPlugin):
         # Report only once
         self._seen.add(response.get_url())
 
+
         desc = 'A potentially interesting file was found at: "%s".'
         desc %= response.get_url()
 
@@ -139,6 +140,7 @@ class url_fuzzer(CrawlPlugin):
 
         kb.kb.append(self, 'files', i)
         om.out.information(i.get_desc())
+
 
     def _mutate_domain_name(self, url):
         """

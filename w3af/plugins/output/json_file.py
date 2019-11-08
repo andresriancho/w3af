@@ -125,7 +125,7 @@ class json_file(OutputPlugin):
                         "VulnDB ID": info.get_vulndb_id(),
                         "Description": info.get_desc()}
                 items.append(item)
-            except Exception, e:
+            except Exception as e:
                 msg = ('An exception was raised while trying to write the '
                        ' vulnerabilities to the output file. Exception: "%s"')
                 om.out.error(msg % e)

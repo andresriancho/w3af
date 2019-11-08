@@ -481,7 +481,7 @@ class SQLiteExecutor(Process):
 
                 future.set_exception(dbe)
 
-            except Exception, e:
+            except Exception as e:
                 dbe = DBException(str(e))
                 future.set_exception(dbe)
 

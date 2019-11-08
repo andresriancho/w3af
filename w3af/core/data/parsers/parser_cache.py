@@ -207,7 +207,7 @@ class ParserCache(CacheStats):
                 # Act just like when there is no parser
                 msg = 'Reached memory usage limit parsing "%s".' % http_response.get_url()
                 raise BaseFrameworkException(msg)
-            except ScanMustStopException, e:
+            except ScanMustStopException as e:
                 msg = 'The document parser is in an invalid state! %s'
                 raise ScanMustStopException(msg % e)
             except:
@@ -340,10 +340,10 @@ class ParserCache(CacheStats):
                 # Act just like when there is no parser
                 self._log_return_empty(http_response, 'Reached memory usage limit')
                 return []
-            except ScanMustStopException, e:
+            except ScanMustStopException as e:
                 msg = 'The document parser is in an invalid state! %s'
                 raise ScanMustStopException(msg % e)
-            except Exception, e:
+            except Exception as e:
                 # Act just like when there is no parser
                 msg = 'Unhandled exception running get_tags_by_filter("%s"): %s'
                 args = (http_response.get_url(), e)

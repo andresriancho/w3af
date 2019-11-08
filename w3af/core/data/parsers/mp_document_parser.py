@@ -208,7 +208,7 @@ class MultiProcessingDocumentParser(object):
 
         try:
             parser_output = load_object_from_temp_file(process_result)
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to deserialize sub-process result. Exception: "%s"'
             args = (e,)
             raise Exception(msg % args)
@@ -302,7 +302,7 @@ class MultiProcessingDocumentParser(object):
 
         try:
             filtered_tags = load_tags_from_temp_file(process_result)
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to deserialize sub-process result. Exception: "%s"'
             args = (e,)
             raise Exception(msg % args)
@@ -356,7 +356,7 @@ def process_document_parser(filename, debug):
     try:
         # Parse
         document_parser = DocumentParser(http_resp)
-    except Exception, e:
+    except Exception as e:
         if debug:
             msg = ('[mp_document_parser] PID %s finished parsing %s with'
                    ' exception: "%s"')

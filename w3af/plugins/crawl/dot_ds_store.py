@@ -82,7 +82,7 @@ class dot_ds_store(CrawlPlugin):
 
         try:
             response = self.http_get_and_parse(url, binary_response=True)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             msg = 'Failed to GET .DS_Store file: %s. Exception: %s.'
             om.out.debug(msg, (url, w3))
             return
@@ -94,7 +94,7 @@ class dot_ds_store(CrawlPlugin):
         try:
             store = DsStore(response.get_raw_body())
             entries = store.get_file_entries()
-        except Exception, e:
+        except Exception as e:
             om.out.debug('Unexpected error while parsing DS_Store file: "%s"' % e)
             return
 

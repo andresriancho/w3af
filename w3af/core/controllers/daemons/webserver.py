@@ -129,7 +129,7 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
             except IOError:
                 try:
                     self.send_error(404, 'File Not Found: %s' % self.path)
-                except Exception, e:
+                except Exception as e:
                     om.out.debug('[webserver] Exception: ' + str(e))
             else:
                 try:
@@ -144,7 +144,7 @@ class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
                         self.send_header('Content-type', 'text/html')
                     self.end_headers()
                     self.wfile.write(f.read())
-                except Exception, e:
+                except Exception as e:
                     om.out.debug('[webserver] Exception: ' + str(e))
 
                 f.close()

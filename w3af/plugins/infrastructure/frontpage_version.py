@@ -72,7 +72,7 @@ class frontpage_version(InfrastructurePlugin):
             try:
                 response = self._uri_opener.GET(frontpage_info_url,
                                                 cache=True)
-            except BaseFrameworkException, w3:
+            except BaseFrameworkException as w3:
                 fmt = ('Failed to GET Frontpage Server _vti_inf.html file: "%s". '
                        'Exception: "%s".')
                 om.out.debug(fmt % (frontpage_info_url, w3))

@@ -385,7 +385,7 @@ class ProfileList(gtk.TreeView):
 
         try:
             self.w3af.profiles.use_profile(profile_obj.get_profile_file())
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                     gtk.MESSAGE_WARNING, gtk.BUTTONS_OK,
                                     str(w3))
@@ -419,7 +419,7 @@ class ProfileList(gtk.TreeView):
         # use the empty profile
         try:
             self.w3af.profiles.use_profile(None)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             dlg = gtk.MessageDialog(None, gtk.DIALOG_MODAL,
                                     gtk.MESSAGE_WARNING,
                                     gtk.BUTTONS_OK, str(w3))

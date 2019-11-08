@@ -93,7 +93,7 @@ class SQLCachedResponse(CachedResponse):
             # Got this one during a moth scan, need to debug further
             raise
 
-        except Exception, ex:
+        except Exception as ex:
             args = (ex, resp.get_id(), request.get_uri(), resp.get_code())
             msg = ('Exception while inserting request/response to the'
                    ' database: "%s". The request/response that generated'

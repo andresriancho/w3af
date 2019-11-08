@@ -71,7 +71,7 @@ class csv_file(OutputPlugin):
                                     delimiter=',',
                                     quotechar='|',
                                     quoting=csv.QUOTE_MINIMAL)
-        except Exception, e:
+        except Exception as e:
             msg = ('An exception was raised while trying to open the '
                    ' CSV writer. Exception: "%s"')
             om.out.error(msg % e)
@@ -89,7 +89,7 @@ class csv_file(OutputPlugin):
                        info.get_id(),
                        info.get_desc()]
                 csv_writer.writerow(row)
-            except Exception, e:
+            except Exception as e:
                 msg = ('An exception was raised while trying to write the '
                        ' vulnerabilities to the output file. Exception: "%s"')
                 om.out.error(msg % e)

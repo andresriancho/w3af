@@ -133,7 +133,7 @@ class CoreStrategy(object):
 
             self._fuzzable_request_router()
 
-        except Exception, e:
+        except Exception as e:
 
             om.out.debug('strategy.start() found exception "%s"' % e)
             exc_info = sys.exc_info()
@@ -141,7 +141,7 @@ class CoreStrategy(object):
             try:
                 # Terminate the consumers, exceptions at this level stop the scan
                 self.terminate()
-            except Exception, e:
+            except Exception as e:
                 msg = 'strategy.start() found exception while terminating workers "%s"'
                 om.out.debug(msg % e)
             finally:
@@ -191,6 +191,7 @@ class CoreStrategy(object):
             om.out.debug('Calling terminate() on %s consumer' % consumer)
             start = time.time()
 
+
             # Set it immediately to None to avoid any race conditions where
             # the terminate() method is called twice (from different
             # threads) and before the first call finishes
@@ -210,6 +211,7 @@ class CoreStrategy(object):
                 spent = time.time() - start
                 args = (consumer, spent)
                 om.out.debug('terminate() on %s consumer took %.2f seconds' % args)
+
 
         self.set_consumers_to_none()
 
@@ -491,7 +493,7 @@ class CoreStrategy(object):
                 except ScanMustStopByUserRequest:
                     # Not a real error, the user stopped the scan
                     raise
-                except Exception, e:
+                except Exception as e:
                     dbg = 'Exception found during verify_target_server_up: "%s"'
                     om.out.debug(dbg % e)
 
@@ -582,10 +584,12 @@ class CoreStrategy(object):
             except ScanMustStopByUserRequest:
                 # Not a real error, the user stopped the scan
                 raise
+
             except Exception, e:
                 msg = 'Exception found during alert_if_target_is_301_all(): "%s"'
                 om.out.debug(msg % e)
                 raise ScanMustStopException(msg % e)
+
             else:
                 if http_response.does_redirect_outside_target():
                     site_does_redirect = True
@@ -617,7 +621,7 @@ class CoreStrategy(object):
                 response = self._w3af_core.uri_opener.GET(url, cache=True)
             except ScanMustStopByUserRequest:
                 raise
-            except Exception, e:
+            except Exception as e:
                 msg = ('Failed to send HTTP request to the configured target'
                        ' URL "%s", the original exception was: "%s" (%s).')
                 args = (url, e, e.__class__.__name__)
@@ -627,7 +631,7 @@ class CoreStrategy(object):
                 current_target_is_404 = is_404(response)
             except ScanMustStopByUserRequest:
                 raise
-            except Exception, e:
+            except Exception as e:
                 msg = ('Failed to initialize the 404 detection using HTTP'
                        ' response from "%s", the original exception was: "%s"'
                        ' (%s).')

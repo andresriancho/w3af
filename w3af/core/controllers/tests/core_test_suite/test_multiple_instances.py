@@ -30,7 +30,7 @@ from w3af.core.controllers.w3afCore import w3afCore
 def start_w3af_core(exception_handler):
     try:
         w3afCore()
-    except Exception, e:
+    except Exception as e:
         if exception_handler:
             exception_handler(e)
 

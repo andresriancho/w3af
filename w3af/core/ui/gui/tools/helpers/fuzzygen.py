@@ -79,7 +79,7 @@ class FuzzyGenerator(object):
         namespace = {"string": __import__("string")}
         try:
             it = eval(text, namespace)
-        except Exception, e:
+        except Exception as e:
             msg = _("%s: %s (generated from %r)") % (e.__class__.__name__, e,
                                                      text)
             raise FuzzyError(msg)

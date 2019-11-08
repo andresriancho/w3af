@@ -63,7 +63,7 @@ class QuestOptions(gtk.VBox):
             #       To get more info:
             try:
                 opt.widg
-            except Exception, e:
+            except Exception as e:
                 raise Exception(str(e) + ' || ' + opt.get_name())
             # end of debugging code
 

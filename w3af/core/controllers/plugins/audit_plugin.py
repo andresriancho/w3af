@@ -72,7 +72,7 @@ class AuditPlugin(Plugin):
             try:
                 orig_response = self.get_original_response(fuzzable_request)
                 self.audit_with_copy(fuzzable_request, orig_response, debugging_id)
-            except Exception, e:
+            except Exception as e:
                 om.out.error(str(e))
             finally:
                 self._store_kb_vulns = False

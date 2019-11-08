@@ -80,7 +80,7 @@ def start_scan():
     try:
         w3af_core.profiles.use_profile(scan_profile_file_name,
                                        workdir=profile_path)
-    except BaseFrameworkException, bfe:
+    except BaseFrameworkException as bfe:
         abort(400, str(bfe))
     finally:
         remove_temp_profile(scan_profile_file_name)
@@ -102,7 +102,7 @@ def start_scan():
     try:
         target_option.set_value([URL(u) for u in target_urls])
         w3af_core.target.set_options(target_options)
-    except BaseFrameworkException, bfe:
+    except BaseFrameworkException as bfe:
         abort(400, str(bfe))
 
     scan_id = get_new_scan_id()

@@ -134,12 +134,12 @@ try:
     import tty
     import termios
     from w3af.core.ui.console.io.unixctrl import *
-except Exception, e:
+except Exception as e:
     # We aren't on unix !
     try:
         import msvcrt
         from w3af.core.ui.console.io.winctrl import *
-    except Exception, a:
+    except Exception as a:
         print str(e + '\n' + a)
         # We arent on windows nor unix
         raise BaseFrameworkException(

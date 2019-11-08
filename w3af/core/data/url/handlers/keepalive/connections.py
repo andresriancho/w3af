@@ -263,7 +263,7 @@ class SSLNegotiatorConnection(httplib.HTTPSConnection, UniqueID):
             # Always close the tcp/ip connection on error
             sock.close()
 
-        except Exception, e:
+        except Exception as e:
             msg = "Unexpected exception occurred with protocol %s: '%s'"
             debug(msg % (protocol, e))
 

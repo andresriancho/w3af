@@ -74,7 +74,7 @@ class Test404Errors(unittest.TestCase):
 
             try:
                 self.plugin.grep_wrapper(request, resp)
-            except Exception, e:
+            except Exception as e:
                 self.assertEqual(str(e), msg)
             else:
                 self.assertTrue(False, 'Expected exception, success found!')

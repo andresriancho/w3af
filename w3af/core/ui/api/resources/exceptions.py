@@ -121,7 +121,7 @@ def exception_creator(scan_id):
 
     try:
         raise Exception('unittest')
-    except Exception, exception:
+    except Exception as exception:
         exec_info = sys.exc_info()
         enabled_plugins = ''
 

@@ -179,7 +179,7 @@ class retirejs(GrepPlugin):
                 http_response = self._uri_opener.GET(self._retire_db_url,
                                                      binary_response=True,
                                                      respect_size_limit=False)
-            except Exception, e:
+            except Exception as e:
                 msg = 'Failed to download the retirejs database: "%s"'
                 om.out.error(msg % e)
                 return

@@ -121,7 +121,7 @@ class phishtank(CrawlPlugin):
         """
         try:
             phishtank_db_fd = file(self.PHISHTANK_DB, 'r')
-        except Exception, e:
+        except Exception as e:
             msg = 'Failed to open phishtank database: "%s", exception: "%s".'
             raise BaseFrameworkException(msg % (self.PHISHTANK_DB, e))
 

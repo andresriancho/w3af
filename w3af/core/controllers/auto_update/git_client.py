@@ -75,7 +75,7 @@ class GitClient(object):
             # or which exception would be raised. So I'm catching all and
             # verifying if there are conflicts in an exception and in the
             # case were no exceptions were raised
-            except Exception, e:
+            except Exception as e:
                 self.handle_conflicts(latest_before_pull)
                 msg = self.UPD_ERROR_MSG + ' The original exception was: "%s"'
                 raise GitClientError(msg % e)

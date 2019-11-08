@@ -95,7 +95,7 @@ class InputFileOption(BaseOption):
         if self_contained or self.should_base64_encode_file(self._value):
             try:
                 return self.encode_b64_data(self._value)
-            except Exception, e:
+            except Exception as e:
                 msg = ('An exception occurred while encoding "%s" for storing'
                        ' into the profile: "%s"')
                 raise BaseFrameworkException(msg % (self._value, e))

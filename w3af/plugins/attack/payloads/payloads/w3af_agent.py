@@ -24,7 +24,7 @@ class w3af_agent(Payload):
 
         try:
             agentManager = w3afAgentManager(self.shell.execute, ip_address)
-        except BaseFrameworkException, w3:
+        except BaseFrameworkException as w3:
             return 'Error' + str(w3)
         else:
             agentManager.run()

@@ -64,10 +64,10 @@ class profile(object):
             with codecs.open(profname, "rb", UTF8) as fp:
                 try:
                     self._config.readfp(fp)
-                except ConfigParser.Error, cpe:
+                except ConfigParser.Error as cpe:
                     msg = 'ConfigParser error in profile: "%s". Exception: "%s"'
                     raise BaseFrameworkException(msg % (profname, cpe))
-                except Exception, e:
+                except Exception as e:
                     msg = 'Unknown error in profile: "%s". Exception: "%s"'
                     raise BaseFrameworkException(msg % (profname, e))
                 else:
@@ -179,7 +179,7 @@ class profile(object):
         """
         try:
             os.unlink(self.profile_file_name)
-        except Exception, e:
+        except Exception as e:
             msg = ('An exception occurred while removing the profile.'
                    ' Exception: "%s".')
             raise BaseFrameworkException(msg % e)
@@ -204,7 +204,7 @@ class profile(object):
 
         try:
             shutil.copyfile(self.profile_file_name, new_profile_path_name)
-        except Exception, e:
+        except Exception as e:
             msg = 'An exception occurred while copying the profile. Exception:'
             msg += ' "%s".' % e
             raise BaseFrameworkException(msg % e)

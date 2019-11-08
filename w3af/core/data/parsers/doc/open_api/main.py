@@ -199,6 +199,7 @@ class OpenAPI(BaseParser):
                 fuzzable_request = request_factory.get_fuzzable_request(self.discover_fuzzable_headers,
                                                                         self.discover_fuzzable_url_parts)
             except Exception, e:
+
                 #
                 # This is a strange situation because parsing of the OpenAPI
                 # spec can fail awfully for one of the operations but succeed

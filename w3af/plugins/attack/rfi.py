@@ -397,7 +397,7 @@ class PortScanShell(Shell):
             http_response = self._uri_opener.send_mutant(mutant)
         except BaseFrameworkException, w3:
             return 'Exception from the remote web application: "%s"' % w3
-        except Exception, e:
+        except Exception as e:
             return 'Unhandled exception, "%s"' % e
         else:
             if 'HTTP request failed!' in http_response.get_body():
@@ -482,7 +482,7 @@ class RFIShell(ExecShell, PortScanShell):
             http_res = self._uri_opener.send_mutant(mutant)
         except BaseFrameworkException, w3:
             return 'Exception from the remote web application: "%s"' % w3
-        except Exception, e:
+        except Exception as e:
             return 'Unhandled exception from the remote web application: "%s"' % e
         else:
             return shell_handler.extract_result(http_res.get_body())
@@ -494,7 +494,7 @@ class RFIShell(ExecShell, PortScanShell):
         om.out.debug('Remote file inclusion shell is cleaning up.')
         try:
             self._rm_file(self._exploit_mutant.get_token_value())
-        except Exception, e:
+        except Exception as e:
             msg = 'Remote file inclusion shell cleanup failed with exception: %s'
             om.out.error(msg % e)
         else:

@@ -392,7 +392,7 @@ class clusterCellData(gtk.TreeView):
         """
         try:
             obj = [i for i in self._data if i.get_id() == int(id)][0]
-        except Exception, e:
+        except Exception as e:
             return ''
         else:
             msg = '<b><i>Code: </i></b>%s\n<b><i>Message: </i></b>%s' \

@@ -66,7 +66,7 @@ class TestMPDocumentParser(unittest.TestCase):
 
         try:
             self.mpdoc.get_document_parser_for(resp)
-        except Exception, e:
+        except Exception as e:
             self.assertEqual(str(e), 'There is no parser for images.')
         else:
             self.assertTrue(False, 'Expected exception!')

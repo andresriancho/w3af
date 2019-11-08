@@ -64,7 +64,7 @@ class xssed_dot_com(InfrastructurePlugin):
 
         try:
             response = self._uri_opener.GET(check_url)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = ('An exception was raised while running xssed_dot_com'
                    ' plugin. Exception: "%s".')
             om.out.debug(msg % e)
@@ -84,7 +84,7 @@ class xssed_dot_com(InfrastructurePlugin):
 
             try:
                 xss_report_response = self._uri_opener.GET(mirror_url)
-            except BaseFrameworkException, e:
+            except BaseFrameworkException as e:
                 msg = ('An exception was raised while running xssed_dot_com'
                        ' plugin. Exception: "%s".')
                 om.out.debug(msg % e)

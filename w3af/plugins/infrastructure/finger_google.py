@@ -92,6 +92,7 @@ class finger_google(InfrastructurePlugin):
         google_results = self._google.search(search_string, self._result_limit)
         self.worker_pool.map(self._find_accounts, google_results)
 
+
     def _find_accounts(self, google_result):
         """
         Finds emails in google result page.
@@ -107,6 +108,7 @@ class finger_google(InfrastructurePlugin):
                                         cache=True,
                                         grep=grep_res)
         self._parse_document(response)
+
 
     def _parse_document(self, response):
         """

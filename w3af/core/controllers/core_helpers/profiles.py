@@ -143,7 +143,7 @@ class CoreProfiles(object):
         # Set the misc and http settings
         try:
             profile_misc_settings = profile_inst.get_misc_settings()
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = ('Setting the framework misc-settings raised an exception'
                    ' due to unknown or invalid configuration parameters. %s')
             error_messages.append(msg % e)
@@ -161,7 +161,7 @@ class CoreProfiles(object):
 
         try:
             http_settings = profile_inst.get_http_settings()
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = ('Setting the framework http-settings raised an exception'
                    ' due to unknown or invalid configuration parameters. %s')
             error_messages.append(msg % e)

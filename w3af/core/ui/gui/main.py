@@ -222,7 +222,7 @@ class MainApp(object):
         genconfigfile = os.path.join(get_home_dir(), "gui_config.pkl")
         try:
             self.generalconfig = shelve.open(genconfigfile)
-        except Exception, e:
+        except Exception as e:
             print ("WARNING: something bad happened when trying to open the"
                    " general config! File: %s. Problem: %s" % (genconfigfile, e))
             self.generalconfig = FakeShelve()

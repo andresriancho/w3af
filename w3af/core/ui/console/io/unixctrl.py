@@ -73,7 +73,7 @@ def set_raw_input_mode(raw):
         try:
             old_settings = termios.tcgetattr(fd)
             tty.setraw(sys.stdin.fileno())
-        except Exception, e:
+        except Exception as e:
             om.out.console('termios error: ' + str(e))
     
     elif not (raw or old_settings is None):
@@ -82,7 +82,7 @@ def set_raw_input_mode(raw):
                               termios.TCSADRAIN,
                               old_settings)
             old_settings = None
-        except Exception, e:
+        except Exception as e:
             om.out.console('termios error: ' + str(e))
 
 

@@ -102,7 +102,7 @@ class SSLServer(threading.Thread):
         #print 'Connection from %s port %s, sending HTTP response' % fromaddr
         try:
             newsocket.send(self.http_response)
-        except Exception, e:
+        except Exception as e:
             self.errors.append(e)
             #print 'Failed to send HTTP response to client: "%s"' % e
         finally:

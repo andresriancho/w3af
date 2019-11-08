@@ -222,7 +222,7 @@ class GAjaxSearch(GoogleAPISearch):
             # Do the request
             try:
                 resp = self._do_GET(google_url_instance)
-            except Exception, e:
+            except Exception as e:
                 msg = 'Failed to GET google.com AJAX API: "%s"'
                 raise BaseFrameworkException(msg % e)
 

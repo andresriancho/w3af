@@ -72,7 +72,7 @@ class request(object):
             else:
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             s.connect((HOST, PORT))
-        except Exception, e:
+        except Exception as e:
             msg = 'hmap connection failed to %s:%s. Exception: "%s"'
             args = (HOST, PORT, e)
             raise BaseFrameworkException(msg % args)
@@ -81,7 +81,7 @@ class request(object):
         if useSSL:
             try:
                 s2 = ssl.wrap_socket(s)
-            except Exception, e:
+            except Exception as e:
                 msg = 'hmap SSL connection failed to %s:%s. Exception: "%s"'
                 args = (HOST, PORT, e)
                 raise BaseFrameworkException(msg % args)
@@ -107,7 +107,7 @@ class request(object):
             # Send the "HTTP request" to the socket
             try:
                 s.send(str(self))
-            except Exception, e:
+            except Exception as e:
                 om.out.debug('hmap failed to send data to socket: "%s"' % e)
 
                 # Try again
@@ -155,7 +155,7 @@ class request(object):
 
                 continue
 
-            except Exception, e:
+            except Exception as e:
                 msg = 'hmap found an exception while reading data from socket: "%s"'
                 om.out.debug(msg % e)
 
@@ -994,7 +994,7 @@ def testServer(ssl, server, port, matchCount, generateFP, threads):
         try:
             ### FIXME: This eval is awful, I should change it to pickle.
             ks = eval(ksf.read())
-        except Exception, e:
+        except Exception as e:
             raise BaseFrameworkException(
                 'The signature file "' + f + '" has an invalid syntax.')
         else:
@@ -1006,7 +1006,7 @@ def testServer(ssl, server, port, matchCount, generateFP, threads):
         for i in xrange(10):
             try:
                 fd = open('hmap-fingerprint-' + server + '-' + str(i), 'w')
-            except Exception, e:
+            except Exception as e:
                 raise BaseFrameworkException(
                     'Cannot open fingerprint file. Error:' + str(e))
             else:

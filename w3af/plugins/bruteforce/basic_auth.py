@@ -93,6 +93,7 @@ class basic_auth(BruteforcePlugin):
         #
         # If one thread sees that we already bruteforced the access, the rest
         # will simply no-op
+
         if self._found and self._stop_on_first:
             return
 
@@ -140,6 +141,7 @@ class basic_auth(BruteforcePlugin):
                              severity=v.get_severity())
 
     def _configure_credentials_in_opener(self):
+
         """
         Configure the main urllib with the newly found credentials.
         """

@@ -115,7 +115,7 @@ class frontpage(AuditPlugin):
             res = self._uri_opener.POST(target_url,
                                         data=data,
                                         debugging_id=debugging_id)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.debug('Exception while uploading file using author.dll: %s' % e)
             return None
         else:
@@ -139,7 +139,7 @@ class frontpage(AuditPlugin):
                                        cache=False,
                                        grep=False,
                                        debugging_id=debugging_id)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             om.out.debug('Exception while verifying if the file that was uploaded'
                          'using author.dll was there: %s' % e)
         else:

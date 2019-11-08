@@ -124,7 +124,7 @@ class GtkHtmlRenderingView(RenderingView):
             # I get here when the mime type is an image or something that I
             # can't display
             pass
-        except Exception, e:
+        except Exception as e:
             print _('gtkhtml2 exception:'), type(e), str(e)
             print _('Please report this issue here:')
             print 'https://github.com/andresriancho/w3af/issues/new'
