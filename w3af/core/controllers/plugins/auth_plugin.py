@@ -25,6 +25,7 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af.core.controllers.plugins.plugin import Plugin
 from w3af.core.data.kb.info import Info
 from w3af.core.data.fuzzer.utils import rand_alnum
+from w3af.core.data.url.helpers import is_no_content_response
 
 
 class AuthPlugin(Plugin):
@@ -74,7 +75,11 @@ class AuthPlugin(Plugin):
         raise NotImplementedError('Plugin is not implementing required method isLogged')
 
     def _log_http_response(self, http_response):
+        if is_no_content_response(http_response):
+            return False
+
         self._http_response_ids.append(http_response.id)
+        return True
 
     def _clear_log(self):
         self._http_response_ids = []
