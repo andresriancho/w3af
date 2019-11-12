@@ -75,8 +75,10 @@ class bruteforce(BaseConsumer):
                            ' unhandled exception was found')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-                self.handle_exception('bruteforce', plugin.get_name(),
-                                      'plugin.end()', e)
+                self.handle_exception('bruteforce',
+                                      plugin.get_name(),
+                                      'plugin.end()',
+                                      e)
 
             else:
                 msg_fmt = 'Spent %.2f seconds running %s.end()'
