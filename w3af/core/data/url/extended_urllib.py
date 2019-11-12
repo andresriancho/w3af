@@ -702,7 +702,7 @@ class ExtendedUrllib(object):
 
         :return: An HTTPResponse object.
         """
-        headers = headers or None
+        headers = headers or Headers()
 
         if not isinstance(uri, URL):
             raise TypeError('The uri parameter of ExtendedUrllib.GET() must be'
