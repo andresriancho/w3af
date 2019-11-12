@@ -120,21 +120,23 @@ class OpenAPI(BaseParser):
     def is_valid_json_or_yaml(http_resp):
         """
         :param http_resp: The HTTP response we want to parse
-        :return: True if it seems that this page is an open api doc
+        :return: True if it seems that this page is valid JSON / YAML that represents a dict
         """
-        try:
-            json.loads(http_resp.body)
-        except ValueError:
-            pass
-        else:
-            return True
+        spec_dict = None
 
         try:
-            load(http_resp.body, Loader=Loader)
-        except:
-            return False
-        else:
+            spec_dict = json.loads(http_resp.body)
+        except ValueError:
+
+            try:
+                spec_dict = load(http_resp.body, Loader=Loader)
+            except:
+                pass
+
+        if isinstance(spec_dict, dict):
             return True
+
+        return False
 
     @staticmethod
     def looks_like_json_or_yaml(http_resp):
