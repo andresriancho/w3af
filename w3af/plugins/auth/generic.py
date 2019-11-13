@@ -81,6 +81,8 @@ class generic(AuthSessionPlugin):
                                                   follow_redirects=True,
                                                   debugging_id=self._debugging_id)
         except Exception, e:
+            self._handle_authentication_failure()
+
             msg = 'Failed to login to the application because of exception: %s'
             self._log_debug(msg % e)
             return False
