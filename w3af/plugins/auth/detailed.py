@@ -52,10 +52,6 @@ class detailed(AuthSessionPlugin):
         self.follow_redirects = False
         self.url_encode_params = True
 
-        # Internal attributes
-        self._show_login_error = True
-        self._attempt_login = True
-
     def login(self):
         """
         Login to the application
@@ -100,18 +96,22 @@ class detailed(AuthSessionPlugin):
         #
         # Check if we're logged in
         #
-        if not self.has_active_session():
-            self._log_info_to_kb()
-            return False
+        if self.has_active_session():
+            self._handle_authentication_success()
+            return True
 
-        om.out.debug('Login success for %s' % self.username)
-        return True
+        self._handle_authentication_failure()
+        return False
 
     def logout(self):
         """
         User logout
         """
         return None
+
+    def _handle_authentication_success(self):
+        super(detailed, self)._handle_authentication_success()
+        self._log_debug('Login success for %s' % self.username)
 
     def _get_data_from_format(self):
         """

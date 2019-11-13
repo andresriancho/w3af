@@ -211,7 +211,8 @@ class TestAutocompleteInvalidCredentials(PluginTest):
             'Login form with action http://w3af.org/login_post.py found in HTTP response with ID 21\n'
             'Login form sent to http://w3af.org/login_post.py in HTTP request ID 22\n'
             'Checking if session for user user@mail.com is active\n'
-            'User "user@mail.com" is NOT logged into the application, the `check_string` was not found in the HTTP response with ID 23.'
+            'User "user@mail.com" is NOT logged into the application, the `check_string` was not found in the HTTP response with ID 23.\n'
+            'Authentication plugin failed 1 times during the last minutes of the scan.'
         )
 
         self.assertEqual(info.get_name(), 'Authentication failure')

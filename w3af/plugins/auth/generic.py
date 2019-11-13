@@ -46,9 +46,6 @@ class generic(AuthSessionPlugin):
         self.check_url = 'http://host.tld/'
         self.check_string = ''
 
-        # Internal attributes
-        self._attempt_login = True
-
     def login(self):
         """
         Login to the application.
@@ -93,18 +90,22 @@ class generic(AuthSessionPlugin):
         #
         # Check if we're logged in
         #
-        if not self.has_active_session():
-            self._log_info_to_kb()
-            return False
+        if self.has_active_session():
+            self._handle_authentication_success()
+            return True
 
-        om.out.debug('Login success for %s' % self.username)
-        return True
+        self._handle_authentication_failure()
+        return False
 
     def logout(self):
         """
         User logout
         """
         return None
+
+    def _handle_authentication_success(self):
+        super(generic, self)._handle_authentication_success()
+        self._log_debug('Login success for %s' % self.username)
 
     def get_options(self):
         """

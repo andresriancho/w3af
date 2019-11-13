@@ -46,9 +46,6 @@ class autocomplete(AuthSessionPlugin):
         self.check_url = URL('http://host.tld/check')
         self.check_string = ''
 
-        # Internal attributes
-        self._attempt_login = True
-
     def login(self):
         """
         Login to the application:
@@ -80,6 +77,7 @@ class autocomplete(AuthSessionPlugin):
         form = self._get_login_form()
 
         if not form:
+            self._handle_authentication_failure()
             return False
 
         #
@@ -88,21 +86,28 @@ class autocomplete(AuthSessionPlugin):
         form_submitted = self._submit_form(form)
 
         if not form_submitted:
-            self._log_info_to_kb()
+            self._handle_authentication_failure()
             return False
 
-        if not self.has_active_session():
-            self._log_info_to_kb()
-            return False
+        #
+        # Check if we're logged in
+        #
+        if self.has_active_session():
+            self._handle_authentication_success()
+            return True
 
-        self._log_debug('Login success for user %s' % self.username)
-        return True
+        self._handle_authentication_failure()
+        return False
 
     def logout(self):
         """
         User logout
         """
         return None
+
+    def _handle_authentication_success(self):
+        super(autocomplete, self)._handle_authentication_success()
+        self._log_debug('Login success for %s' % self.username)
 
     def _submit_form(self, form_params):
         """

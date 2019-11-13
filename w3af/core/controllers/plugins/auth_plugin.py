@@ -39,6 +39,8 @@ class AuthPlugin(Plugin):
     :author: Dmitriy V. Simonov ( dsimonov@yandex-team.com )
     """
 
+    MAX_FAILED_LOGIN_COUNT = 3
+
     def __init__(self):
         Plugin.__init__(self)
 
@@ -46,6 +48,8 @@ class AuthPlugin(Plugin):
         self._debugging_id = None
         self._http_response_ids = []
         self._log_messages = []
+        self._attempt_login = True
+        self._failed_login_count = 0
 
     def login(self):
         """
@@ -112,6 +116,30 @@ class AuthPlugin(Plugin):
                  authentication.
         """
         raise NotImplementedError
+
+    def _handle_authentication_failure(self):
+        self._failed_login_count += 1
+
+        if self._failed_login_count == self.MAX_FAILED_LOGIN_COUNT:
+            msg = ('Authentication plugin failed %s consecutive times.'
+                   ' Disabling authentication plugin.')
+            args = (self._failed_login_count,)
+            self._log_debug(msg % args)
+
+            self._log_info_to_kb()
+
+            self._attempt_login = False
+
+    def end(self):
+        if self._failed_login_count:
+            msg = 'Authentication plugin failed %s times during the last minutes of the scan.'
+            args = (self._failed_login_count,)
+            self._log_debug(msg % args)
+
+            self._log_info_to_kb()
+
+    def _handle_authentication_success(self):
+        self._failed_login_count = 0
 
     def _log_info_to_kb(self):
         """
