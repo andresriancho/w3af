@@ -116,7 +116,7 @@ class TestDetailedFailAuth(PluginTest):
             'Logging into the application with user: user@mail.com\n'
             'Checking if session for user user@mail.com is active\n'
             'User "user@mail.com" is NOT logged into the application, the `check_string` was not found in the HTTP response with ID 24.\n'
-            'Authentication plugin failed 1 times during the last minutes of the scan.'
+            'The `detailed` authentication plugin failed 1 times to get a valid application session using the user-provided configuration settings\nThe `detailed` authentication plugin failed 1 times to get a valid application session using the user-provided configuration settings'
         )
 
         self.assertEqual(info.get_name(), 'Authentication failure')

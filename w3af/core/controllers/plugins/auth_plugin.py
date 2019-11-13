@@ -98,8 +98,12 @@ class AuthPlugin(Plugin):
     def _log_error(self, message):
         self._log_messages.append(message)
 
-        formatted_message = self._format_message(message)
-        om.out.error(formatted_message)
+        # Send the message to the output without adding any formatting
+        om.out.error(message)
+
+        # This is here just for me to be able to quickly find all the activity
+        # of a specific auth plugin by grepping by its name
+        self._log_debug(message)
 
     def _format_message(self, message):
         message_fmt = '[auth.%s] %s (did: %s)'
@@ -121,10 +125,12 @@ class AuthPlugin(Plugin):
         self._failed_login_count += 1
 
         if self._failed_login_count == self.MAX_FAILED_LOGIN_COUNT:
-            msg = ('Authentication plugin failed %s consecutive times.'
-                   ' Disabling authentication plugin.')
-            args = (self._failed_login_count,)
-            self._log_debug(msg % args)
+            msg = ('The authentication plugin failed %s consecutive times to'
+                   ' get a valid application session using the user-provided'
+                   ' configuration settings. Disabling the `%s` authentication'
+                   ' plugin.')
+            args = (self._failed_login_count, self.get_name())
+            self._log_error(msg % args)
 
             self._log_info_to_kb()
 
@@ -132,9 +138,12 @@ class AuthPlugin(Plugin):
 
     def end(self):
         if self._failed_login_count:
-            msg = 'Authentication plugin failed %s times during the last minutes of the scan.'
-            args = (self._failed_login_count,)
-            self._log_debug(msg % args)
+            msg = ('The `%s` authentication plugin failed %i times to get'
+                   ' a valid application session using the user-provided'
+                   ' configuration settings')
+            args = (self.get_name(), self._failed_login_count,)
+
+            self._log_error(msg % args)
 
             self._log_info_to_kb()
 
@@ -167,7 +176,6 @@ class AuthPlugin(Plugin):
 
         i.set_uri(self._get_main_authentication_url())
 
-        kb.kb.clear('authentication', 'error')
         kb.kb.append('authentication', 'error', i)
 
     def get_type(self):
