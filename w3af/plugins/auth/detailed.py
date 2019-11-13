@@ -98,7 +98,7 @@ class detailed(AuthSessionPlugin):
         #
         # Check if we're logged in
         #
-        if self.has_active_session():
+        if self.has_active_session(new_debugging_id=False):
             self._handle_authentication_success()
             return True
 
