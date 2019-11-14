@@ -1218,10 +1218,24 @@ class ExtendedUrllib(object):
             args = (req, req.debugging_id, url_error)
             om.out.debug(msg % args)
 
+            #
             # Before sending it again we update the timeout, which could have
             # changed because of the error we just found
+            #
             host = req.get_host()
             req.set_timeout(self.get_timeout(host))
+
+            #
+            # And for retries we force a new connection to be used to increase
+            # the chances of successfully retrieving a response
+            #
+            # TCP/IP connections are closed every time they receive an error and
+            # shouldn't be used anymore to send any HTTP requests. That is
+            # responsibility of the keepalive.handler code. So it should never
+            # happen, even without the next line of code, that a connection that
+            # triggered a timeout is re-used. The next line is to be 100% sure
+            #
+            req.set_new_connection(True)
 
             return self.send(req, grep=grep)
         

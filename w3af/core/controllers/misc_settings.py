@@ -96,8 +96,11 @@ class MiscSettings(Configurable):
             local_address = '127.0.0.1'  # do'h!
 
         cf.cf.save('local_ip_address', local_address)
-        cf.cf.save('non_targets', [])
         cf.cf.save('stop_on_first_exception', False)
+
+        # Blacklists
+        cf.cf.save('blacklist_http_request', [])
+        cf.cf.save('blacklist_audit', [])
 
         # Form exclusion via IDs
         cf.cf.save('form_id_list', FormIDMatcherList('[]'))
@@ -300,10 +303,23 @@ class MiscSettings(Configurable):
         #
         # URL and form exclusions
         #
-        desc = 'A comma separated list of URLs that w3af should ignore'
-        h = 'No HTTP requests will be sent to these URLs'
-        opt = opt_factory('non_targets',
-                          cf.cf.get('non_targets'),
+        desc = 'List of URLs that must be completely ignored by the scan engine'
+        h = ('A comma separated list of URLs which must never receive an'
+             ' HTTP requests from w3af')
+        opt = opt_factory('blacklist_http_request',
+                          cf.cf.get('blacklist_http_request'),
+                          desc,
+                          URL_LIST,
+                          help=h,
+                          tabid='Exclusions')
+        ol.add(opt)
+
+        desc = 'List of URLs to ignore during the HTTP fuzzing phase'
+        h = ('A comma separated list of URLs which can receive traffic from'
+             ' crawl plugins but must never receive HTTP fuzzing from audit'
+             ' plugins')
+        opt = opt_factory('blacklist_audit',
+                          cf.cf.get('blacklist_audit'),
                           desc,
                           URL_LIST,
                           help=h,
@@ -400,7 +416,8 @@ class MiscSettings(Configurable):
                    'local_ip_address',
                    'msf_location',
                    'stop_on_first_exception',
-                   'non_targets',
+                   'blacklist_http_request',
+                   'blacklist_audit',
                    'form_id_action',
                    'form_id_list',
                    'path_max_variants',

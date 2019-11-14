@@ -40,14 +40,14 @@ class TestBlacklistHandler(unittest.TestCase):
         consecutive_number_generator.reset()
     
     def tearDown(self):
-        cf.cf.save('non_targets', [])
+        cf.cf.save('blacklist_http_request', [])
     
     def test_blacklist_handler_block(self):
         """Verify that the blacklist handler works as expected"""
         
         # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
-        cf.cf.save('non_targets', [blocked_url,])
+        cf.cf.save('blacklist_http_request', [blocked_url])
         
         opener = urllib2.build_opener(BlacklistHandler)
         
@@ -73,7 +73,7 @@ class TestBlacklistHandler(unittest.TestCase):
         handler still works, even when mixed with all the other handlers."""
         # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
-        cf.cf.save('non_targets', [blocked_url,])
+        cf.cf.save('blacklist_http_request', [blocked_url])
         
         settings = opener_settings.OpenerSettings()
         settings.build_openers()
@@ -95,7 +95,7 @@ class TestBlacklistHandler(unittest.TestCase):
         # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
         safe_url = URL(get_moth_http())
-        cf.cf.save('non_targets', [blocked_url,])
+        cf.cf.save('blacklist_http_request', [blocked_url])
         
         settings = opener_settings.OpenerSettings()
         settings.build_openers()

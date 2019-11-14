@@ -46,9 +46,6 @@ class generic(AuthSessionPlugin):
         self.check_url = 'http://host.tld/'
         self.check_string = ''
 
-        # Internal attributes
-        self._attempt_login = True
-
     def login(self):
         """
         Login to the application.
@@ -66,6 +63,7 @@ class generic(AuthSessionPlugin):
         #
         self._new_debugging_id()
         self._clear_log()
+        self._configure_audit_blacklist(self.auth_url)
 
         msg = 'Logging into the application using %s' % self.username
         om.out.debug(msg)
@@ -84,6 +82,8 @@ class generic(AuthSessionPlugin):
                                                   follow_redirects=True,
                                                   debugging_id=self._debugging_id)
         except Exception, e:
+            self._handle_authentication_failure()
+
             msg = 'Failed to login to the application because of exception: %s'
             self._log_debug(msg % e)
             return False
@@ -93,18 +93,22 @@ class generic(AuthSessionPlugin):
         #
         # Check if we're logged in
         #
-        if not self.has_active_session():
-            self._log_info_to_kb()
-            return False
+        if self.has_active_session(new_debugging_id=False):
+            self._handle_authentication_success()
+            return True
 
-        om.out.debug('Login success for %s' % self.username)
-        return True
+        self._handle_authentication_failure()
+        return False
 
     def logout(self):
         """
         User logout
         """
         return None
+
+    def _handle_authentication_success(self):
+        super(generic, self)._handle_authentication_success()
+        self._log_debug('Login success for %s' % self.username)
 
     def get_options(self):
         """
@@ -168,8 +172,8 @@ class generic(AuthSessionPlugin):
                 missing_options.append(o.get_name())
 
         if missing_options:
-            msg = ("All parameters are required and can't be empty. The"
-                   " missing parameters are %s")
+            msg = ('All plugin configuration parameters are required.'
+                   ' The missing parameters are: %s')
             raise BaseFrameworkException(msg % ', '.join(missing_options))
 
     def get_long_desc(self):

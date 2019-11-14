@@ -109,14 +109,14 @@ class TestDetailedFailAuth(PluginTest):
         info = infos[0]
 
         expected_desc = (
-            'The authentication plugin failed to get a valid application session using'
-            ' the user-provided configuration settings.\n'
+            'The authentication plugin failed to get a valid application session using the user-provided configuration settings.\n'
             '\n'
             'The plugin generated the following log messages:\n'
             '\n'
             'Logging into the application with user: user@mail.com\n'
-            'User "user@mail.com" is NOT logged into the application, the'
-            ' `check_string` was not found in the HTTP response with ID 24.'
+            'Checking if session for user user@mail.com is active\n'
+            'User "user@mail.com" is NOT logged into the application, the `check_string` was not found in the HTTP response with ID 24.\n'
+            'The `detailed` authentication plugin failed 1 times to get a valid application session using the user-provided configuration settings\nThe `detailed` authentication plugin failed 1 times to get a valid application session using the user-provided configuration settings'
         )
 
         self.assertEqual(info.get_name(), 'Authentication failure')
