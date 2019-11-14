@@ -83,6 +83,7 @@ class web_spider(CrawlPlugin):
 
         self._enable_js_crawler = True
         self._chrome_processes = ChromePool.MAX_INSTANCES
+        self._chrome_identified_http_requests = 0
 
     def crawl(self, fuzzable_request, debugging_id):
         """
@@ -453,12 +454,18 @@ class web_spider(CrawlPlugin):
 
             processed_items += 1
 
-        msg = 'The web_spider processed %s items from ChromeCrawler queue'
+        msg = 'The web_spider processed a batch of %s items from ChromeCrawler queue'
         om.out.debug(msg % processed_items)
+
+        msg = ('A total of %s HTTP requests have been read by the web_spider'
+               ' from the ChromeCrawler queue')
+        om.out.debug(msg % self._chrome_identified_http_requests)
 
         return processed_items
 
     def _handle_http_traffic_from_chrome_queue(self, queue_data):
+        self._chrome_identified_http_requests += 1
+
         request, response, debugging_id = queue_data
 
         if response.get_code() in (404, 403, 401):
