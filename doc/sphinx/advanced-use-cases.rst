@@ -125,8 +125,16 @@ containing the form ID of each identified form.
 
 .. note::
 
-    This feature works well together with ``non_targets``.
+    This feature works well together with ``blacklist_http_request``.
     ``w3af`` will only send requests to the target if they match both filters.
+
+Ignoring URLs during fuzzing
+----------------------------
+
+``w3af`` allows users to configure a set of URLs that will be used for crawling
+(finding new URLs) but will be ignored during the ``audit`` phase. In order to
+use this feature users need to set the URLs to be excluded in
+``misc-settings.blacklist_audit``.
 
 Variants
 --------

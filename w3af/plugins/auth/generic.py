@@ -63,6 +63,7 @@ class generic(AuthSessionPlugin):
         #
         self._new_debugging_id()
         self._clear_log()
+        self._configure_audit_blacklist(self.auth_url)
 
         msg = 'Logging into the application using %s' % self.username
         om.out.debug(msg)
@@ -171,8 +172,8 @@ class generic(AuthSessionPlugin):
                 missing_options.append(o.get_name())
 
         if missing_options:
-            msg = ("All parameters are required and can't be empty. The"
-                   " missing parameters are %s")
+            msg = ('All plugin configuration parameters are required.'
+                   ' The missing parameters are: %s')
             raise BaseFrameworkException(msg % ', '.join(missing_options))
 
     def get_long_desc(self):

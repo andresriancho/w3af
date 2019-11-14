@@ -19,8 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import urllib2
 import urllib
+import urllib2
 import cStringIO
 import mimetools
 
@@ -44,9 +44,8 @@ class BlacklistHandler(urllib2.BaseHandler):
     handler_order = urllib2.HTTPErrorProcessor.handler_order - 1
 
     def __init__(self):
-        non_targets = cf.cf.get('non_targets') or []
-        self._non_targets = set()
-        self._non_targets.update([url.uri2url() for url in non_targets])
+        blacklist_http_request = cf.cf.get('blacklist_http_request') or []
+        self._blacklist_urls = {url.uri2url() for url in blacklist_http_request}
 
     def default_open(self, req):
         """
@@ -69,10 +68,10 @@ class BlacklistHandler(urllib2.BaseHandler):
         If the user configured w3af to ignore a URL, we are going to be applying
         that configuration here. This is the lowest layer inside w3af.
         """
-        if uri.uri2url() in self._non_targets:
-            msg = ('The URL you are trying to reach (%s) was configured as a'
-                   ' non-target. NOT performing the HTTP request and returning'
-                   ' an empty response.')
+        if uri.uri2url() in self._blacklist_urls:
+            msg = ('%s was included in the HTTP request blacklist, the scan'
+                   ' engine is NOT sending the HTTP request and is instead'
+                   ' returning an empty response to the caller.')
             om.out.debug(msg % uri)
             return True
 

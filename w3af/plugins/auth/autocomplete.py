@@ -93,7 +93,7 @@ class autocomplete(AuthSessionPlugin):
         # Check if we're logged in
         #
         if self.has_active_session(new_debugging_id=False):
-            self._handle_authentication_success()
+            self._handle_authentication_success(form)
             return True
 
         self._handle_authentication_failure()
@@ -105,9 +105,16 @@ class autocomplete(AuthSessionPlugin):
         """
         return None
 
-    def _handle_authentication_success(self):
+    def _handle_authentication_success(self, form):
         super(autocomplete, self)._handle_authentication_success()
-        self._log_debug('Login success for %s' % self.username)
+
+        form_url = form.get_action().uri2url()
+
+        args = (self.username, form_url)
+        msg = 'Login success for username %s with form action %s'
+        self._log_debug(msg % args)
+
+        self._configure_audit_blacklist(form_url)
 
     def _submit_form(self, form_params):
         """
@@ -291,8 +298,8 @@ class autocomplete(AuthSessionPlugin):
                 missing_options.append(o.get_name())
 
         if missing_options:
-            msg = ("All parameters are required and can't be empty."
-                   " The missing parameters are %s")
+            msg = ('All plugin configuration parameters are required.'
+                   ' The missing parameters are: %s')
             raise BaseFrameworkException(msg % ', '.join(missing_options))
 
     def get_long_desc(self):
