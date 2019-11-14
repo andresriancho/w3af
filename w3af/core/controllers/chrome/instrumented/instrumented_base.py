@@ -246,7 +246,7 @@ class InstrumentedChromeBase(object):
         if self.chrome_conn is not None:
             try:
                 # Close the browser in a clean way
-                self.chrome_conn.Browser.close()
+                self.chrome_conn.Browser.close(ignore_result=True)
             except Exception as e:
                 msg = 'Failed call Browser.close(), exception: "%s" (did: %s)'
                 args = (e, self.debugging_id)
