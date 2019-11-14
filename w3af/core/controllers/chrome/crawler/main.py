@@ -262,13 +262,12 @@ class ChromeCrawler(object):
         took_line = TookLine(msg)
 
         try:
-            crawl_strategy.crawl(chrome,
-                                 url)
-        except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
+            crawl_strategy.crawl(chrome, url)
+        except (ChromeInterfaceException, ChromeInterfaceTimeout, ChromeCrawlerException) as ce:
             msg = ('Failed to crawl %s using chrome crawler: "%s".'
                    ' Will skip this crawl strategy and try the next one.'
                    ' (did: %s)')
-            args = (url, cie, debugging_id)
+            args = (url, ce, debugging_id)
             om.out.debug(msg % args)
 
             # These are soft exceptions, just skip this crawl strategy
@@ -321,6 +320,11 @@ class ChromeCrawler(object):
                  url,
                  chrome,
                  debugging_id=None):
+
+        args = (chrome.http_traffic_queue.count, url, chrome, debugging_id)
+        msg = 'Extracted %s new HTTP requests from %s using %s (did: %s)'
+        om.out.debug(msg % args)
+
         #
         # In order to remove all the DOM from the chrome instance and clear
         # some memory we load the about:blank page
@@ -338,11 +342,7 @@ class ChromeCrawler(object):
             # pool it might be in an error state
             self._chrome_pool.remove(chrome, 'failed to load about:blank')
 
-            raise ChromeCrawlerException('Failed to load about:blank in chrome browser')
-
-        args = (chrome.http_traffic_queue.count, url, chrome, debugging_id)
-        msg = 'Extracted %s new HTTP requests from %s using %s (did: %s)'
-        om.out.debug(msg % args)
+            raise
 
         took_line.send()
 
@@ -394,8 +394,7 @@ class ChromeCrawler(object):
             # it might be in an error state
             self._chrome_pool.remove(chrome, 'failed to load URL')
 
-            args = (url, chrome, cie)
-            raise ChromeCrawlerException('Failed to load %s using %s: "%s"' % args)
+            raise
 
         try:
             successfully_loaded = chrome.wait_for_load()
@@ -414,10 +413,7 @@ class ChromeCrawler(object):
             # it might be in an error state
             self._chrome_pool.remove(chrome, 'exception raised')
 
-            args = (url, chrome, cie)
-            msg = ('Exception raised while waiting for page load of %s '
-                   'using %s: "%s"')
-            raise ChromeCrawlerException(msg % args)
+            raise
 
         if not successfully_loaded:
             #
@@ -449,7 +445,7 @@ class ChromeCrawler(object):
             # pool it might be in an error state
             self._chrome_pool.remove(chrome, 'failed to stop')
 
-            raise ChromeCrawlerException('Failed to stop chrome browser')
+            raise
 
         took_line.send()
 

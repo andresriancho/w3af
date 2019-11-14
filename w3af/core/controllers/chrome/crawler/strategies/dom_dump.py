@@ -85,7 +85,7 @@ class ChromeCrawlerDOMDump(object):
             # pool, it might be in an error state
             self._chrome_pool.remove(chrome, 'failed to get DOM')
 
-            raise ChromeCrawlerException('Failed to get the DOM from chrome browser')
+            raise
 
         if dom is None:
             msg = 'Chrome returned a null DOM (did: %s)'
@@ -94,7 +94,7 @@ class ChromeCrawlerDOMDump(object):
 
             # Since we got an error we remove this chrome instance from the
             # pool, it might be in an error state
-            self._chrome_pool.remove(chrome, 'failed to get DOM')
+            self._chrome_pool.remove(chrome, 'DOM was None')
 
             raise ChromeCrawlerException('Failed to get the DOM from chrome browser')
 
