@@ -122,6 +122,7 @@ class InstrumentedChromeBase(object):
 
     def connect_to_chrome(self):
         port = self.chrome_process.get_devtools_port()
+        chrome_id = self.chrome_process.get_id()
 
         # The timeout we specify here is the websocket timeout, which is used
         # for send() and recv() calls.
@@ -129,7 +130,8 @@ class InstrumentedChromeBase(object):
             chrome_conn = DebugChromeInterface(host=self.CHROME_HOST,
                                                port=port,
                                                timeout=0.001,
-                                               debugging_id=self.debugging_id)
+                                               debugging_id=self.debugging_id,
+                                               chrome_id=chrome_id)
         except ConnectionError:
             msg = 'Failed to connect to Chrome on port %s'
             raise InstrumentedChromeException(msg % port)

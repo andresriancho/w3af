@@ -265,7 +265,7 @@ class ChromeCrawler(object):
             crawl_strategy.crawl(chrome,
                                  url)
         except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
-            msg = ('Failed to crawl %s using chrome crawler: "%s"'
+            msg = ('Failed to crawl %s using chrome crawler: "%s".'
                    ' Will skip this crawl strategy and try the next one.'
                    ' (did: %s)')
             args = (url, cie, debugging_id)

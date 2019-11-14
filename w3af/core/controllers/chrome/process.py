@@ -33,6 +33,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.misc.poll import poll
 from w3af.core.controllers.dependency_check.external.chrome import get_chrome_path, get_chrome_version
+from w3af.core.data.fuzzer.utils import rand_number
 
 
 class ChromeProcess(object):
@@ -96,8 +97,13 @@ class ChromeProcess(object):
 
         self.thread = None
 
+        self.id = rand_number(8)
+
     def get_default_user_data_dir(self):
         return os.path.join(get_temp_dir(), 'chrome')
+
+    def get_id(self):
+        return self.id
 
     def set_devtools_port(self, devtools_port):
         """

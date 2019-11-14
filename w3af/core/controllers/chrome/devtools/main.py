@@ -81,7 +81,8 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
                  timeout=TIMEOUT,
                  auto_connect=True,
                  debugging_id=None,
-                 dialog_handler=DEFAULT_DIALOG_HANDLER):
+                 dialog_handler=DEFAULT_DIALOG_HANDLER,
+                 chrome_id=None):
 
         threading.Thread.__init__(self)
         ChromeInterface.__init__(self,
@@ -102,7 +103,9 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         self.exc_value = None
         self.exc_traceback = None
 
-        self.message_counter = MessageIdentifierGenerator()
+        self.chrome_id = chrome_id or 1234
+
+        self.message_counter = MessageIdentifierGenerator(self.chrome_id)
 
     def set_default_event_handlers(self):
         self.set_event_handler(proxy_connection_failed_handler)
@@ -596,9 +599,9 @@ class MessageIdentifierGenerator(object):
 
     It is easier to grep for that ID, which will be most likely unique.
     """
-    def __init__(self):
+    def __init__(self, chrome_id):
         self.message_identifier = None
-        self._rand = random.Random(1)
+        self._rand = random.Random(chrome_id)
 
     def get(self):
         if self.message_identifier is None:
