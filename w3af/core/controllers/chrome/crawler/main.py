@@ -49,7 +49,7 @@ class ChromeCrawler(object):
         * Send the HTTP requests to the caller
     """
 
-    WORKER_MAX_TASKS = 1
+    WORKER_MAX_TASKS = 5
     MIN_WORKER_THREADS = 1
     MIN_CHROME_POOL_INSTANCES = 2
 
@@ -191,18 +191,20 @@ class ChromeCrawler(object):
         :param http_traffic_queue: Queue to send HTTP requests and responses to
         :return: None
         """
-        debugging_id = crawl_strategy.get_debugging_id()
-
         try:
             self._crawl_with_strategy(crawl_strategy,
                                       fuzzable_request.get_uri(),
                                       http_traffic_queue)
         except Exception as e:
+            add_traceback_string(e)
+
+            debugging_id = crawl_strategy.get_debugging_id()
+            data = (fuzzable_request, e, debugging_id)
+
             # Sending exceptions to a queue called HTTP traffic queue is not
             # ideal but at this point it is the best way to send the exceptions
             # to the web_spider
-            add_traceback_string(e)
-            http_traffic_queue.put((fuzzable_request, e, debugging_id))
+            http_traffic_queue.put(data)
             return False
 
         return True
