@@ -37,7 +37,8 @@ from requests.adapters import ConnectionError
 from PyChromeDevTools import GenericElement, ChromeInterface, TIMEOUT
 from websocket import (WebSocketTimeoutException,
                        WebSocketConnectionClosedException,
-                       WebSocketProtocolException)
+                       WebSocketProtocolException,
+                       create_connection)
 
 import w3af.core.controllers.output_manager as om
 
@@ -50,13 +51,14 @@ from w3af.core.controllers.chrome.devtools.console_message import ConsoleMessage
 from w3af.core.controllers.chrome.devtools.command_result import CommandResult
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
 from w3af.core.controllers.chrome.devtools.js_dialogs import dialog_handler
+from w3af.core.controllers.chrome.devtools.custom_websocket import CustomWebSocket
 from w3af.core.controllers.chrome.utils.multi_json_doc import parse_multi_json_docs
 
 #
 # Disable all the annoying logging from the urllib3 and requests libraries
 #
-logging.getLogger("requests").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger('requests').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 
 DEFAULT_DIALOG_HANDLER = dialog_handler
@@ -106,6 +108,27 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         self.chrome_id = chrome_id or 1234
 
         self.message_counter = MessageIdentifierGenerator(self.chrome_id)
+
+    def connect(self, tab=0, update_tabs=True):
+        """
+        Connect to the websocket.
+
+        Overwriting this method to set enable_multithread
+
+        :param tab: The chrome tab ID
+        :param update_tabs: Should update tabs
+        :return: None
+        """
+        if update_tabs or self.tabs is None:
+            self.get_tabs()
+
+        self.close()
+
+        ws_url = self.tabs[tab]['webSocketDebuggerUrl']
+        self.ws = create_connection(ws_url,
+                                    enable_multithread=True,
+                                    class_=CustomWebSocket)
+        self.ws.settimeout(self.timeout)
 
     def set_default_event_handlers(self):
         self.set_event_handler(proxy_connection_failed_handler)
