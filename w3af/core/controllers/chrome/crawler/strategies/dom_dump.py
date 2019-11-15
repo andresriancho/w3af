@@ -72,7 +72,22 @@ class ChromeCrawlerDOMDump(object):
         :return: None, the new URLs and forms are sent to the chrome instance
                  http_traffic_queue.
         """
-        http_traffic_queue = chrome.get_traffic_queue()
+        #
+        # Get the first HTTP response.
+        #
+        # Should never be None, but in case it is... we want to find it early
+        # on the crawl() method.
+        #
+        first_http_response = chrome.get_first_response()
+        if first_http_response is None:
+            #
+            # This should never happen, because we reached this code section after
+            # crawler/main.py did an initial page load
+            #
+            msg = 'The %s browser first HTTP response is None (did: %s)'
+            args = (chrome, self._debugging_id)
+            om.out.debug(msg % args)
+            return
 
         try:
             dom = chrome.get_dom()
@@ -98,13 +113,6 @@ class ChromeCrawlerDOMDump(object):
 
             raise ChromeCrawlerException('Failed to get the DOM from chrome browser')
 
-        first_http_response = chrome.get_first_response()
-        if first_http_response is None:
-            msg = 'The %s browser first HTTP response is None (did: %s)'
-            args = (chrome, self._debugging_id)
-            om.out.debug(msg % args)
-            return
-
         if not self._should_parse_dom(dom, first_http_response.get_body()):
             msg = 'Decided not to parse the DOM (did: %s)'
             args = (self._debugging_id,)
@@ -121,6 +129,7 @@ class ChromeCrawlerDOMDump(object):
                       dom_http_response,
                       self._debugging_id)
 
+        http_traffic_queue = chrome.get_traffic_queue()
         http_traffic_queue.put(queue_data)
 
     def get_debugging_id(self):
