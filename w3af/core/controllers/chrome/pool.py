@@ -267,16 +267,16 @@ class ChromePool(object):
     def free(self, chrome):
         chrome.free_count += 1
 
-        msg = ('Chrome instance %s with free_count %s will be marked'
-               ' as free in ChromePool')
-        args = (chrome, chrome.free_count)
-        om.out.debug(msg % args)
-
         if chrome.free_count > self.MAX_TASKS:
             self.remove(chrome, 'MAX_TASKS exceeded')
             return
 
         if chrome in self._in_use.copy():
+            msg = ('Chrome instance %s with free_count %s will be marked as'
+                   ' free in ChromePool')
+            args = (chrome, chrome.free_count)
+            om.out.debug(msg % args)
+
             self._in_use.discard(chrome)
             self._free.add(chrome)
             chrome.current_task_start = None
