@@ -152,7 +152,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
             if self.page_state.get() == PageState.STATE_LOADED:
                 return True
 
-            time.sleep(0.1)
+            time.sleep(0.15)
 
     def stop(self):
         """
