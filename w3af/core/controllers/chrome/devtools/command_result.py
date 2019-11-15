@@ -49,11 +49,16 @@ class CommandResult(object):
         # timeout was running
         self._raise_exception_if_exists()
 
-        if not was_set:
-            raise ChromeInterfaceTimeout('Timeout waiting for message ID %s' % self.message_id)
-
         spent = time.time() - start
-        om.out.debug('Waited %.2f seconds for message ID %s' % (spent, self.message_id))
+
+        if not was_set:
+            msg = 'Timeout waiting for message with ID %s (timeout: %.2f, waited: %.2f)'
+            args = (self.message_id, timeout, spent)
+            raise ChromeInterfaceTimeout(msg % args)
+
+        msg = 'Waited %.2f seconds for message with ID %s (timeout: %.2f)'
+        args = (spent, self.message_id, timeout)
+        om.out.debug(msg % args)
 
         return self.message
 
