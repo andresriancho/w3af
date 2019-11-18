@@ -25,6 +25,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.db.disk_set import DiskSet
 from w3af.core.controllers.threads.threadpool import Pool, add_traceback_string
+from w3af.core.controllers.core_helpers.consumers.base_consumer import BaseConsumer
 from w3af.core.controllers.chrome.pool import ChromePool, ChromePoolException
 from w3af.core.controllers.chrome.crawler.strategies.dom_dump import ChromeCrawlerDOMDump
 from w3af.core.controllers.chrome.crawler.strategies.js import ChromeCrawlerJS
@@ -51,7 +52,7 @@ class ChromeCrawler(object):
 
     WORKER_MAX_TASKS = 5
     MIN_WORKER_THREADS = 1
-    MIN_CHROME_POOL_INSTANCES = 2
+    MIN_CHROME_POOL_INSTANCES = BaseConsumer.THREAD_POOL_SIZE
 
     def __init__(self,
                  uri_opener,
