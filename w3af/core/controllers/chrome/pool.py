@@ -77,8 +77,9 @@ class ChromePool(object):
 
         min_error_message = ('The number of instances in the ChromePool needs'
                              ' to be greater than %s in order to prevent timeouts'
-                             ' and dead-locks in the web_spider plugin')
-        min_error_message %= (self.MIN_INSTANCES - 1,)
+                             ' and dead-locks in the web_spider plugin. The specified'
+                             ' number of instances was %s.')
+        min_error_message %= (self.MIN_INSTANCES - 1, self.max_instances_configured)
         assert self.max_instances_configured >= self.MIN_INSTANCES, min_error_message
 
     def log_stats(self, force=False):
