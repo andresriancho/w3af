@@ -36,26 +36,24 @@ from w3af.core.controllers.misc.poll import poll
 
 
 class CustomWebSocket(WebSocket):
-    def __init__(self, get_mask_key=None, sockopt=None, sslopt=None,
-                 fire_cont_frame=False, enable_multithread=False,
-                 skip_utf8_validation=False, **_):
-        super(CustomWebSocket, self).__init__(self,
-
-                                              # Forcing this one to be None because we're
-                                              # going to override
-                                              get_mask_key=None,
-
+    def __init__(self,
+                 sslopt=None,
+                 sockopt=None,
+                 fire_cont_frame=False,
+                 enable_multithread=False,
+                 skip_utf8_validation=False):
+        super(CustomWebSocket, self).__init__(sslopt=sslopt,
                                               sockopt=sockopt,
-                                              sslopt=sslopt,
+                                              get_mask_key=get_mask_key_zero,
                                               fire_cont_frame=fire_cont_frame,
                                               enable_multithread=enable_multithread,
                                               skip_utf8_validation=skip_utf8_validation)
 
-        self.get_mask_key = get_mask_key_zero
         self.frame_buffer = CustomFrameBuffer(self._recv, skip_utf8_validation)
 
     def set_mask_key(self, *args):
-        self.get_mask_key = get_mask_key
+        # Do not let anyone override this
+        self.get_mask_key = get_mask_key_zero
 
     def _recv(self, bufsize):
         try:
@@ -141,7 +139,10 @@ def recv_with_timeout(sock, bufsize):
         try:
             # This call to recv() will timeout in sock.gettimeout() which is
             # not exactly what we want and will skew the timeout :-(
-            read_data = sock.recv(chunk_size)
+            read_data = sock.recv(1)
+        except socket.timeout:
+            raise
+
         except SSLWantReadError:
             # We want to read data from the socket but got an SSL exception
             # try to read from the socket again
@@ -149,6 +150,7 @@ def recv_with_timeout(sock, bufsize):
             # This might skew the timeout because we wait two times for the
             # same call to _recv but should be just for some edge cases
             continue
+
         except socket.error as exc:
             error_code = extract_error_code(exc)
 
@@ -163,7 +165,7 @@ def recv_with_timeout(sock, bufsize):
                 # same call to _recv but should be just for some edge cases
                 continue
         else:
-            if not data:
+            if not read_data:
                 # socket.recv() will return an empty string when the connection is
                 # closed. Raise an exception
                 raise WebSocketConnectionClosedException('Connection is already closed')
