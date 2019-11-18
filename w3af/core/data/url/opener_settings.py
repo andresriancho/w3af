@@ -317,7 +317,7 @@ class OpenerSettings(Configurable):
                        ' (eg. www.target.com)')
                 raise BaseFrameworkException(msg)
         else:
-            if not hasattr(self, '_password_mgr'):
+            if self._password_mgr is None:
                 # Create a new password manager
                 self._password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
 
@@ -350,7 +350,7 @@ class OpenerSettings(Configurable):
         cfg.save('ntlm_auth_user', username)
         cfg.save('ntlm_auth_url', url)
 
-        if not hasattr(self, '_password_mgr'):
+        if self._password_mgr is None:
             # create a new password manager
             self._password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
 
