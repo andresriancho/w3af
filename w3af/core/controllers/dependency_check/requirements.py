@@ -92,7 +92,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('diff_match_patch', 'diff-match-patch', '20121119'),
 
                      # OpenAPI documentation parser
-                     PIPDependency('bravado_core', 'bravado-core', '5.12.1'),
+                     PIPDependency('bravado_core', 'bravado-core', '5.15.0'),
 
                      # Fast compression library
                      PIPDependency('lz4', 'lz4', '1.1.0'),
