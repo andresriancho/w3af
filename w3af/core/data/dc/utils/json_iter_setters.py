@@ -61,6 +61,11 @@ def to_mutable(arbitrary_python_obj):
         arbitrary_python_obj.set_value(value)
         return arbitrary_python_obj
 
+    elif isinstance(arbitrary_python_obj, DataToken):
+        value = to_mutable(arbitrary_python_obj.get_value())
+        arbitrary_python_obj.set_value(value)
+        return arbitrary_python_obj
+
     elif isinstance(arbitrary_python_obj, list):
         for idx, oapo in enumerate(arbitrary_python_obj):
             arbitrary_python_obj[idx] = to_mutable(oapo)
@@ -72,6 +77,8 @@ def to_mutable(arbitrary_python_obj):
             arbitrary_python_obj[key] = to_mutable(oapo)
 
         return arbitrary_python_obj
+
+    raise RuntimeError('Unexpected data type in JSON iter setter: %r' % arbitrary_python_obj)
 
 
 class MutableWrapper(object):
@@ -98,7 +105,9 @@ class MutableWrapper(object):
         return getattr(self._wrapped_obj, attr)
 
 
-def _json_iter_setters(marbitrary_python_obj, key_names=[]):
+def _json_iter_setters(marbitrary_python_obj, key_names=None):
+    key_names = key_names or []
+
     if isinstance(marbitrary_python_obj, MutableWrapper):
         # We get here when we're iterating over a MutableWrapper, which is a
         # helper class to be able to "change the value of a string|float|int"
