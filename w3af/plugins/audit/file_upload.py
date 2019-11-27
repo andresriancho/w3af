@@ -103,7 +103,8 @@ class file_upload(AuditPlugin):
 
                 # Only file handlers are passed to the create_mutants functions
                 named_stringio = NamedStringIO(file_content, file_name)
-                mutants = create_mutants(freq, [named_stringio],
+                mutants = create_mutants(freq,
+                                         [named_stringio],
                                          fuzzable_param_list=[file_parameter])
 
                 for mutant in mutants:
@@ -111,6 +112,7 @@ class file_upload(AuditPlugin):
                     mutant.extension = extension
                     mutant.file_content = file_content
                     mutant.file_payload = payload
+                    mutant.debugging_id = debugging_id
 
                 self._send_mutants_in_threads(self._uri_opener.send_mutant,
                                               mutants,
@@ -127,10 +129,12 @@ class file_upload(AuditPlugin):
         if self._has_bug(mutant):
             return
 
-        self._find_files_by_parsing(mutant, mutant_response)
-        self._find_files_by_bruteforce(mutant, mutant_response)
+        debugging_id = mutant.debugging_id
 
-    def _find_files_by_parsing(self, mutant, mutant_response):
+        self._find_files_by_parsing(mutant, mutant_response, debugging_id)
+        self._find_files_by_bruteforce(mutant, mutant_response, debugging_id)
+
+    def _find_files_by_parsing(self, mutant, mutant_response, debugging_id):
         """
         Parse the HTTP response and find our file.
 
@@ -189,9 +193,10 @@ class file_upload(AuditPlugin):
         #   Now we verify what we got, this process makes sure that the links
         #   seen in the HTTP response body do contain the file we uploaded
         #
-        debugging_id = rand_alnum(8)
-        om.out.debug('audit.file_upload will search for the uploaded file'
-                     ' in URLs extracted from the HTTP response body (did=%s).' % debugging_id)
+        args = (len(to_verify_filtered), debugging_id)
+        msg = ('audit.file_upload will search for the uploaded file in %s URLs'
+               ' extracted from the HTTP response body (did=%s).')
+        om.out.debug(msg % args)
 
         mutant_repeater = repeat(mutant)
         debugging_id_repeater = repeat(debugging_id)
@@ -204,7 +209,7 @@ class file_upload(AuditPlugin):
 
         self.worker_pool.map_multi_args(self._confirm_file_upload, args)
 
-    def _find_files_by_bruteforce(self, mutant, mutant_response):
+    def _find_files_by_bruteforce(self, mutant, mutant_response, debugging_id):
         """
         Use the framework's knowledge to find the file in all possible locations
 
@@ -216,9 +221,10 @@ class file_upload(AuditPlugin):
         domain_path_set = set(u.get_domain_path() for u in
                               kb.kb.get_all_known_urls())
 
-        debugging_id = rand_alnum(8)
-        om.out.debug('audit.file_upload will search for the uploaded file'
-                     ' in all known application paths (did=%s).' % debugging_id)
+        msg = ('audit.file_upload will search for the uploaded file in %s'
+               ' known application paths (did=%s).')
+        args = (len(domain_path_set), debugging_id)
+        om.out.debug(msg % args)
 
         # FIXME: Note that in all cases where I'm using kb's url_object info
         # I'll be making a mistake if the audit plugin is run before all
