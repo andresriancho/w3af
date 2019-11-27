@@ -34,10 +34,15 @@ class ReExtract(BaseParser):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    # Matches
-    # "PHP/5.2.4-2ubuntu5.7", "Apache/2.2.8", "mod_python/3.3.1"
+    # Matches strings like:
+    #
+    #   PHP/5.2.4-2ubuntu5.7
+    #   Apache/2.2.8
+    #   mod_python/3.3.1
+    #
     # used in _find_relative() method
-    PHP_VERSION_RE = re.compile('.*?/\d\.\d\.\d')
+    PHP_VERSION_RE = re.compile(r'.*?/\d\.\d\.\d')
+
     QUOTES = {"'", '"'}
 
     def __init__(self, doc_string, base_url, encoding, relative=True,

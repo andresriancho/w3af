@@ -25,8 +25,7 @@ import urllib
 from w3af.core.data.constants.encodings import UTF8
 from w3af.core.data.misc.encoding import is_known_encoding
 
-NOT_IMPLEMENTED_FMT = 'You should create your own parser class ' \
-                      'and implement the %s() method.'
+NOT_IMPLEMENTED_FMT = 'You should create your own parser class and implement the %s() method.'
 
 
 class BaseParser(object):
@@ -121,10 +120,10 @@ class BaseParser(object):
         # This is what de W3C recommends (not a universal practice though):
         #    http://www.w3.org/TR/REC-html40/appendix/notes.html#h-B.2
         #
-##        index = dec_url.find('?')
-##        if index > -1:
-##            dec_url = (dec_url[:index].decode(enc, 'ignore') +
-##                       dec_url[index:].decode('utf-8', 'ignore'))
+        #        index = dec_url.find('?')
+        #        if index > -1:
+        #            dec_url = (dec_url[:index].decode(enc, 'ignore') +
+        #                       dec_url[index:].decode('utf-8', 'ignore'))
 
         return dec_url
 
