@@ -46,7 +46,7 @@ class autocomplete(AuthSessionPlugin):
         self.check_url = URL('http://host.tld/check')
         self.check_string = ''
 
-    def login(self):
+    def login(self, debugging_id=None):
         """
         Login to the application:
             * HTTP GET `login_form_url`
@@ -63,7 +63,7 @@ class autocomplete(AuthSessionPlugin):
             return False
 
         # Create a new debugging ID for each login() run
-        self._new_debugging_id()
+        self._set_debugging_id(debugging_id)
         self._clear_log()
 
         msg = 'Logging into the application with user: %s' % self.username
@@ -92,7 +92,7 @@ class autocomplete(AuthSessionPlugin):
         #
         # Check if we're logged in
         #
-        if self.has_active_session(new_debugging_id=False):
+        if self.has_active_session(debugging_id=debugging_id):
             self._handle_authentication_success(form)
             return True
 

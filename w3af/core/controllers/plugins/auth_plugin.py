@@ -70,7 +70,7 @@ class AuthPlugin(Plugin):
 
         self._login_result_log = deque(maxlen=500)
 
-    def login(self):
+    def login(self, debugging_id=None):
         """
         Login user into web application.
 
@@ -167,8 +167,11 @@ class AuthPlugin(Plugin):
         message_fmt = '[auth.%s] %s (did: %s)'
         return message_fmt % (self.get_name(), message, self._debugging_id)
 
-    def _new_debugging_id(self):
-        self._debugging_id = rand_alnum(8)
+    def _set_debugging_id(self, debugging_id):
+        if debugging_id is not None:
+            self._debugging_id = debugging_id
+        else:
+            self._debugging_id = rand_alnum(8)
 
     def _get_main_authentication_url(self):
         """

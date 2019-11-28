@@ -71,7 +71,7 @@ class AuthSessionPlugin(AuthPlugin):
         self.check_url = None
         self.check_string = None
 
-    def has_active_session(self, new_debugging_id=True):
+    def has_active_session(self, debugging_id=None):
         """
         Check user session.
         """
@@ -85,8 +85,7 @@ class AuthSessionPlugin(AuthPlugin):
 
         # Create a new debugging ID for each has_active_session() run unless
         # the caller (usually the login method) specifies otherwise
-        if new_debugging_id:
-            self._new_debugging_id()
+        self._set_debugging_id(debugging_id)
 
         msg = 'Checking if session for user %s is active'
         self._log_debug(msg % self.username)
