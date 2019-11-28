@@ -226,14 +226,21 @@ class autocomplete(AuthSessionPlugin):
             self._log_error(msg % args)
 
             #
-            # Set the attempt_login to false, in order to prevent the plugin from
-            # running again.
+            # We get here when:
             #
-            # This is done in this case because we can't recover from it: got the
-            # HTML and it has no login forms. Other cases such as HTTP timeouts
-            # in the request to get the HTML might work in a retry
+            #   * The user configured the login form URL incorrectly
             #
-            self._attempt_login = False
+            #   * There is an error in the HTTP request, and the HTTP response
+            #     does NOT contain the login form.
+            #
+            # It is impossible to know in which case we are in, so we just return
+            # None and wait for the next call to login(). The next call will act
+            # as the retry strategy for the potential HTTP request / response error
+            #
+            # In the past we were setting self._attempt_login = False here, but
+            # any errors (timeouts!) in the HTTP request to get the form ended
+            # up in an ugly situation where the plugin was disabled
+            #
             return None
 
         msg = 'Login form with action %s found in HTTP response with ID %s'
