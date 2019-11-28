@@ -29,7 +29,6 @@ from darts.lib.utils.lru import SynchronizedLRUDict
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.statistics.utils import outliers_modified_z_score
 from w3af.core.data.misc.encoding import smart_str_ignore
 
 
@@ -159,9 +158,12 @@ class GetAverageRTTForMutant(object):
         :param rtts: The list of RTT obtained by _get_rtts
         :return: True if the list of rtts has one or more outliers.
         """
+        #
+        # TODO: perform outlier analysis
+        #
+        # https://github.com/andresriancho/w3af/commit/9494b49acab10833f629fae58dcc104b37f9720f
+        #
         return False
-        outlier_analyis = outliers_modified_z_score(rtts)
-        return None in outlier_analyis
 
     def _get_specific_rtt_mutant_lock(self, cache_key):
         with self._rtt_mutant_lock:
