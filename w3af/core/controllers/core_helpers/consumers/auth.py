@@ -102,7 +102,8 @@ class auth(BaseConsumer):
         for plugin in self._consumer_plugins:
 
             args = (plugin.get_name(), plugin.get_name())
-            om.out.debug('%s.has_active_session() and %s.login()' % args)
+            om.out.debug('auth consumer is calling %s.has_active_session() and %s.login()' % args)
+
             took_line = TookLine(self._w3af_core,
                                  plugin.get_name(),
                                  '_login')
