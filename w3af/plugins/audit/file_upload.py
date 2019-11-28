@@ -36,6 +36,8 @@ from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.misc.io import NamedStringIO
 from w3af.core.controllers.exceptions import BaseFrameworkException
 
+from w3af.core.data.parsers.utils.re_extract import ReExtract
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.constants.file_templates.file_templates import get_template_with_payload
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -76,7 +78,7 @@ class file_upload(AuditPlugin):
         AuditPlugin.__init__(self)
 
         # Internal attributes
-        self._urls_recently_tested = deque(maxlen=30)
+        self._urls_recently_tested = deque(maxlen=300)
         self._urt_lock = RLock()
 
         # User configured
@@ -145,16 +147,12 @@ class file_upload(AuditPlugin):
         :param mutant_response: The HTTP response associated with the file upload
         :return: None
         """
-        try:
-            doc_parser = parser_cache.dpc.get_document_parser_for(mutant_response)
-        except BaseFrameworkException:
-            # Failed to find a suitable parser for the document
-            return
+        parser_references = self._get_references_from_parser(mutant_response)
+        re_references = self._get_references_regex(mutant, mutant_response)
 
-        parsed_refs, re_refs = doc_parser.get_references()
-
-        all_references = parsed_refs
-        all_references.extend(re_refs)
+        all_references = set()
+        all_references.update(parser_references)
+        all_references.update(re_references)
 
         to_verify = set()
 
@@ -162,8 +160,8 @@ class file_upload(AuditPlugin):
         #   Find the uploaded file in the references!
         #
         for ref in all_references:
+            # This one looks really promising!
             if mutant.uploaded_file_name in ref.url_string:
-                # This one looks really promising!
                 to_verify.add(ref)
 
             # These are just in case...
@@ -208,6 +206,44 @@ class file_upload(AuditPlugin):
                     debugging_id_repeater)
 
         self.worker_pool.map_multi_args(self._confirm_file_upload, args)
+
+    def _get_references_regex(self, mutant, mutant_response):
+        """
+        Apply regular expressions to extract links from the HTTP response body.
+
+        :param mutant: The request used to upload the file
+        :param mutant_response: The HTTP response to parse
+        :return: References (links) found in the HTTP response that end with the
+                 uploaded filename.
+        """
+        # Quick performance improvement
+        if mutant.uploaded_file_name not in mutant_response.get_body():
+            return []
+
+        # Apply the regular expressions and extract links
+        re_extract = ReExtract(mutant_response.get_body(),
+                               mutant_response.get_uri(),
+                               mutant_response.get_charset())
+        re_extract.parse()
+
+        return re_extract.get_references()
+
+    def _get_references_from_parser(self, mutant_response):
+        """
+        :param mutant_response: The HTTP response to parse
+        :return: All references (links) found in the HTTP response
+        """
+        try:
+            doc_parser = parser_cache.dpc.get_document_parser_for(mutant_response)
+        except BaseFrameworkException:
+            # Failed to find a suitable parser for the document
+            return
+
+        parsed_refs, re_refs = doc_parser.get_references()
+
+        all_references = parsed_refs
+        all_references.extend(re_refs)
+        return all_references
 
     def _find_files_by_bruteforce(self, mutant, mutant_response, debugging_id):
         """
@@ -266,9 +302,12 @@ class file_upload(AuditPlugin):
         desc = 'A file upload to a directory inside the webroot was found at: %s'
         desc %= mutant.found_at()
 
-        v = Vuln.from_mutant('Insecure file upload', desc, severity.HIGH,
+        v = Vuln.from_mutant('Insecure file upload',
+                             desc,
+                             severity.HIGH,
                              [http_response.id, response.id],
-                             self.get_name(), mutant)
+                             self.get_name(),
+                             mutant)
 
         v['file_dest'] = response.get_url()
         v['file_vars'] = mutant.get_file_vars()

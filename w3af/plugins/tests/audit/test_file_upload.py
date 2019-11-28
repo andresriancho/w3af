@@ -152,7 +152,7 @@ class TestParseOutputFromUpload(PluginTest):
         cfg = self._run_configs['cfg']
 
         with patch('w3af.core.data.fuzzer.utils.rand_alnum') as rand_alnum_mock:
-            rand_alnum_mock.side_effect = 'B' * 239
+            rand_alnum_mock.return_value = 'B' * 239
 
             self._scan(cfg['target'], cfg['plugins'])
 
@@ -176,9 +176,12 @@ class TestRegexOutputFromUpload(TestParseOutputFromUpload):
           </form>
           """
 
-    RESULT = "Thanks for uploading your file to <pre>../../hackable/uploads/foo.png</pre>"
+    RESULT = "Thanks for uploading your file to <pre>../../hackable/uploads/mockname.png</pre>"
 
-    image_content = 'PNG' + 'B' * 239
+    FILE_CONTENT_RAND = 'w3af.core.data.fuzzer.utils.rand_alnum'
+    IMAGE_CONTENT = 'PNG' + 'B' * 239
+
+    FILENAME_RAND_ALPHA = 'w3af.core.data.constants.file_templates.file_templates.rand_alpha'
 
     MOCK_RESPONSES = [
               MockResponse(url=target_url,
@@ -191,8 +194,25 @@ class TestRegexOutputFromUpload(TestParseOutputFromUpload):
                            content_type='text/html',
                            method='POST', status=200),
 
-              MockResponse(url=target_url + 'hackable/uploads/foo.png',
-                           body=image_content,
+              MockResponse(url=target_url + 'hackable/uploads/mockname.png',
+                           body=IMAGE_CONTENT,
                            content_type='image/png',
                            method='GET', status=200),
     ]
+
+    def test_parse_response(self):
+        with patch(self.FILENAME_RAND_ALPHA) as rand_alpha_mock:
+            rand_alpha_mock.return_value = 'mockname'
+
+            with patch(self.FILE_CONTENT_RAND) as rand_alnum_mock:
+                rand_alnum_mock.return_value = 'B' * 239
+
+                cfg = self._run_configs['cfg']
+                self._scan(cfg['target'], cfg['plugins'])
+
+        fu_vulns = self.kb.get('file_upload', 'file_upload')
+        self.assertEquals(1, len(fu_vulns))
+
+        v = fu_vulns[0]
+        self.assertEquals(v.get_name(), 'Insecure file upload')
+        self.assertEquals(str(v.get_url().get_domain_path()), self.target_url)
