@@ -75,6 +75,14 @@ class AuthSessionPlugin(AuthPlugin):
         """
         Check user session.
         """
+        #
+        # In some cases the authentication plugin is incorrectly configured and
+        # we don't want to keep trying over and over to check for an active session
+        # when we know it will fail
+        #
+        if not self._attempt_login:
+            return False
+
         # Create a new debugging ID for each has_active_session() run unless
         # the caller (usually the login method) specifies otherwise
         if new_debugging_id:
