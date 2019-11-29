@@ -278,11 +278,12 @@ class web_spider(CrawlPlugin):
             om.out.debug(msg % args)
             return False
 
-        if self._compiled_ignore_re.match(ref.url_string):
-            msg = 'web_spider will ignore %s (match ignore regex)'
-            args = (ref.url_string,)
-            om.out.debug(msg % args)
-            return False
+        if self._compiled_ignore_re is not None:
+            if self._compiled_ignore_re.match(ref.url_string):
+                msg = 'web_spider will ignore %s (match ignore regex)'
+                args = (ref.url_string,)
+                om.out.debug(msg % args)
+                return False
 
         if self._has_ignored_extension(ref):
             msg = 'web_spider will ignore %s (match ignore extensions)'
@@ -474,18 +475,22 @@ class web_spider(CrawlPlugin):
         """
         ol = OptionList()
 
-        d = 'Only crawl links to paths inside the URL given as target.'
-        o = opt_factory('only_forward', self._only_forward, d, BOOL)
+        d = 'Only crawl links inside the target URL'
+        h = ('For example, when the target URL is set to http://abc/def/'
+             ' and only_forward is set, http://abc/def/123 will be crawled'
+             ' but http://abc/xyz/ will not. When only_forward is disabled'
+             ' both links will be crawled.')
+        o = opt_factory('only_forward', self._only_forward, d, BOOL, help=h)
         ol.add(o)
 
-        d = ('Only crawl links that match this regular expression.'
-             ' Note that ignore_regex has precedence over follow_regex.')
-        o = opt_factory('follow_regex', self._follow_regex, d, REGEX)
+        d = 'Only crawl links that match this regular expression'
+        h = 'The ignore_regex configuration parameter has precedence over follow_regex'
+        o = opt_factory('follow_regex', self._follow_regex, d, REGEX, help=h)
         ol.add(o)
 
-        d = ('DO NOT crawl links that match this regular expression.'
-             ' Note that ignore_regex has precedence over follow_regex.')
-        o = opt_factory('ignore_regex', self._ignore_regex, d, REGEX)
+        d = 'DO NOT crawl links that match this regular expression'
+        h = 'The ignore_regex configuration parameter has precedence over follow_regex'
+        o = opt_factory('ignore_regex', self._ignore_regex, d, REGEX, help=h)
         ol.add(o)
 
         d = 'DO NOT crawl links that use these extensions.'
@@ -526,11 +531,7 @@ class web_spider(CrawlPlugin):
             # verified as valid at regex_option.py: see REGEX in get_options()
             self._compiled_ignore_re = re.compile(self._ignore_regex)
         else:
-            # If the self._ignore_regex is empty then I don't have to ignore
-            # anything. To be able to do that, I simply compile an re with "abc"
-            # as the pattern, which won't match any URL since they will all
-            # start with http:// or https://
-            self._compiled_ignore_re = re.compile('abc')
+            self._compiled_ignore_re = None
 
         # Compilation of this regex can't fail because it was already
         # verified as valid at regex_option.py: see REGEX in get_options()
@@ -552,7 +553,7 @@ class web_spider(CrawlPlugin):
 
         ignore_regex and follow_regex are commonly used to configure the
         web_spider to crawl all URLs except "/logout" or some more
-        exciting link like "Reboot Appliance" that would greatly reduce
+        exciting link like "Reboot appliance" that would greatly reduce
         the scan test coverage.
 
         By default ignore_regex is an empty string (nothing is ignored) and
@@ -561,5 +562,5 @@ class web_spider(CrawlPlugin):
         string included).
         
         The ignore_extensions configuration parameter is commonly used to ignore
-        static files such as zip, jpeg, pdf, etc.
+        static files such as zip, jpeg and pdf.
         """
