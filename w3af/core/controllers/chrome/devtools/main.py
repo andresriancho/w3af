@@ -600,9 +600,9 @@ class DebugGenericElement(GenericElement):
 
             ignore_result = kwargs.pop('ignore_result', False)
 
-            self.parent.message_counter.new()
+            message_id = self.parent.message_counter.new()
 
-            call_obj = {'id': self.parent.message_counter.get(),
+            call_obj = {'id': message_id,
                         'method': func_name,
                         'params': kwargs}
             call_str = json.dumps(call_obj)
@@ -625,7 +625,7 @@ class DebugGenericElement(GenericElement):
                 self.parent.send(call_str)
                 return None
 
-            result = self.parent.get_command_result(self.parent.message_counter.get())
+            result = self.parent.get_command_result(message_id)
             self.parent.send(call_str)
             return result.get(timeout)
 
@@ -645,14 +645,8 @@ class MessageIdentifierGenerator(object):
     It is easier to grep for that ID, which will be most likely unique.
     """
     def __init__(self, chrome_id):
-        self.message_identifier = None
         self._rand = random.Random(chrome_id)
 
-    def get(self):
-        if self.message_identifier is None:
-            self.new()
-
-        return self.message_identifier
-
     def new(self):
-        self.message_identifier = self._rand.randint(100000, 10000000)
+        message_identifier = self._rand.randint(100000, 10000000)
+        return message_identifier
