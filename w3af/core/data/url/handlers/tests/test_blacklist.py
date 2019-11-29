@@ -25,6 +25,7 @@ import urllib2
 from nose.plugins.attrib import attr
 
 import w3af.core.data.kb.config as cf
+
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.parsers.doc.url import URL
@@ -43,8 +44,6 @@ class TestBlacklistHandler(unittest.TestCase):
         cf.cf.save('blacklist_http_request', [])
     
     def test_blacklist_handler_block(self):
-        """Verify that the blacklist handler works as expected"""
-        
         # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
         cf.cf.save('blacklist_http_request', [blocked_url])
@@ -59,7 +58,6 @@ class TestBlacklistHandler(unittest.TestCase):
     
     @attr('moth')
     def test_blacklist_handler_pass(self):
-        """Verify that the blacklist handler works as expected"""
         opener = urllib2.build_opener(BlacklistHandler)
         
         request = urllib2.Request(get_moth_http())
@@ -67,14 +65,13 @@ class TestBlacklistHandler(unittest.TestCase):
         response = opener.open(request)
         
         self.assertEqual(response.code, 200)
-    
+
     def test_handler_order_block(self):
-        """Get an instance of the extended urllib and verify that the blacklist
-        handler still works, even when mixed with all the other handlers."""
-        # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
         cf.cf.save('blacklist_http_request', [blocked_url])
-        
+
+        # Get an instance of the extended urllib and verify that the blacklist
+        # handler still works, even when mixed with all the other handlers.
         settings = opener_settings.OpenerSettings()
         settings.build_openers()
         opener = settings.get_custom_opener()
@@ -90,13 +87,12 @@ class TestBlacklistHandler(unittest.TestCase):
         
     @attr('moth')
     def test_handler_order_pass(self):
-        """Get an instance of the extended urllib and verify that the blacklist
-        handler still works, even when mixed with all the other handlers."""
-        # Configure the handler
         blocked_url = URL(get_moth_http('/abc/def/'))
         safe_url = URL(get_moth_http())
         cf.cf.save('blacklist_http_request', [blocked_url])
-        
+
+        # Get an instance of the extended urllib and verify that the blacklist
+        # handler still works, even when mixed with all the other handlers.
         settings = opener_settings.OpenerSettings()
         settings.build_openers()
         opener = settings.get_custom_opener()
