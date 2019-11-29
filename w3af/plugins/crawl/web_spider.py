@@ -517,6 +517,7 @@ class web_spider(CrawlPlugin):
         self._ignore_regex = options_list['ignore_regex'].get_value()
         self._follow_regex = options_list['follow_regex'].get_value()
         self._compile_re()
+        self._save_ignore_regex_to_config()
 
         self._ignore_extensions = options_list['ignore_extensions'].get_value()
         self._ignore_extensions = [ext.lower() for ext in self._ignore_extensions]
@@ -536,6 +537,31 @@ class web_spider(CrawlPlugin):
         # Compilation of this regex can't fail because it was already
         # verified as valid at regex_option.py: see REGEX in get_options()
         self._compiled_follow_re = re.compile(self._follow_regex)
+
+    def _save_ignore_regex_to_config(self):
+        """
+        This code works together with blacklist.py, where the regular expression
+        is applied to outgoing HTTP request URLs and some requests are dropped.
+
+        The problem I'm trying to solve with this code is:
+
+            * User configures web_spider to ignore a set of URLs
+
+            * crawl.web_spider ignores these URLs: it knows about and respects
+              the ignore_regex configuration setting
+
+            * crawl.foobar sends requests to any URLs: it is unaware of the
+              web_spider configuration or how to use it
+
+        A potential solution to this problem was to add a new exclusion setting
+        to misc_settings.py, something similar to blacklist_http_request or
+        blacklist_audit. The problem with that alternative is that I was
+        duplicating configuration settings: web_spider had one exclusion regex
+        and misc-settings had another.
+
+        :return: None
+        """
+        cf.cf.save('ignore_regex', self._compiled_ignore_re)
 
     def get_long_desc(self):
         """
