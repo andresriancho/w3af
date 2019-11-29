@@ -33,6 +33,7 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.threads.threadpool import Pool
+from w3af.core.controllers.threads.is_main_thread import is_main_thread
 from w3af.core.controllers.threads.monkey_patch_debug import monkey_patch_debug, remove_monkey_patch_debug
 from w3af.core.controllers.misc.get_w3af_version import get_w3af_version_minimal
 from w3af.core.controllers.core_helpers.profiles import CoreProfiles
@@ -329,9 +330,24 @@ class w3afCore(object):
             return self._worker_pool
 
         if not self._worker_pool.is_running():
-            # Clean-up the old worker pool
             old_pool_id = id(self._worker_pool)
-            self._worker_pool.terminate_join()
+
+            #
+            # Clean-up the old worker pool
+            #
+            # We want to do this only when running on the main thread because
+            # a call to terminate_join() from within a thread in the same worker
+            # pool will generate a dead-lock:
+            #
+            #   * terminate_join() is waiting for threads to terminate
+            #   * current thread is running terminate_join()
+            #
+            # Not terminating and joining a worker pool that has been closed will
+            # consume some resources and at the end be just a few threads doing
+            # nothing, so it is not that bad...
+            #
+            if is_main_thread():
+                self._worker_pool.terminate_join()
 
             # Create a new one
             self._worker_pool = Pool(processes=self.WORKER_THREADS,
@@ -339,7 +355,7 @@ class w3afCore(object):
                                      max_queued_tasks=self.WORKER_INQUEUE_MAX_SIZE,
                                      maxtasksperchild=self.WORKER_MAX_TASKS)
 
-            msg = ('Created a new Worker pool for core (id: %s) because the old'
+            msg = ('Created a new worker pool for core (id: %s) because the old'
                    ' one was not in running state (id: %s)')
             om.out.debug(msg % (id(self._worker_pool), old_pool_id))
 
