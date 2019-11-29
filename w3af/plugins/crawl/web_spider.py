@@ -458,9 +458,10 @@ class web_spider(CrawlPlugin):
         msg = 'The web_spider processed a batch of %s items from ChromeCrawler queue'
         om.out.debug(msg % processed_items)
 
-        msg = ('A total of %s HTTP requests have been read by the web_spider'
-               ' from the ChromeCrawler queue')
-        om.out.debug(msg % self._chrome_identified_http_requests)
+        if processed_items:
+            msg = ('A total of %s HTTP requests have been read by the web_spider'
+                   ' from the ChromeCrawler queue')
+            om.out.debug(msg % self._chrome_identified_http_requests)
 
         return processed_items
 
