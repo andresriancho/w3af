@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import re
 import unittest
 import urllib2
 import httpretty
@@ -42,9 +43,12 @@ class TestBlacklistHandler(unittest.TestCase):
     
     def setUp(self):
         consecutive_number_generator.reset()
-    
+        cf.cf.save('blacklist_http_request', [])
+        cf.cf.save('ignore_regex', None)
+
     def tearDown(self):
         cf.cf.save('blacklist_http_request', [])
+        cf.cf.save('ignore_regex', None)
 
     @httpretty.activate
     def test_blacklist_handler_block(self):
@@ -97,9 +101,6 @@ class TestBlacklistHandler(unittest.TestCase):
         opener = settings.get_custom_opener()
 
         request = HTTPRequest(blocked_url)
-        request.url_object = blocked_url
-        request.cookies = True
-        request.get_from_cache = False
         response = opener.open(request)
         
         self.assertEqual(response.code, NO_CONTENT)
@@ -128,10 +129,87 @@ class TestBlacklistHandler(unittest.TestCase):
         opener = settings.get_custom_opener()
 
         request = HTTPRequest(safe_url)
-        request.url_object = safe_url
-        request.cookies = True
-        request.get_from_cache = False
         response = opener.open(request)
         
         self.assertEqual(response.code, 200)
         self.assertEqual(response.id, 1)
+
+        request = HTTPRequest(blocked_url)
+        response = opener.open(request)
+
+        self.assertEqual(response.code, 204)
+        self.assertEqual(response.id, 2)
+
+    @httpretty.activate
+    def test_handler_order_pass_with_ignore_regex(self):
+        httpretty.register_uri(httpretty.GET,
+                               self.MOCK_URL_BLOCK,
+                               body=self.MOCK_BODY,
+                               status=200)
+
+        httpretty.register_uri(httpretty.GET,
+                               self.MOCK_URL_PASS,
+                               body=self.MOCK_BODY,
+                               status=200)
+
+        blocked_url = URL(self.MOCK_URL_BLOCK)
+        safe_url = URL(self.MOCK_URL_PASS)
+
+        ignore_regex = re.compile('.*block.*')
+        cf.cf.save('ignore_regex', ignore_regex)
+
+        # Get an instance of the extended urllib and verify that the blacklist
+        # handler still works, even when mixed with all the other handlers.
+        settings = opener_settings.OpenerSettings()
+        settings.build_openers()
+        opener = settings.get_custom_opener()
+
+        request = HTTPRequest(safe_url)
+        response = opener.open(request)
+
+        self.assertEqual(response.code, 200)
+        self.assertEqual(response.id, 1)
+
+        request = HTTPRequest(blocked_url)
+        response = opener.open(request)
+
+        self.assertEqual(response.code, 204)
+        self.assertEqual(response.id, 2)
+
+    @httpretty.activate
+    def test_handler_order_pass_with_both_methods(self):
+        httpretty.register_uri(httpretty.GET,
+                               self.MOCK_URL_BLOCK,
+                               body=self.MOCK_BODY,
+                               status=200)
+
+        httpretty.register_uri(httpretty.GET,
+                               self.MOCK_URL_PASS,
+                               body=self.MOCK_BODY,
+                               status=200)
+
+        blocked_url = URL(self.MOCK_URL_BLOCK)
+        safe_url = URL(self.MOCK_URL_PASS)
+
+        cf.cf.save('blacklist_http_request', [blocked_url])
+
+        ignore_regex = re.compile('.*blo.*')
+        cf.cf.save('ignore_regex', ignore_regex)
+
+        # Get an instance of the extended urllib and verify that the blacklist
+        # handler still works, even when mixed with all the other handlers.
+        settings = opener_settings.OpenerSettings()
+        settings.build_openers()
+        opener = settings.get_custom_opener()
+
+        request = HTTPRequest(safe_url)
+        response = opener.open(request)
+
+        self.assertEqual(response.code, 200)
+        self.assertEqual(response.id, 1)
+
+        request = HTTPRequest(blocked_url)
+        response = opener.open(request)
+
+        self.assertEqual(response.code, 204)
+        self.assertEqual(response.id, 2)
