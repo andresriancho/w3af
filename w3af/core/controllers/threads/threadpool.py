@@ -438,10 +438,11 @@ class Pool(ThreadPool):
         """
         for i in range(self._processes - len(self._pool)):
             w = self.Process(target=Worker(),
-                             args=(self._inqueue, self._outqueue,
+                             args=(self._inqueue,
+                                   self._outqueue,
                                    self._initializer,
-                                   self._initargs, self._maxtasksperchild)
-                             )
+                                   self._initargs,
+                                   self._maxtasksperchild))
             self._pool.append(w)
             w.name = w.name.replace('Process', 'PoolWorker')
             w.daemon = True
