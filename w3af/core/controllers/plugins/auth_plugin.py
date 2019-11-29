@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from collections import deque
+
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.kb.config as cf
@@ -39,8 +41,7 @@ class AuthPlugin(Plugin):
 
     :author: Dmitriy V. Simonov ( dsimonov@yandex-team.com )
     """
-
-    MAX_FAILED_LOGIN_COUNT = 3
+    MAX_CONSECUTIVE_FAILED_LOGIN_COUNT = 3
     BLACKLIST_LOGIN_URL_MESSAGE = ('The following URLs were added to the audit blacklist:\n'
                                    '\n'
                                    ' - %s\n'
@@ -66,9 +67,10 @@ class AuthPlugin(Plugin):
         self._http_response_ids = []
         self._log_messages = []
         self._attempt_login = True
-        self._failed_login_count = 0
 
-    def login(self):
+        self._login_result_log = deque(maxlen=500)
+
+    def login(self, debugging_id=None):
         """
         Login user into web application.
 
@@ -165,8 +167,11 @@ class AuthPlugin(Plugin):
         message_fmt = '[auth.%s] %s (did: %s)'
         return message_fmt % (self.get_name(), message, self._debugging_id)
 
-    def _new_debugging_id(self):
-        self._debugging_id = rand_alnum(8)
+    def _set_debugging_id(self, debugging_id):
+        if debugging_id is not None:
+            self._debugging_id = debugging_id
+        else:
+            self._debugging_id = rand_alnum(8)
 
     def _get_main_authentication_url(self):
         """
@@ -177,36 +182,75 @@ class AuthPlugin(Plugin):
         """
         raise NotImplementedError
 
-    def _handle_authentication_failure(self):
-        self._failed_login_count += 1
+    def _max_consecutive_failed_login_count_exceeded(self):
+        if len(self._login_result_log) < self.MAX_CONSECUTIVE_FAILED_LOGIN_COUNT:
+            return False
 
-        if self._failed_login_count == self.MAX_FAILED_LOGIN_COUNT:
+        # This awful range statement generates -1, -2, -3 when
+        # self.MAX_CONSECUTIVE_FAILED_LOGIN_COUNT is set to 3.
+        for i in range(-1, - self.MAX_CONSECUTIVE_FAILED_LOGIN_COUNT - 1, -1):
+
+            # If there is at least one successful login in the last three
+            # then the max consecutive failed login was not exceeded
+            if self._login_result_log[i]:
+                return False
+
+        return True
+
+    def _all_login_attempts_failed(self):
+        for login_result in self._login_result_log:
+            if login_result:
+                return False
+
+        return True
+
+    def _handle_authentication_failure(self):
+        self._login_result_log.append(False)
+
+        if self._max_consecutive_failed_login_count_exceeded():
             msg = ('The authentication plugin failed %s consecutive times to'
                    ' get a valid application session using the user-provided'
-                   ' configuration settings. Disabling the `%s` authentication'
-                   ' plugin.')
-            args = (self._failed_login_count, self.get_name())
-            self._log_error(msg % args)
+                   ' configuration settings.\n'
+                   '\n'
+                   'The `%s` authentication plugin will be disabled.')
+            args = (self.MAX_CONSECUTIVE_FAILED_LOGIN_COUNT, self.get_name())
 
-            self._log_info_to_kb()
+            title = 'Authentication failure'
+            message = msg % args
 
+            self._log_info_to_kb(title, message, include_log_messages=True)
+            self._log_error(message)
             self._attempt_login = False
 
     def end(self):
-        if self._failed_login_count:
-            msg = ('The `%s` authentication plugin failed %i times to get'
-                   ' a valid application session using the user-provided'
+        #
+        # Please note that the auth_session_plugin.py file reports
+        # "Unstable application session" using the data collected from the
+        # has_active_session method
+        #
+        # This message is different from the one on that file. This message is
+        # shown to let the user know that his configuration is incorrect. The
+        # reason for having this in end() and in _handle_authentication_failure()
+        # is that in some cases the plugin will run only two times, not reach
+        # self.MAX_FAILED_LOGIN_COUNT and never report the issue to the user
+        #
+        if self._all_login_attempts_failed():
+            msg = ('The `%s` authentication plugin was never able to authenticate'
+                   ' and get a valid application session using the user-provided'
                    ' configuration settings')
-            args = (self.get_name(), self._failed_login_count,)
+            args = (self.get_name(),)
 
-            self._log_error(msg % args)
+            title = 'Authentication failure'
+            message = msg % args
 
-            self._log_info_to_kb()
+            self._log_info_to_kb(title, message, include_log_messages=True)
+            self._log_error(message)
+            self._attempt_login = False
 
     def _handle_authentication_success(self):
-        self._failed_login_count = 0
+        self._login_result_log.append(True)
 
-    def _log_info_to_kb(self):
+    def _log_info_to_kb(self, title, message, include_log_messages=True):
         """
         This method creates an Info object containing information about failed
         authentication attempts and stores it in the knowledge base.
@@ -218,14 +262,19 @@ class AuthPlugin(Plugin):
 
         :return: None
         """
-        desc = ('The authentication plugin failed to get a valid application'
-                ' session using the user-provided configuration settings.\n'
-                '\n'
-                'The plugin generated the following log messages:\n'
-                '\n')
-        desc += '\n'.join(self._log_messages)
+        desc = message
 
-        i = Info('Authentication failure',
+        if include_log_messages:
+            log_messages = ' - ' + '\n - '.join(self._log_messages)
+            args = (message, log_messages)
+            msg_fmt = ('%s\n'
+                       '\n'
+                       'The following are the last log messages from the authentication plugin:\n'
+                       '\n'
+                       '%s')
+            desc = msg_fmt % args
+
+        i = Info(title,
                  desc,
                  self._http_response_ids,
                  self.get_name())

@@ -43,8 +43,6 @@ class audit(BaseConsumer):
         :param audit_plugins: Instances of audit plugins in a list
         :param w3af_core: The w3af core that we'll use for status reporting
         """
-        self._blacklist_urls = None
-
         max_qsize = self.THREAD_POOL_SIZE * 2
 
         super(audit, self).__init__(audit_plugins,
@@ -160,18 +158,17 @@ class audit(BaseConsumer):
         :return: True if the FuzzableRequest should be audited
         """
         #
-        # First setup the blacklist (if needed)
+        # First setup the blacklist
         #
-        if self._blacklist_urls is None:
-            blacklist_audit = cf.cf.get('blacklist_audit') or []
-            self._blacklist_urls = {url.uri2url() for url in blacklist_audit}
+        blacklist_urls = cf.cf.get('blacklist_audit') or []
+        blacklist_urls = {url.uri2url() for url in blacklist_urls}
 
         #
         # Then query the blacklist
         #
         url = fuzzable_request.get_uri().uri2url()
 
-        if url in self._blacklist_urls:
+        if url in blacklist_urls:
             msg = ('%s was included in the audit blacklist, the scan engine'
                    ' is NOT going to perform fuzzing on this URL')
             om.out.debug(msg % url)

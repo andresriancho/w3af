@@ -22,9 +22,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 import random
 import unittest
-
 import httpretty
+
 from nose.plugins.attrib import attr
+from multiprocessing.dummy import Pool as ThreadPool
+from itertools import repeat
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.parsers.doc.url import URL
@@ -43,17 +45,17 @@ class TestGetAverageRTT(unittest.TestCase):
         self.uri_opener.end()
         httpretty.reset()
 
+    @staticmethod
+    def request_callback_05(request, uri, headers):
+        time.sleep(0.5)
+        body = 'Yup'
+        return 200, headers, body
+
     @httpretty.activate
     def test_get_average_rtt_for_mutant_all_equal(self):
-
-        def request_callback(request, uri, headers):
-            time.sleep(0.5)
-            body = 'Yup'
-            return 200, headers, body
-
         httpretty.register_uri(httpretty.GET,
                                self.MOCK_URL,
-                               body=request_callback)
+                               body=TestGetAverageRTT.request_callback_05)
 
         mock_url = URL(self.MOCK_URL)
         fuzzable_request = FuzzableRequest(mock_url)
@@ -101,6 +103,30 @@ class TestGetAverageRTT(unittest.TestCase):
         # Check the response
         self.assertGreater(average_rtt, 0.80)
         self.assertGreater(0.90, average_rtt)
+
+    @httpretty.activate
+    def test_get_average_rtt_for_mutant_with_threads(self):
+        httpretty.register_uri(httpretty.GET,
+                               self.MOCK_URL,
+                               body=TestGetAverageRTT.request_callback_05)
+
+        pool = ThreadPool(25)
+        mock_url = URL(self.MOCK_URL)
+        fuzzable_request = FuzzableRequest(mock_url)
+
+        iterations = 50
+
+        results = pool.map(self.uri_opener.get_average_rtt_for_mutant,
+                           repeat(fuzzable_request, iterations))
+
+        self.assertEqual(len(results), iterations)
+
+        for result_n in results:
+            self.assertEqual(result_n, results[0])
+
+        # Check the response
+        self.assertGreater(results[0], 0.45)
+        self.assertGreater(0.55, results[0])
 
 
 class RequestCallBackWithDelays(object):

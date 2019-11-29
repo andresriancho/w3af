@@ -59,7 +59,8 @@ class JavaScriptParser(BaseParser):
         Get the URLs using a regex
         """
         re_extract = ReExtract(self.get_http_response().get_body(),
-                               self._base_url, self._encoding,
+                               self._base_url,
+                               self._encoding,
                                require_quotes=True)
         re_extract.parse()
         self._re_urls = re_extract.get_references()

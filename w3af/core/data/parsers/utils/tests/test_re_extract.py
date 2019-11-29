@@ -1,7 +1,8 @@
+# -*- coding: utf-8 -*-
 """
-link_extractor.py
+test_re_extract.py
 
-Copyright 2014 Andres Riancho
+Copyright 2019 Andres Riancho
 
 This file is part of w3af, http://w3af.org/ .
 
@@ -19,26 +20,20 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-from w3af.core.data.parsers.pynarcissus.string_extractor import StringExtractor
-from w3af.core.data.parsers.utils.url_regex import URL_RE, RELATIVE_URL_RE
+import unittest
+
+from w3af.core.data.parsers.utils.re_extract import ReExtract
 from w3af.core.data.parsers.doc.url import URL
 
 
-class JSLinkExtractor(StringExtractor):
-    """
-    :see: Docstring in StringExtractor
-    """
-    def get_links(self):
-        return self.extract_full_urls()
+class TestReExtract(unittest.TestCase):
+    def test_relative_regex(self):
+        doc_string = '123 ../../foobar/uploads/foo.png 465'
+        base_url = URL('https://w3af.org/abc/def/')
 
-    def extract_full_urls(self):
-        urls = set()
-        merged_strings = ' \n'.join(self.get_strings())
+        re_extract = ReExtract(doc_string, base_url, 'utf-8')
+        re_extract.parse()
 
-        for x in URL_RE.findall(merged_strings):
-            try:
-                urls.add(URL(x[0]))
-            except ValueError:
-                pass
+        references = re_extract.get_references()
 
-        return urls
+        self.assertEqual(references, [URL('https://w3af.org/foobar/uploads/foo.png')])

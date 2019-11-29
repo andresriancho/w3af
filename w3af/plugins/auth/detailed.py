@@ -52,7 +52,7 @@ class detailed(AuthSessionPlugin):
         self.follow_redirects = False
         self.url_encode_params = True
 
-    def login(self):
+    def login(self, debugging_id=None):
         """
         Login to the application
         """
@@ -67,7 +67,7 @@ class detailed(AuthSessionPlugin):
         #
         # Create a new debugging ID for each login() run
         #
-        self._new_debugging_id()
+        self._set_debugging_id(debugging_id)
         self._clear_log()
         self._configure_audit_blacklist(self.auth_url)
 
@@ -99,7 +99,7 @@ class detailed(AuthSessionPlugin):
         #
         # Check if we're logged in
         #
-        if self.has_active_session(new_debugging_id=False):
+        if self.has_active_session(debugging_id=debugging_id):
             self._handle_authentication_success()
             return True
 

@@ -21,8 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import urllib
 import urllib2
-import cStringIO
 import mimetools
+import cStringIO
 
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.config as cf
@@ -44,6 +44,19 @@ class BlacklistHandler(urllib2.BaseHandler):
     handler_order = urllib2.HTTPErrorProcessor.handler_order - 1
 
     def __init__(self):
+        self._blacklist_urls = None
+        self._compiled_ignore_re = None
+
+    def _read_configuration_settings(self):
+        #
+        # Read the compiled regular expression to use to ignore URLs, this
+        # might be None (when the user doesn't configure an ignore_regex)
+        #
+        self._compiled_ignore_re = cf.cf.get('ignore_regex')
+
+        #
+        # Read the list of URLs to blacklist
+        #
         blacklist_http_request = cf.cf.get('blacklist_http_request') or []
         self._blacklist_urls = {url.uri2url() for url in blacklist_http_request}
 
@@ -54,37 +67,48 @@ class BlacklistHandler(urllib2.BaseHandler):
         needs to be called. With this we want to indicate that the keepalive
         handler will be called.
         """
-        if self._is_blacklisted(req.url_object):
-            nncr = new_no_content_resp(req.url_object)
-            addinfo_inst = http_response_to_httplib(nncr)
-            
-            return addinfo_inst
+        if self._blacklist_urls is None:
+            # This happens only during the first HTTP request
+            self._read_configuration_settings()
 
-        # This means: I don't know how to handle this, call the next opener        
-        return None
-        
+        uri = req.url_object
+
+        if not self._is_blacklisted(uri):
+            # This means: I don't know how to handle this, call the next opener
+            return None
+
+        msg = ('%s was included in the HTTP request blacklist, the scan'
+               ' engine is NOT sending the HTTP request and is instead'
+               ' returning an empty response to the plugin.')
+        om.out.debug(msg % uri)
+
+        # Return a 204 response
+        no_content = new_no_content_resp(req.url_object)
+        no_content = http_response_to_httplib(no_content)
+        return no_content
+
     def _is_blacklisted(self, uri):
         """
         If the user configured w3af to ignore a URL, we are going to be applying
         that configuration here. This is the lowest layer inside w3af.
         """
         if uri.uri2url() in self._blacklist_urls:
-            msg = ('%s was included in the HTTP request blacklist, the scan'
-                   ' engine is NOT sending the HTTP request and is instead'
-                   ' returning an empty response to the caller.')
-            om.out.debug(msg % uri)
             return True
+
+        if self._compiled_ignore_re is not None:
+            if self._compiled_ignore_re.match(uri.url_string):
+                return True
 
         return False
 
 
-def http_response_to_httplib(nncr):
-    header_string = cStringIO.StringIO(str(nncr.get_headers()))
+def http_response_to_httplib(no_content):
+    header_string = cStringIO.StringIO(str(no_content.get_headers()))
     headers = mimetools.Message(header_string)
     
-    addinfo_inst = urllib.addinfourl(cStringIO.StringIO(nncr.get_body()),
-                                     headers,
-                                     nncr.get_url().url_string,
-                                     code=nncr.get_code())
-    addinfo_inst.msg = 'No content'
-    return addinfo_inst
+    no_content = urllib.addinfourl(cStringIO.StringIO(no_content.get_body()),
+                                   headers,
+                                   no_content.get_url().url_string,
+                                   code=no_content.get_code())
+    no_content.msg = 'No content'
+    return no_content

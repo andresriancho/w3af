@@ -261,7 +261,7 @@ class ChromeCrawler(object):
             raise
 
         args = (crawl_strategy.get_name(), url, debugging_id)
-        msg = 'Spent %%.2f seconds in crawl strategy %s for %s (did: %s)' % args
+        msg = 'Spent {seconds} seconds in crawl strategy %s for %s (did: %s)' % args
         took_line = TookLine(msg)
 
         try:
@@ -332,7 +332,7 @@ class ChromeCrawler(object):
         # In order to remove all the DOM from the chrome instance and clear
         # some memory we load the about:blank page
         #
-        took_line = TookLine('Spent %.2f seconds cleaning up')
+        took_line = TookLine('Spent {seconds} seconds cleaning up')
 
         try:
             chrome.load_about_blank()
@@ -383,7 +383,7 @@ class ChromeCrawler(object):
         chrome.set_debugging_id(debugging_id)
         start = time.time()
 
-        msg = 'Spent %%.2f seconds loading URL %s in chrome' % url
+        msg = 'Spent {seconds} seconds loading URL %s in chrome' % url
         took_line = TookLine(msg)
 
         try:
@@ -430,7 +430,7 @@ class ChromeCrawler(object):
 
         took_line.send()
 
-        took_line = TookLine('Spent %.2f seconds in chrome.stop()')
+        took_line = TookLine('Spent {seconds} seconds in chrome.stop()')
 
         #
         # Even if the page has successfully loaded (which is a very subjective

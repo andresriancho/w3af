@@ -46,7 +46,7 @@ class generic(AuthSessionPlugin):
         self.check_url = 'http://host.tld/'
         self.check_string = ''
 
-    def login(self):
+    def login(self, debugging_id=None):
         """
         Login to the application.
         """
@@ -61,7 +61,7 @@ class generic(AuthSessionPlugin):
         #
         # Create a new debugging ID for each login() run
         #
-        self._new_debugging_id()
+        self._set_debugging_id(debugging_id)
         self._clear_log()
         self._configure_audit_blacklist(self.auth_url)
 
@@ -93,7 +93,7 @@ class generic(AuthSessionPlugin):
         #
         # Check if we're logged in
         #
-        if self.has_active_session(new_debugging_id=False):
+        if self.has_active_session(debugging_id=debugging_id):
             self._handle_authentication_success()
             return True
 
