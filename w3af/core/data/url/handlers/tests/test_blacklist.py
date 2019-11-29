@@ -68,6 +68,7 @@ class TestBlacklistHandler(unittest.TestCase):
         response = opener.open(request)
         
         self.assertEqual(response.code, NO_CONTENT)
+        self.assertIsInstance(httpretty.last_request(), httpretty.core.HTTPrettyRequestEmpty)
     
     @httpretty.activate
     def test_blacklist_handler_pass(self):
@@ -83,6 +84,7 @@ class TestBlacklistHandler(unittest.TestCase):
         response = opener.open(request)
         
         self.assertEqual(response.code, 200)
+        self.assertEqual(httpretty.last_request().method, httpretty.GET)
 
     @httpretty.activate
     def test_handler_order_block(self):
@@ -105,6 +107,7 @@ class TestBlacklistHandler(unittest.TestCase):
         
         self.assertEqual(response.code, NO_CONTENT)
         self.assertEqual(response.id, 1)
+        self.assertIsInstance(httpretty.last_request(), httpretty.core.HTTPrettyRequestEmpty)
         
     @httpretty.activate
     def test_handler_order_pass(self):
@@ -130,15 +133,19 @@ class TestBlacklistHandler(unittest.TestCase):
 
         request = HTTPRequest(safe_url)
         response = opener.open(request)
-        
+
+        last_request = httpretty.last_request()
+
         self.assertEqual(response.code, 200)
         self.assertEqual(response.id, 1)
+        self.assertEqual(last_request.method, httpretty.GET)
 
         request = HTTPRequest(blocked_url)
         response = opener.open(request)
 
         self.assertEqual(response.code, 204)
         self.assertEqual(response.id, 2)
+        self.assertIs(last_request, httpretty.last_request())
 
     @httpretty.activate
     def test_handler_order_pass_with_ignore_regex(self):
@@ -167,6 +174,8 @@ class TestBlacklistHandler(unittest.TestCase):
         request = HTTPRequest(safe_url)
         response = opener.open(request)
 
+        last_request = httpretty.last_request()
+
         self.assertEqual(response.code, 200)
         self.assertEqual(response.id, 1)
 
@@ -175,6 +184,7 @@ class TestBlacklistHandler(unittest.TestCase):
 
         self.assertEqual(response.code, 204)
         self.assertEqual(response.id, 2)
+        self.assertIs(last_request, httpretty.last_request())
 
     @httpretty.activate
     def test_handler_order_pass_with_both_methods(self):
@@ -205,6 +215,8 @@ class TestBlacklistHandler(unittest.TestCase):
         request = HTTPRequest(safe_url)
         response = opener.open(request)
 
+        last_request = httpretty.last_request()
+
         self.assertEqual(response.code, 200)
         self.assertEqual(response.id, 1)
 
@@ -213,3 +225,4 @@ class TestBlacklistHandler(unittest.TestCase):
 
         self.assertEqual(response.code, 204)
         self.assertEqual(response.id, 2)
+        self.assertIs(last_request, httpretty.last_request())
