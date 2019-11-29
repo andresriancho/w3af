@@ -21,13 +21,11 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import unittest
 import urllib2
-
-from nose.plugins.attrib import attr
+import httpretty
 
 import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.misc.number_generator import consecutive_number_generator
-from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.constants.response_codes import NO_CONTENT
 from w3af.core.data.url.handlers.blacklist import BlacklistHandler
@@ -36,16 +34,27 @@ from w3af.core.data.url import opener_settings
 
 
 class TestBlacklistHandler(unittest.TestCase):
+
+    MOCK_URL = 'http://w3af.org/scanner/'
+    MOCK_URL_BLOCK = 'http://w3af.org/block/'
+    MOCK_URL_PASS = 'http://w3af.org/pass/'
+    MOCK_BODY = 'Hello world'
     
     def setUp(self):
         consecutive_number_generator.reset()
     
     def tearDown(self):
         cf.cf.save('blacklist_http_request', [])
-    
+
+    @httpretty.activate
     def test_blacklist_handler_block(self):
+        httpretty.register_uri(httpretty.GET,
+                               self.MOCK_URL,
+                               body=self.MOCK_BODY,
+                               status=200)
+
         # Configure the handler
-        blocked_url = URL(get_moth_http('/abc/def/'))
+        blocked_url = URL(self.MOCK_URL)
         cf.cf.save('blacklist_http_request', [blocked_url])
         
         opener = urllib2.build_opener(BlacklistHandler)
@@ -56,18 +65,29 @@ class TestBlacklistHandler(unittest.TestCase):
         
         self.assertEqual(response.code, NO_CONTENT)
     
-    @attr('moth')
+    @httpretty.activate
     def test_blacklist_handler_pass(self):
+        httpretty.register_uri(httpretty.GET,
+                               self.MOCK_URL,
+                               body=self.MOCK_BODY,
+                               status=200)
+
         opener = urllib2.build_opener(BlacklistHandler)
         
-        request = urllib2.Request(get_moth_http())
-        request.url_object = URL(get_moth_http())
+        request = urllib2.Request(self.MOCK_URL)
+        request.url_object = URL(self.MOCK_URL)
         response = opener.open(request)
         
         self.assertEqual(response.code, 200)
 
+    @httpretty.activate
     def test_handler_order_block(self):
-        blocked_url = URL(get_moth_http('/abc/def/'))
+        httpretty.register_uri(httpretty.GET,
+                               self.MOCK_URL,
+                               body=self.MOCK_BODY,
+                               status=200)
+
+        blocked_url = URL(self.MOCK_URL)
         cf.cf.save('blacklist_http_request', [blocked_url])
 
         # Get an instance of the extended urllib and verify that the blacklist
@@ -85,10 +105,20 @@ class TestBlacklistHandler(unittest.TestCase):
         self.assertEqual(response.code, NO_CONTENT)
         self.assertEqual(response.id, 1)
         
-    @attr('moth')
+    @httpretty.activate
     def test_handler_order_pass(self):
-        blocked_url = URL(get_moth_http('/abc/def/'))
-        safe_url = URL(get_moth_http())
+        httpretty.register_uri(httpretty.GET,
+                               self.MOCK_URL_BLOCK,
+                               body=self.MOCK_BODY,
+                               status=200)
+
+        httpretty.register_uri(httpretty.GET,
+                               self.MOCK_URL_PASS,
+                               body=self.MOCK_BODY,
+                               status=200)
+
+        blocked_url = URL(self.MOCK_URL_BLOCK)
+        safe_url = URL(self.MOCK_URL_PASS)
         cf.cf.save('blacklist_http_request', [blocked_url])
 
         # Get an instance of the extended urllib and verify that the blacklist
