@@ -29,6 +29,7 @@ import traceback
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.misc.traceback_utils import get_exception_location
 from w3af.core.controllers.core_helpers.status import CoreStatus
@@ -350,17 +351,20 @@ class ExceptionData(object):
         return self.traceback_str
 
     def get_summary(self):
+        fuzzable_request = smart_str_ignore(self.fuzzable_request)
+
         res = ('A "%s" exception was found while running %s.%s on "%s".'
                ' The exception was: "%s" at %s:%s():%s.')
-        res = res % (self.get_exception_class(),
-                     self.phase,
-                     self.plugin,
-                     self.fuzzable_request,
-                     self.exception_msg,
-                     self.filename,
-                     self.function_name,
-                     self.lineno)
-        return res
+
+        args = (self.get_exception_class(),
+                self.phase,
+                self.plugin,
+                fuzzable_request,
+                self.exception_msg,
+                self.filename,
+                self.function_name,
+                self.lineno)
+        return res % args
 
     def get_exception_class(self):
         return self.exception_class

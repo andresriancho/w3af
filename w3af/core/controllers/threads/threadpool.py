@@ -36,7 +36,7 @@ from .pool276 import ThreadPool, RUN, create_detailed_pickling_error, mapstar
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.threads.decorators import apply_with_return_error
 
-__all__ = ['Pool', 'return_args', 'one_to_many']
+__all__ = ['Pool', 'return_args', 'one_to_many', 'add_traceback_string']
 
 
 class one_to_many(object):
@@ -439,10 +439,11 @@ class Pool(ThreadPool):
         """
         for i in range(self._processes - len(self._pool)):
             w = self.Process(target=Worker(),
-                             args=(self._inqueue, self._outqueue,
+                             args=(self._inqueue,
+                                   self._outqueue,
                                    self._initializer,
-                                   self._initargs, self._maxtasksperchild)
-                             )
+                                   self._initargs,
+                                   self._maxtasksperchild))
             self._pool.append(w)
             w.name = w.name.replace('Process', 'PoolWorker')
             w.daemon = True

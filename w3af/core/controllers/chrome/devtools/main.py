@@ -37,7 +37,8 @@ from requests.adapters import ConnectionError
 from PyChromeDevTools import GenericElement, ChromeInterface, TIMEOUT
 from websocket import (WebSocketTimeoutException,
                        WebSocketConnectionClosedException,
-                       WebSocketProtocolException)
+                       WebSocketProtocolException,
+                       create_connection)
 
 import w3af.core.controllers.output_manager as om
 
@@ -50,13 +51,15 @@ from w3af.core.controllers.chrome.devtools.console_message import ConsoleMessage
 from w3af.core.controllers.chrome.devtools.command_result import CommandResult
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
 from w3af.core.controllers.chrome.devtools.js_dialogs import dialog_handler
+from w3af.core.controllers.chrome.devtools.custom_websocket import CustomWebSocket
 from w3af.core.controllers.chrome.utils.multi_json_doc import parse_multi_json_docs
+from w3af.core.data.misc.encoding import smart_str_ignore
 
 #
 # Disable all the annoying logging from the urllib3 and requests libraries
 #
-logging.getLogger("requests").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
+logging.getLogger('requests').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 
 DEFAULT_DIALOG_HANDLER = dialog_handler
@@ -81,7 +84,8 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
                  timeout=TIMEOUT,
                  auto_connect=True,
                  debugging_id=None,
-                 dialog_handler=DEFAULT_DIALOG_HANDLER):
+                 dialog_handler=DEFAULT_DIALOG_HANDLER,
+                 chrome_id=None):
 
         threading.Thread.__init__(self)
         ChromeInterface.__init__(self,
@@ -102,7 +106,30 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         self.exc_value = None
         self.exc_traceback = None
 
-        self.message_counter = MessageIdentifierGenerator()
+        self.chrome_id = chrome_id or 1234
+
+        self.message_counter = MessageIdentifierGenerator(self.chrome_id)
+
+    def connect(self, tab=0, update_tabs=True):
+        """
+        Connect to the websocket.
+
+        Overwriting this method to set enable_multithread
+
+        :param tab: The chrome tab ID
+        :param update_tabs: Should update tabs
+        :return: None
+        """
+        if update_tabs or self.tabs is None:
+            self.get_tabs()
+
+        self.close()
+
+        ws_url = self.tabs[tab]['webSocketDebuggerUrl']
+        self.ws = create_connection(ws_url,
+                                    enable_multithread=True,
+                                    class_=CustomWebSocket,
+                                    timeout=self.timeout)
 
     def set_default_event_handlers(self):
         self.set_event_handler(proxy_connection_failed_handler)
@@ -239,10 +266,13 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         if self.ws is None:
             raise ChromeInterfaceException('The connection is closed')
 
-        log_data = self._clean_data(data)
-        self.debug('Sending message to Chrome: %s' % log_data)
+        bytes_sent = self.ws.send(data)
 
-        return self.ws.send(data)
+        log_data = self._clean_data(data)
+        args = (bytes_sent, log_data)
+        self.debug('Sent %s bytes to Chrome containing message: %s' % args)
+
+        return bytes_sent
 
     def _clean_data(self, data):
         """
@@ -333,22 +363,35 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         result = result.get('result', {})
         value = result.get('value', [])
 
-        if not isinstance(value, list):
+        if isinstance(value, list):
+            for value_item in value:
+                if not isinstance(value_item, dict):
+                    continue
+
+                text_content = value_item.get('text_content', '')
+                if not text_content:
+                    continue
+
+                m = hashlib.md5()
+                m.update(smart_str_ignore(text_content))
+                digest = m.hexdigest()
+
+                value_item['text_content'] = digest
+
             return json.dumps(data)
 
-        for value_item in value:
-            if not isinstance(value_item, dict):
-                continue
+        if isinstance(result, dict):
+            value = result.get('value', None)
+            _type = result.get('type', None)
 
-            text_content = value_item.get('text_content', '')
-            if not text_content:
-                continue
+            if value is not None and _type == 'string':
+                m = hashlib.md5()
+                m.update(smart_str_ignore(value))
+                digest = m.hexdigest()
 
-            m = hashlib.md5()
-            m.update(text_content)
-            digest = m.hexdigest()
+                result['value'] = digest
 
-            value_item['text_content'] = digest
+                return json.dumps(data)
 
         return json.dumps(data)
 
@@ -356,6 +399,13 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         try:
             super(DebugChromeInterface, self).close()
         finally:
+            try:
+                # Just in case the close() call failed, make sure we shutdown
+                # the websocket connection to prevent leaking connections
+                self.ws.shutdown()
+            except:
+                pass
+
             # This will force the thread to stop (see while self.ws in run())
             self.ws = None
 
@@ -396,9 +446,14 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
                 if se.errno == errno.EAGAIN:
                     continue
 
+                message = 'Handled socket.error from websocket: calling reconnect() (did: %s)'
+                args = (self.debugging_id,)
+                om.out.debug(message % args)
+
                 # Not sure what this error is, close the connection because
                 # it can't be used anymore and create a new one
                 self.reconnect()
+
                 continue
 
             except WebSocketProtocolException as e:
@@ -527,6 +582,7 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
             # Only raise once
             self._clear_exc_info()
 
+            # pylint: disable=E0702
             raise exc_type, exc_value, exc_traceback
 
         generic_element = DebugGenericElement(attr, self)
@@ -588,9 +644,9 @@ class MessageIdentifierGenerator(object):
 
     It is easier to grep for that ID, which will be most likely unique.
     """
-    def __init__(self):
+    def __init__(self, chrome_id):
         self.message_identifier = None
-        self._rand = random.Random(1)
+        self._rand = random.Random(chrome_id)
 
     def get(self):
         if self.message_identifier is None:

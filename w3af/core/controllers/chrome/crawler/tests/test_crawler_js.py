@@ -20,7 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from w3af.core.controllers.chrome.crawler.tests.base import BaseChromeCrawlerTest
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
-from w3af.core.controllers.chrome.crawler.js import ChromeCrawlerJS
+from w3af.core.controllers.chrome.crawler.strategies.js import ChromeCrawlerJS
 from w3af.core.data.parsers.doc.url import URL
 
 

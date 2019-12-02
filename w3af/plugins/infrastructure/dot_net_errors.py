@@ -51,10 +51,11 @@ class dot_net_errors(InfrastructurePlugin):
         # MAX_TESTS tests, it simply won't happen and we have to stop testing.
         self.MAX_TESTS = 25
 
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Requests the special filenames.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """

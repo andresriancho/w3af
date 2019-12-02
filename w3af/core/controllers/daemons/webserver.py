@@ -22,12 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import time
 import socket
-import select
 import threading
 import mimetypes
 import BaseHTTPServer
 
 import w3af.core.controllers.output_manager as om
+
+from w3af.core.controllers.misc.poll import poll
 
 # Created servers
 _servers = {}
@@ -83,7 +84,7 @@ class HTTPServer(BaseHTTPServer.HTTPServer):
         """
         Handle one request, possibly blocking.
         """
-        read, write, error = select.select([self], [], [], poll_interval)
+        read, write, error = poll([self], [], [], poll_interval)
 
         if not read:
             return

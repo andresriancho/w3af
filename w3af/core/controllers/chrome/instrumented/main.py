@@ -24,6 +24,7 @@ import json
 
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.chrome.instrumented.instrumented_base import InstrumentedChromeBase
 from w3af.core.controllers.chrome.instrumented.event_listener import EventListener
 from w3af.core.controllers.chrome.instrumented.page_state import PageState
@@ -151,7 +152,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
             if self.page_state.get() == PageState.STATE_LOADED:
                 return True
 
-            time.sleep(0.1)
+            time.sleep(0.15)
 
     def stop(self):
         """
@@ -163,8 +164,26 @@ class InstrumentedChrome(InstrumentedChromeBase):
         self.chrome_conn.Page.stopLoading()
 
     def get_url(self):
+        """
+        :return: The current URL for the chrome instance or None if there is
+                 no page loaded
+        """
         result = self.chrome_conn.Runtime.evaluate(expression='document.location.href')
-        return result['result']['result']['value']
+        url_string = result['result']['result']['value']
+
+        try:
+            url = URL(url_string)
+        except ValueError:
+            #
+            # This happens in some rare cases when the URL in the browser tab
+            # is set to about:blank , which is an invalid URL for the w3af
+            # framework
+            #
+            # Callers to this method need to handle None as a result
+            #
+            url = None
+
+        return url
 
     def get_dom(self):
         result = self.chrome_conn.Runtime.evaluate(expression='document.documentElement.outerHTML')

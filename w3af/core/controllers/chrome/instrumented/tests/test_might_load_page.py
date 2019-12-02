@@ -56,13 +56,15 @@ class TestMightLoadPage(BaseInstrumentedUnittest):
                                                           u'handler': u'goto();',
                                                           u'node_type': 1,
                                                           u'selector': u'[onclick="goto\\(\\)\\;"]',
-                                                          u'text_content': u'Thiscanbeclicked'}),
+                                                          u'text_content': u'Thiscanbeclicked',
+                                                          u'event_source': u'attribute'}),
                                            EventListener({u'event_type': u'click',
                                                           u'tag_name': u'div',
                                                           u'handler': u'noop();',
                                                           u'node_type': 1,
                                                           u'selector': u'[onclick="noop\\(\\)\\;"]',
-                                                          u'text_content': u'Thiscanbeclicked'})])
+                                                          u'text_content': u'Thiscanbeclicked',
+                                                          u'event_source': u'attribute'})])
 
         # Choose the one that navigates to a different page
         event_listener = event_listeners[0]
@@ -126,13 +128,15 @@ class TestMightLoadPage(BaseInstrumentedUnittest):
                                                           u'handler': u'goto();',
                                                           u'node_type': 1,
                                                           u'selector': u'[onclick="goto\\(\\)\\;"]',
-                                                          u'text_content': u'Thiscanbeclicked'}),
+                                                          u'text_content': u'Thiscanbeclicked',
+                                                          u'event_source': u'attribute'}),
                                            EventListener({u'event_type': u'click',
                                                           u'tag_name': u'div',
                                                           u'handler': u'noop();',
                                                           u'node_type': 1,
                                                           u'selector': u'[onclick="noop\\(\\)\\;"]',
-                                                          u'text_content': u'Thiscanbeclicked'})])
+                                                          u'text_content': u'Thiscanbeclicked',
+                                                          u'event_source': u'attribute'})])
 
         # Choose the one that does nothing, no new navigation is started
         event_listener = event_listeners[1]
@@ -187,6 +191,60 @@ class TestMightLoadPage(BaseInstrumentedUnittest):
 
         self.assertEqual(self.ic.page_state.get(), PageState.STATE_LOADED)
 
+    def test_onclick_move_to_anchor(self):
+        #
+        # This tests will assert that the Frame.on_navigated_within_document
+        # method and all things related with Page.navigatedWithinDocument work
+        # as expected
+        #
+
+        self._unittest_setup(AnchorPageRequestHandler)
+
+        #
+        # Get event data
+        #
+        event_listeners = self.ic.get_html_event_listeners()
+        self.assertEqual(event_listeners, [EventListener({u'event_type': u'click',
+                                                          u'tag_name': u'div',
+                                                          u'handler': u'goto();',
+                                                          u'node_type': 1,
+                                                          u'selector': u'[onclick]',
+                                                          u'text_content': u'Thiscanbeclicked',
+                                                          u'event_source': u'attribute'})])
+
+        # Choose the one that does nothing, no new navigation is started
+        event_listener = event_listeners[0]
+        selector = event_listener['selector']
+        event_type = event_listener['event_type']
+
+        dom_before = self.ic.get_dom()
+
+        #
+        # Assert that navigation is not started
+        #
+        navigation_started = self.ic.navigation_started(timeout=0.5)
+        self.assertFalse(navigation_started)
+
+        #
+        # Click on the div tag, this will:
+        #
+        #   * Force the page state to MIGHT_NAVIGATE because we have no way of
+        #     knowing beforehand if the page will actually navigate, run code
+        #     and stay in the same DOM or navigatedWithinDocument
+        #
+        #   * Receive the Page.navigatedWithinDocument and set the state to
+        #     LOADED.
+        #
+        #
+        self.assertTrue(self.ic.dispatch_js_event(selector, event_type))
+        self.assertEqual(self.ic.page_state.get(), PageState.STATE_LOADED)
+
+        #
+        # Assert that the event never changed the DOM
+        #
+        dom_after = self.ic.get_dom()
+        self.assertEqual(dom_before, dom_after)
+
 
 class TwoPagesRequestHandler(ExtendedHttpRequestHandler):
     RESPONSE_BODY_ROOT = ('''<div onclick="goto();">This can be clicked</div>
@@ -210,3 +268,23 @@ class TwoPagesRequestHandler(ExtendedHttpRequestHandler):
             return 200, self.RESPONSE_BODY_ROOT
         elif request_path == '/a':
             return 200, self.RESPONSE_BODY_CHANGED
+
+
+class AnchorPageRequestHandler(ExtendedHttpRequestHandler):
+    RESPONSE_BODY_ROOT = ('''<div onclick="goto();">This can be clicked</div>
+
+                             <a name="anchor"></a>
+                             
+                             <p>Text after anchor</p>
+
+                             <script>
+                                 function goto() {
+                                     location.hash = '#anchor';
+                                 }
+                             </script>''')
+
+    def get_code_body(self, request_path):
+        if request_path == '/':
+            return 200, self.RESPONSE_BODY_ROOT
+        else:
+            return 404, 'Not found'

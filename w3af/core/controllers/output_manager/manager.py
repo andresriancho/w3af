@@ -185,7 +185,7 @@ class OutputManager(Process):
             # we flush the output (if needed)
             self.flush_plugin_output()
 
-    def flush_plugin_output(self):
+    def flush_plugin_output(self, force=False):
         """
         Call flush() on all plugins so they write their data to the external
         file(s) / socket(s) if they want to. This is useful when the scan
@@ -200,7 +200,7 @@ class OutputManager(Process):
         :see: https://github.com/andresriancho/w3af/issues/6726
         :return: None
         """
-        if not self.should_flush():
+        if not force and not self.should_flush():
             return
 
         pool = self._worker_pool
@@ -210,8 +210,17 @@ class OutputManager(Process):
         self.update_last_output_flush()
 
         for o_plugin in self._output_plugin_instances:
-            pool.apply_async(func=self.__inner_flush_plugin_output,
-                             args=(o_plugin,))
+            result = pool.apply_async(func=self.__inner_flush_plugin_output,
+                                      args=(o_plugin,))
+
+            #
+            # This forces the method to wait for each plugin.flush()
+            #
+            # Should be used with care because some plugins take considerable
+            # time to flush their ouput
+            #
+            if force:
+                result.get()
 
     def __inner_flush_plugin_output(self, o_plugin):
         """
@@ -363,7 +372,9 @@ class OutputManager(Process):
                 continue
 
         if exc_info:
+            # pylint: disable=E0702
             raise exc_info
+            # pylint: enable=E0702
 
         # This is a neat trick which basically removes all plugin references
         # from memory. Those plugins might have pointers to memory parts that

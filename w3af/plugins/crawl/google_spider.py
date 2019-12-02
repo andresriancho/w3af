@@ -42,8 +42,9 @@ class google_spider(CrawlPlugin):
         self._result_limit = 300
 
     @runonce(exc_class=RunOnce)
-    def crawl(self, fuzzable_request):
+    def crawl(self, fuzzable_request, debugging_id):
         """
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                     (among other things) the URL to test.
         """

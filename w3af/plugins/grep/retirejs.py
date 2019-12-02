@@ -269,7 +269,8 @@ class retirejs(GrepPlugin):
 
         process = subprocess.Popen(shlex.split(cmd),
                                    stdout=subprocess.DEVNULL,
-                                   stderr=subprocess.DEVNULL)
+                                   stderr=subprocess.DEVNULL,
+                                   close_fds=True)
 
         process.wait()
 

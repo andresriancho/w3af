@@ -39,6 +39,9 @@ class Decorator(object):
         # https://stackoverflow.com/questions/5469956/python-decorator-self-is-mixed-up
         return functools.partial(self.__call__, instance)
 
+    def __call__(self, *args, **kwargs):
+        raise NotImplementedError
+
 
 class LRUCache404(Decorator):
     """

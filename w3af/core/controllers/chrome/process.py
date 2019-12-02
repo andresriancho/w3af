@@ -23,7 +23,6 @@ import os
 import re
 import time
 import signal
-import select
 import threading
 import subprocess32 as subprocess
 
@@ -31,8 +30,10 @@ import psutil
 
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.misc.home_dir import get_home_dir
+from w3af.core.controllers.misc.temp_dir import get_temp_dir
+from w3af.core.controllers.misc.poll import poll
 from w3af.core.controllers.dependency_check.external.chrome import get_chrome_path, get_chrome_version
+from w3af.core.data.fuzzer.utils import rand_number
 
 
 class ChromeProcess(object):
@@ -76,13 +77,13 @@ class ChromeProcess(object):
              '--ignore-certificate-errors-spki-list',
              '--reduce-security-for-testing',
              '--allow-running-insecure-content',
-             '--no-sandox',
+             '--no-sandbox',
 
              # Not supported at proxy
              '--disable-http2',
     ]
 
-    DEVTOOLS_PORT_RE = re.compile('DevTools listening on ws://127.0.0.1:(\d*?)/devtools/')
+    DEVTOOLS_PORT_RE = re.compile(r'DevTools listening on ws://127.0.0.1:(\d*?)/devtools/')
     START_TIMEOUT_SEC = 5.0
 
     def __init__(self):
@@ -97,8 +98,13 @@ class ChromeProcess(object):
 
         self.thread = None
 
+        self.id = rand_number(8)
+
     def get_default_user_data_dir(self):
-        return os.path.join(get_home_dir(), 'chrome')
+        return os.path.join(get_temp_dir(), 'chrome')
+
+    def get_id(self):
+        return self.id
 
     def set_devtools_port(self, devtools_port):
         """
@@ -121,8 +127,8 @@ class ChromeProcess(object):
 
         flags.append('--remote-debugging-port=%s' % self.devtools_port)
         flags.append('--user-data-dir=%s' % self.data_dir)
-        # flags.append('--disk-cache-dir=/dev/null')
-        # flags.append('--disk-cache-size=1')
+        flags.append('--disk-cache-dir=%s' % self.data_dir)
+        flags.append('--disk-cache-size=104857600')
 
         if self.proxy_port and self.proxy_host:
             flags.append('--proxy-server=%s:%s' % (self.proxy_host, self.proxy_port))
@@ -185,10 +191,16 @@ class ChromeProcess(object):
 
         while self.proc is not None and self.proc.poll() is None:
 
-            read_ready, write_ready, _ = select.select([stdout_r, stderr_r],
-                                                       [],
-                                                       [],
-                                                       0.2)
+            try:
+                read_ready, write_ready, _ = poll([stdout_r, stderr_r],
+                                                  [],
+                                                  [],
+                                                  0.2)
+            except ValueError as e:
+                msg = 'Failed to read ChromeProcess stdout / stderr using poll(): %s'
+                args = (e, )
+                om.out.debug(msg % args)
+                break
 
             for fd in read_ready:
                 data = os.read(fd, 1024)
@@ -233,7 +245,7 @@ class ChromeProcess(object):
         if self.proc is not None:
             try:
                 os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
-            except OSError:
+            except OSError as e:
                 # In some cases the process is already dead, calling terminate()
                 # will try to kill a process that doesn't exist anymore
                 pass

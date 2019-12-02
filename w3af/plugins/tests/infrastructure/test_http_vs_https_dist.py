@@ -77,7 +77,7 @@ class test_http_vs_https_dist(unittest.TestCase):
 
             traceroute_mock.side_effect = [resp_tuple_1, resp_tuple_2]
 
-            plugininst.discover(fuzz_req)
+            plugininst.discover(fuzz_req, None)
 
         result = ('Routes to target "host.tld" using ports 80 and 4444 are different:\n'\
                   '  TCP trace to host.tld:80\n    0 192.168.1.1\n    1 200.200.0.0\n    2 207.46.47.14\n'\
@@ -109,7 +109,7 @@ class test_http_vs_https_dist(unittest.TestCase):
 
             traceroute_mock.side_effect = [resp_tuple_1, resp_tuple_2]
 
-            plugininst.discover(fuzz_req)
+            plugininst.discover(fuzz_req, None)
 
         infos = kb.kb.get('http_vs_https_dist', 'http_vs_https_dist')
         self.assertEqual(len(infos), 1)
@@ -144,7 +144,7 @@ class test_http_vs_https_dist(unittest.TestCase):
 
             traceroute_mock.side_effect = [resp_tuple_1, resp_tuple_2]
 
-            plugininst.discover(fuzz_req)
+            plugininst.discover(fuzz_req, None)
 
         result = ('Routes to target "host.tld" using ports 80 and 443 are different:\n'\
                   '  TCP trace to host.tld:80\n    0 192.168.1.1\n    1 200.200.0.0\n    2 207.46.47.14\n'\
@@ -160,7 +160,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         plugininst = hvshsdist.http_vs_https_dist()
         plugininst._has_permission = MagicMock(side_effect=[True, True])
 
-        plugininst.discover(fuzz_req)
+        plugininst.discover(fuzz_req, None)
         self.assertRaises(RunOnce, plugininst.discover, fuzz_req)
 
     def test_not_root_user(self):
@@ -169,7 +169,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         plugininst._has_permission = MagicMock(return_value=False)
 
         with patch('w3af.plugins.infrastructure.http_vs_https_dist.om.out') as om_mock:
-            plugininst.discover(None)
+            plugininst.discover(None, None)
             ecall = call.error(hvshsdist.PERM_ERROR_MSG)
             self.assertIn(ecall, om_mock.mock_calls)
 

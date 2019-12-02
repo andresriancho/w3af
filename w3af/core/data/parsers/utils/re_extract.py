@@ -23,24 +23,37 @@ import re
 
 from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.url import URL
-from w3af.core.data.parsers import URL_RE, RELATIVE_URL_RE
+from w3af.core.data.parsers.utils.url_regex import URL_RE, RELATIVE_URL_RE
 
 
 class ReExtract(BaseParser):
     """
-    A helper that extracts URLs from a string using regular expressions.
+    A helper class that extracts URLs from a string using regular expressions.
 
-    THIS CODE IS SLOW! USE WITH CARE!
+        THIS CODE IS SLOW!
+        DO NOT APPLY THESE REGULAR EXPRESSIONS TO ALL HTTP RESPONSES!
+
+    You have been warned.
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    # Matches
-    # "PHP/5.2.4-2ubuntu5.7", "Apache/2.2.8", "mod_python/3.3.1"
+
+    # Matches strings like:
+    #
+    #   PHP/5.2.4-2ubuntu5.7
+    #   Apache/2.2.8
+    #   mod_python/3.3.1
+    #
     # used in _find_relative() method
-    PHP_VERSION_RE = re.compile('.*?/\d\.\d\.\d')
+    PHP_VERSION_RE = re.compile(r'.*?/\d\.\d\.\d')
+
     QUOTES = {"'", '"'}
 
-    def __init__(self, doc_string, base_url, encoding, relative=True,
+    def __init__(self,
+                 doc_string,
+                 base_url,
+                 encoding,
+                 relative=True,
                  require_quotes=False):
         self._re_urls = set()
 
@@ -60,13 +73,17 @@ class ReExtract(BaseParser):
             self._extract_relative_urls(self._doc_string)
 
     def _is_quoted(self, url_mo, doc_string):
+        """
+        :return: True if the URL extracted using regular expressions has quotes
+                 around it.
+        """
         start, end = url_mo.span()
         doc_string_len = len(doc_string)
 
         if end == doc_string_len:
             return False
 
-        if doc_string[start-1] not in self.QUOTES:
+        if doc_string[start - 1] not in self.QUOTES:
             return False
 
         if doc_string[end] not in self.QUOTES:
@@ -92,14 +109,20 @@ class ReExtract(BaseParser):
 
     def _extract_relative_urls(self, doc_string):
         """
-        Now detect some relative URL's (also using regexs)
+        Extract relative URL's using regular expressions
         """
-        # TODO: Also matches //foo/bar.txt and http://host.tld/foo/bar.txt
-        # I'm removing those matches with the filter
+        #
+        # The RELATIVE_URL_RE is very complex and (for some cases) dumb.
+        #
+        # The regular expression results need to be filtered to make sure
+        # they are actually URLs. Some of the URLs that will be dropped by
+        # `_filter_false_urls` will be caught by `URL_RE`.
+        #
+        # Take a look at `test_url_regex.py` for examples
+        #
         relative_urls = RELATIVE_URL_RE.finditer(doc_string)
-        filter_false_urls = self._filter_false_urls
 
-        for url_mo in filter(filter_false_urls, relative_urls):
+        for url_mo in filter(self._filter_false_urls, relative_urls):
             if self._require_quotes:
                 if not self._is_quoted(url_mo, doc_string):
                     continue
@@ -108,16 +131,16 @@ class ReExtract(BaseParser):
                 url = self._base_url.url_join(url_mo.group(0)).url_string
                 url = URL(self._decode_url(url), encoding=self._encoding)
             except ValueError:
-                # In some cases, the relative URL is invalid and triggers an
+                #
+                # In some cases, the relative URL is invalid and triggers a
                 # ValueError: Invalid URL "%s" exception. All we can do at this
-                # point is to ignore this "fake relative URL".
+                # point is to ignore it.
+                #
                 pass
             else:
                 url_lower = url.url_string.lower()
 
-                if url_lower.startswith('http://') or \
-                url_lower.startswith('https://'):
-
+                if url_lower.startswith('http://') or url_lower.startswith('https://'):
                     self._re_urls.add(url)
 
     def _filter_false_urls(self, potential_url_mo):

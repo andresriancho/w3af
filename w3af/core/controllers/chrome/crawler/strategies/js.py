@@ -27,7 +27,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.data.misc.xml_bones import get_xml_bones
 from w3af.core.controllers.chrome.instrumented.exceptions import EventException, EventTimeout
-from w3af.core.controllers.chrome.crawler.state import CrawlerState
+from w3af.core.controllers.chrome.crawler.state import CrawlerState, EventDispatchLogUnit
 from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceException
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 
@@ -107,6 +107,9 @@ class ChromeCrawlerJS(object):
         #
         self._local_crawler_state = CrawlerState()
         self._global_crawler_state = crawler_state
+
+    def get_debugging_id(self):
+        return self._debugging_id
 
     def get_name(self):
         return 'JS events'
@@ -196,6 +199,8 @@ class ChromeCrawlerJS(object):
                 total += 1
                 if total == self.MAX_EVENTS_TO_DISPATCH:
                     return
+
+        om.out.debug('The JS crawler found a total of %s event listeners' % total)
 
     def _crawl_one_state(self):
         """
@@ -288,7 +293,17 @@ class ChromeCrawlerJS(object):
         """
         potentially_new_url = self._chrome.get_url()
 
+        if potentially_new_url is None:
+            return
+
         if potentially_new_url in self._visited_urls:
+            # If the event navigated the browser to a page which was already
+            # visited in the past, don't wait for the page to load
+            return
+
+        if potentially_new_url.get_root_domain() != self._url.get_root_domain():
+            # If the event navigated the browser to a different domain,
+            # don't wait for the page to load
             return
 
         self._visited_urls.add(potentially_new_url)
@@ -342,7 +357,7 @@ class ChromeCrawlerJS(object):
             #
             potentially_new_url = self._chrome.get_url()
 
-            if potentially_new_url != self._url:
+            if potentially_new_url is not None and potentially_new_url != self._url:
                 #
                 # Let this new page load for 1 second so that new information
                 # reaches w3af's core, and after that render the initial URL
@@ -475,7 +490,7 @@ class ChromeCrawlerJS(object):
         return True
 
     def _append_event_to_logs(self, event, state):
-        url = self._url[:]
+        url = self._url.copy()
         event_dispatch_log_unit = EventDispatchLogUnit(event, state, url)
 
         self._local_crawler_state.append_event_to_log(event_dispatch_log_unit)
@@ -591,39 +606,6 @@ class ChromeCrawlerJS(object):
 
         self._ignore_event(event)
         return False
-
-
-class EventDispatchLogUnit(object):
-    IGNORED = 0
-    SUCCESS = 1
-    FAILED = 2
-
-    __slots__ = (
-        'state',
-        'event',
-        'uri'
-    )
-
-    def __init__(self, event, state, uri):
-        assert state in (self.IGNORED, self.SUCCESS, self.FAILED), 'Invalid state'
-
-        self.state = state
-        self.event = event
-        self.uri = uri
-
-    def get_state_as_string(self):
-        if self.state == EventDispatchLogUnit.IGNORED:
-            return 'IGNORED'
-
-        if self.state == EventDispatchLogUnit.SUCCESS:
-            return 'SUCCESS'
-
-        if self.state == EventDispatchLogUnit.FAILED:
-            return 'FAILED'
-
-    def __repr__(self):
-        state = self.get_state_as_string()
-        return '<EventDispatchLogUnit %s %s>' % (state, self.event)
 
 
 class MaxPageReload(Exception):

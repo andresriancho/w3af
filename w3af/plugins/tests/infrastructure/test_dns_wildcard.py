@@ -18,32 +18,30 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-
-from nose.plugins.attrib import attr
-from w3af.plugins.tests.helper import PluginTest, PluginConfig
+from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
 class TestDNSWildcard(PluginTest):
 
-    base_url = 'http://moth/'
+    target_url = 'http://httpretty'
 
+    MOCK_RESPONSES = [MockResponse('http://httpretty/',
+                                   body='Hello world',
+                                   method='GET',
+                                   status=200)]
     _run_configs = {
         'cfg': {
-            'target': base_url,
+            'target': target_url,
             'plugins': {'infrastructure': (PluginConfig('dns_wildcard'),)}
         }
     }
 
-    @attr('ci_fails')
     def test_wildcard(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
 
         infos = self.kb.get('dns_wildcard', 'dns_wildcard')
 
-        self.assertEqual(len(infos), 2, infos)
-
-        expected = set(['Default virtual host', 'No DNS wildcard'])
-
-        self.assertEqual(expected,
-                         set([i.get_name() for i in infos]))
+        self.assertEqual(len(infos), 1, infos)
+        self.assertEqual('DNS wildcard',
+                         infos[0].get_name())

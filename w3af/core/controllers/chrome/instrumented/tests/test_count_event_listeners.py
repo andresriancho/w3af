@@ -20,7 +20,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import print_function
 
-import os
 import Queue
 import unittest
 
@@ -47,7 +46,7 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
-        ('https://www.holmsecurity.com/', 100),
+        ('https://www.holmsecurity.com/work-at-holm', 400)
     ])
 
     """
@@ -78,16 +77,43 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
         ('https://github.com/', 40),
         ('https://github.com/andresriancho/w3af', 46),
 
-        ('https://web.whatsapp.com/', 0), # FAILS: websocket?
+        # FAILS: WebSocket connection to 'wss://web.whatsapp.com/ws' failed
+        #        Error during WebSocket handshake: Unexpected response code: 500
+        ('https://web.whatsapp.com/', 0),
         
-        ('https://www.holmsecurity.com/', 100),
-        ('https://www.holmsecurity.com/blog/', 100),
+        ('https://andresriancho.com/', 15),
+        ('https://andresriancho.com/internet-scale-analysis-of-aws-cognito-security/', 15),
         
-        ('https://andresriancho.com/', 100),
+        ('https://www.holmsecurity.com/', 8)
+        ('https://www.holmsecurity.com/work-at-holm', 10)
         
-        ('https://www.amazon.com/', 100),
-        ('https://www.amazon.com/Donner-DAG-1C-Beginner-Acoustic-Cutaway/dp/B073XC3Y5J/', 100),
-        ('https://www.amazon.com/s?k=beginner+guitars', 100),
+        ('https://Youtube.com/', 400),
+        ('https://www.youtube.com/watch?v=otvvUzFh5Do', 400),
+                
+        ('https://baidu.com/', 20),
+        ('http://www.baidu.com/s?wd=search', 80),
+        ('https://www.alexa.com/siteinfo/baidu.com', 1000),
+        
+        ('https://imdb.com/', 600),
+        
+        ('https://new.qq.com/rain/a/20190902A0C87G00', 20),
+        
+        ('https://360.cn/', 150),
+        ('http://ku.u.360.cn/online.php?s=gw_web', 110),
+        
+        ('https://netflix.com/', 110),
+        ('https://www.netflix.com/ar-en/title/80057281', 700),
+        
+        ('https://instagram.com/', 90),
+        ('https://www.instagram.com/leomessi/', 250),
+        ('https://www.instagram.com/p/Bz3BsLSim4x/', 150),
+        
+        ('https://twitter.com/', 10),
+        ('https://twitter.com/AndresRiancho', 50),
+        ('https://twitter.com/AndresRiancho/status/1115224660600393728', 40),
+        
+        ('https://stackoverflow.com/', 70),
+        ('https://stackoverflow.com/questions/20484920/terminate-a-hung-redis-pubsub-listen-thread', 50),
     """
 
     def setUp(self):
@@ -150,8 +176,8 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
 
     @unittest.skip('Manual testing')
     def test_count_event_listeners(self):
-        if int(os.getenv('CHROME_DEBUG', 0)) == 1:
-            set_debugging_in_output_manager()
+        set_debugging_in_output_manager()
 
         for url, min_event_count in self.TESTS.iteritems():
             self._count_event_listeners(url, min_event_count)
+

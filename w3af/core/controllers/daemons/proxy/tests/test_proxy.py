@@ -19,49 +19,53 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import ssl
 import urllib2
 import unittest
 
-from nose.plugins.attrib import attr
+import websocket
 
-from w3af.core.controllers.ci.moth import get_moth_http, get_moth_https
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.controllers.misc.temp_dir import create_temp_dir
 from w3af.core.controllers.daemons.proxy import Proxy, ProxyHandler
 
 
-@attr('moth')
 class TestProxy(unittest.TestCase):
 
-    IP = '127.0.0.1'
+    IP_ADDRESS = '127.0.0.1'
+    HTTP_URL = 'http://httpbin.org/base64/SFRUUEJJTiBpcyBhd2Vzb21l'
+    HTTPS_URL = 'https://httpbin.org/base64/SFRUUEJJTiBpcyBhd2Vzb21l'
 
     def setUp(self):
         # Start the proxy server
         create_temp_dir()
 
-        self._proxy = Proxy(self.IP, 0, ExtendedUrllib(), ProxyHandler)
+        self._proxy = Proxy(self.IP_ADDRESS, 0, ExtendedUrllib(), ProxyHandler)
         self._proxy.start()
         self._proxy.wait_for_start()
         
         port = self._proxy.get_port()
-        
+
         # Build the proxy opener
-        proxy_url = 'http://%s:%s' % (self.IP, port)
+        proxy_url = 'http://%s:%s' % (self.IP_ADDRESS, port)
         proxy_handler = urllib2.ProxyHandler({'http': proxy_url,
                                               'https': proxy_url})
         self.proxy_opener = urllib2.build_opener(proxy_handler,
                                                  urllib2.HTTPHandler)
 
+    def tearDown(self):
+        # Shutdown the proxy server
+        self._proxy.stop()
+
     def test_do_req_through_proxy(self):
-        resp_body = self.proxy_opener.open(get_moth_http()).read()
+        resp_body = self.proxy_opener.open(self.HTTP_URL).read()
 
         # Basic check
-        self.assertTrue(len(resp_body) > 0)
+        self.assertGreater(len(resp_body), 0)
 
-        # Get response using the proxy
-        proxy_resp = self.proxy_opener.open(get_moth_http())
-        # Get it without any proxy
-        direct_resp = urllib2.urlopen(get_moth_http())
+        # Get response with and without the proxy
+        proxy_resp = self.proxy_opener.open(self.HTTP_URL)
+        direct_resp = urllib2.urlopen(self.HTTP_URL)
 
         # Must be equal
         self.assertEqual(direct_resp.read(), proxy_resp.read())
@@ -77,23 +81,19 @@ class TestProxy(unittest.TestCase):
         del direct_resp_headers['date']
         del proxy_resp_headers['date']
 
-        del direct_resp_headers['transfer-encoding']
-        del proxy_resp_headers['content-length']
-
         del proxy_resp_headers['content-encoding']
 
         self.assertEqual(direct_resp_headers, proxy_resp_headers)
 
     def test_do_ssl_req_through_proxy(self):
-        resp_body = self.proxy_opener.open(get_moth_https()).read()
+        resp_body = self.proxy_opener.open(self.HTTPS_URL).read()
 
         # Basic check
         self.assertTrue(len(resp_body) > 0)
 
-        # Get response using the proxy
-        proxy_resp = self.proxy_opener.open(get_moth_https())
-        # Get it without any proxy
-        direct_resp = urllib2.urlopen(get_moth_https())
+        # Get response with and without the proxy
+        proxy_resp = self.proxy_opener.open(self.HTTPS_URL)
+        direct_resp = urllib2.urlopen(self.HTTPS_URL)
 
         # Must be equal
         self.assertEqual(direct_resp.read(), proxy_resp.read())
@@ -106,9 +106,6 @@ class TestProxy(unittest.TestCase):
         del direct_resp_headers['date']
         del proxy_resp_headers['date']
 
-        del direct_resp_headers['transfer-encoding']
-        del proxy_resp_headers['content-length']
-
         del proxy_resp_headers['content-encoding']
 
         self.assertEqual(direct_resp_headers, proxy_resp_headers)
@@ -119,10 +116,10 @@ class TestProxy(unittest.TestCase):
         check fails because of some error in start() or stop() which is run
         during setUp and tearDown."""
         # Get response using the proxy
-        proxy_resp = self.proxy_opener.open(get_moth_http()).read()
+        proxy_resp = self.proxy_opener.open(self.HTTP_URL).read()
 
         # Get it without the proxy
-        resp = urllib2.urlopen(get_moth_http()).read()
+        resp = urllib2.urlopen(self.HTTP_URL).read()
 
         self.assertEqual(resp, proxy_resp)
     
@@ -137,15 +134,11 @@ class TestProxy(unittest.TestCase):
         # Note that the test is completed by self._proxy.stop() in tearDown
         self._proxy.stop()
     
-    def tearDown(self):
-        # Shutdown the proxy server
-        self._proxy.stop()
-
     def test_error_handling(self):
         del self._proxy._master.uri_opener
 
         try:
-            self.proxy_opener.open(get_moth_http()).read()
+            self.proxy_opener.open(self.HTTP_URL).read()
         except urllib2.HTTPError, hte:
             # By default urllib2 handles 500 errors as exceptions, so we match
             # against this exception object
@@ -154,6 +147,8 @@ class TestProxy(unittest.TestCase):
             body = hte.read()
             self.assertIn('Proxy error', body)
             self.assertIn('HTTP request', body)
+        else:
+            self.assertTrue(False)
 
     def test_proxy_gzip_encoding(self):
         """
@@ -172,3 +167,22 @@ class TestProxy(unittest.TestCase):
 
         self.assertIn('"gzipped": true', resp.read())
         self.assertEqual('identity', content_encoding)
+
+    @unittest.skip('Implementation pending')
+    def test_websocket_secure_proxy(self):
+        raise NotImplementedError
+
+    @unittest.skip('Implementation pending')
+    def test_websocket_proxy(self):
+        ws = websocket.WebSocket()
+        ws.connect('ws://echo.websocket.org',
+                   http_proxy_host=self.IP_ADDRESS,
+                   http_proxy_port=self._proxy.get_port(),
+                   sslopt={'cert_reqs': ssl.CERT_NONE,
+                           'check_hostname': False})
+
+        sent_message = 'Hello, World'
+        ws.send(sent_message)
+
+        received_message = ws.recv()
+        self.assertEqual(received_message, sent_message)

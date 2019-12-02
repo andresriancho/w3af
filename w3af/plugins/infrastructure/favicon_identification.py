@@ -55,10 +55,11 @@ class favicon_identification(InfrastructurePlugin):
                                      'favicon', 'favicon-md5')
 
     @runonce(exc_class=RunOnce)
-    def discover(self, fuzzable_request):
+    def discover(self, fuzzable_request, debugging_id):
         """
         Identify server software using favicon.
 
+        :param debugging_id: A unique identifier for this call to discover()
         :param fuzzable_request: A fuzzable_request instance that contains
                                 (among other things) the URL to test.
         """

@@ -49,15 +49,18 @@ def set_debugging_in_output_manager():
     om.manager.set_output_plugin_inst(text_file_inst)
     om.manager.start()
 
-    print('')
-    print('    Logging to %s' % text_output)
+    if int(os.getenv('CHROME_DEBUG', 0)) == 1:
+        latest_output = os.path.join(tempfile.gettempdir(), 'latest-w3af-output.txt')
+        if os.path.exists(latest_output):
+            os.remove(latest_output)
 
-    latest_output = os.path.join(tempfile.gettempdir(), 'latest-w3af-output.txt')
-    if os.path.exists(latest_output):
-        os.remove(latest_output)
+        os.symlink(text_output, latest_output)
 
-    os.symlink(text_output, latest_output)
-    print('    Symlink to log file created at %s' % latest_output)
+        print('')
+        print('    Logging to %s' % text_output)
+        print('    Symlink to log file created at %s' % latest_output)
+
+    return text_output
 
 
 def debugging_is_configured_in_output_manager():
@@ -92,7 +95,9 @@ class ExtendedHttpRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         headers = {
             'Content-Type': 'text/html',
             'Content-Length': len(body),
-            'Content-Encoding': 'identity'
+            'Content-Encoding': 'identity',
+            # Enable this header if you want Chrome to cache the response
+            # 'Cache-Control': 'public, max-age=86400'
         }
 
         self.send_response_to_client(code, body, headers)

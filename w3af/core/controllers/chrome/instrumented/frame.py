@@ -44,6 +44,7 @@ class Frame(object):
         # state
         self._network_idle_event = False
         self._dom_content_loaded = False
+        self._navigated_within_document = False
         self._navigated = False
         self._forced_state = VariableValueTimeout(value=None)
 
@@ -59,6 +60,7 @@ class Frame(object):
 
         self._network_idle_event = False
         self._dom_content_loaded = False
+        self._navigated_within_document = False
 
         if self._forced_state.get() in (self.MIGHT_NAVIGATE, self.STATE_LOADING):
             # The forced state is overwritten by the real state: Navigated!
@@ -96,6 +98,9 @@ class Frame(object):
             state = forced_state
 
         elif self._network_idle_event and self._dom_content_loaded:
+            state = self.STATE_LOADED
+
+        elif self._navigated_within_document:
             state = self.STATE_LOADED
 
         elif self._navigated:
@@ -170,6 +175,38 @@ class Frame(object):
         # remove myself from the frame manager
         #
         frame_manager.remove_frame(self.frame_id)
+
+    def on_navigated_within_document(self, message):
+        """
+        Handle Page.navigatedWithinDocument events.
+
+        See FrameManager._on_navigated_within_document for more detailed
+        information about this event.
+
+        :param message: A message received from the chrome websocket. A dict
+                        with the following format:
+
+                        {"params": {"url": "https://react-icons-kit.now.sh/guide",
+                                    "frameId": "719977C1A7DEFC2EB63EE086E716CC9D"},
+                                    "method": "Page.navigatedWithinDocument"}
+        :return: None
+        """
+        #
+        # When an event is dispatched self._force_might_navigate_state() is called
+        # to force the PageState.MIGHT_NAVIGATE state.
+        #
+        # When the dispatched event triggers an Page.navigatedWithinDocument we
+        # want to catch it to quickly update the page state. Navigations within
+        # the same document are quick and the framework can read the new DOM
+        # immediately after.
+        #
+        self._navigated_within_document = True
+
+        #
+        # If there was a forced state, such as MIGHT_NAVIGATE, we remove it
+        # because we already know the real state: navigated within document
+        #
+        self._forced_state = VariableValueTimeout(value=None)
 
     def handle_event(self, message):
         """

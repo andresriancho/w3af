@@ -77,8 +77,9 @@ class ChromePool(object):
 
         min_error_message = ('The number of instances in the ChromePool needs'
                              ' to be greater than %s in order to prevent timeouts'
-                             ' and dead-locks in the web_spider plugin')
-        min_error_message %= (self.MIN_INSTANCES - 1,)
+                             ' and dead-locks in the web_spider plugin. The specified'
+                             ' number of instances was %s.')
+        min_error_message %= (self.MIN_INSTANCES - 1, self.max_instances_configured)
         assert self.max_instances_configured >= self.MIN_INSTANCES, min_error_message
 
     def log_stats(self, force=False):
@@ -154,7 +155,10 @@ class ChromePool(object):
         chrome_info = ' '.join(chrome_info)
         om.out.debug('Chrome browsers with more in use time: %s' % chrome_info)
 
-    def get(self, http_traffic_queue, timeout=GET_FREE_CHROME_RETRY_MAX_TIME):
+    def get(self,
+            http_traffic_queue,
+            timeout=GET_FREE_CHROME_RETRY_MAX_TIME,
+            debugging_id=None):
         """
 
         :param http_traffic_queue: The Queue.Queue instance where requests and
@@ -162,15 +166,41 @@ class ChromePool(object):
 
         :param timeout: Timeout to wait for a Chrome instance to be ready
 
+        :param debugging_id: Unique identifier for this call
+
         :return: An InstrumentedChrome instance
         """
         self.log_stats()
 
         time_waited = 0
         start_time = time.time()
-        debugging_id = http_traffic_queue.debugging_id
 
         while time_waited < timeout:
+            #
+            # Make sure the number of chrome instances does not exceed the max
+            #
+            # The problem with the pool is that it doesn't lock on each call
+            # to get(), so multiple threads might create a chrome instance at
+            # the same time and exceed the max.
+            #
+            # The problem is fixed by reducing the size of the chrome pool
+            # each time it exceeds the max
+            #
+            chrome_instances = len(self._free) + len(self._in_use)
+            if chrome_instances > self.max_instances_configured:
+                for chrome in self._free.copy():
+                    try:
+                        self._free.remove(chrome)
+                    except KeyError:
+                        # The chrome instance was removed from the set by
+                        # another thread
+                        continue
+                    else:
+                        # We just remove one free instance on each call to
+                        # get(), this should slowly reduce the number of extra
+                        # instances
+                        break
+
             #
             # First try to re-use the chrome instances we have
             #
@@ -189,7 +219,7 @@ class ChromePool(object):
                     args = (chrome, debugging_id)
                     om.out.debug(msg % args)
 
-                    msg = 'ChromePool.get() took %.2f seconds to return an instance (did: %s)'
+                    msg = 'ChromePool.get() took %.2f seconds to re-use an instance (did: %s)'
                     spent = time.time() - start_time
                     args = (spent, debugging_id)
                     om.out.debug(msg % args)
@@ -215,7 +245,7 @@ class ChromePool(object):
 
                 spent = time.time() - start_time
                 args = (spent, debugging_id)
-                msg = 'ChromePool.get() took %.2f seconds to return an instance (did: %s)'
+                msg = 'ChromePool.get() took %.2f seconds to create an instance (did: %s)'
                 om.out.debug(msg % args)
 
                 return chrome
@@ -239,11 +269,15 @@ class ChromePool(object):
         chrome.free_count += 1
 
         if chrome.free_count > self.MAX_TASKS:
-            om.out.debug('Removing %s from pool. MAX_TASKS exceeded.' % chrome)
-            self.remove(chrome)
+            self.remove(chrome, 'MAX_TASKS exceeded')
             return
 
         if chrome in self._in_use.copy():
+            msg = ('Chrome instance %s with free_count %s will be marked as'
+                   ' free in ChromePool')
+            args = (chrome, chrome.free_count)
+            om.out.debug(msg % args)
+
             self._in_use.discard(chrome)
             self._free.add(chrome)
             chrome.current_task_start = None
@@ -251,22 +285,23 @@ class ChromePool(object):
             om.out.debug('Chrome pool bug! Called free() on an instance that'
                          ' is not marked as in-use by the pool internals.')
 
-    def remove(self, chrome):
+    def remove(self, chrome, reason):
         self._in_use.discard(chrome)
         self._free.discard(chrome)
         chrome.terminate()
 
-        om.out.debug('Removing %s from pool' % chrome)
+        args = (chrome, reason)
+        om.out.debug('Removed %s from pool, reason: %s' % args)
 
     def terminate(self):
         om.out.debug('Calling terminate on all chrome instances')
 
         while len(self._free) or len(self._in_use):
             for chrome in self._free.copy():
-                self.remove(chrome)
+                self.remove(chrome, 'terminate')
 
             for chrome in self._in_use.copy():
-                self.remove(chrome)
+                self.remove(chrome, 'terminate')
 
         om.out.debug('All chrome instances have been terminated')
 
@@ -281,10 +316,6 @@ class PoolInstrumentedChrome(InstrumentedChrome):
         # The number of times this instance has been free'ed back to the pool
         # This is used by the pool to terminate "old" instances
         self.free_count = 0
-
-    def set_traffic_queue(self, http_traffic_queue):
-        self.http_traffic_queue = http_traffic_queue
-        self.proxy.set_traffic_queue(http_traffic_queue)
 
 
 class ChromePoolException(Exception):

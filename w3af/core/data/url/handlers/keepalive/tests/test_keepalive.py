@@ -89,7 +89,7 @@ class TestKeepalive(unittest.TestCase):
         kah._cm = conn_mgr_mock
         kah.do_open(req)
 
-        ## Verify ##
+        # Verify
         kah._start_transaction.assert_called_once_with(conn, req)
         conn_mgr_mock.get_available_connection.assert_called_once_with(req,
                                                                        conn_factory)
@@ -172,15 +172,17 @@ class TestKeepalive(unittest.TestCase):
         response.read()
 
         time.sleep(wait)
-        
+
+        # pylint: disable=E1101
         pid = os.getpid()
         p = psutil.Process(pid)
-        connections_before = p.get_connections()
+        connections_before = p.connections()
         
         keep_alive_http.close_all()
 
         time.sleep(1)
-        connections_after = p.get_connections()
+        connections_after = p.connections()
+        # pylint: enable=E1101
         
         self.assertLess(len(connections_after), len(connections_before))
         
@@ -197,7 +199,7 @@ class TestConnectionMgr(unittest.TestCase):
         self.request.get_host = lambda: 'w3af.org'
         self.request.get_netloc = lambda: 'w3af.org'
 
-        self.cm.MAX_CONNECTIONS = 1  # Only a single connection
+        self.cm.MAX_CONNECTIONS_PER_HOST = 1  # Only a single connection
         self.assertEquals(0, len(self.cm._used_conns))
         self.assertEquals(0, len(self.cm._free_conns))
 
@@ -226,7 +228,7 @@ class TestConnectionMgr(unittest.TestCase):
         # We want a new HTTPConnection for each request
         self.request.new_connection = True
 
-        self.cm.MAX_CONNECTIONS = 2
+        self.cm.MAX_CONNECTIONS_PER_HOST = 2
         self.assertEquals(0, len(self.cm._used_conns))
         self.assertEquals(0, len(self.cm._free_conns))
 
@@ -250,7 +252,7 @@ class TestConnectionMgr(unittest.TestCase):
         bad_conn = Mock()
         self.cm.replace_connection(bad_conn, self.request, cf)
         bad_conn = self.cm.get_available_connection(self.request, cf)
-        old_len = self.cm.get_connections_total()
+        old_len = self.cm.get_connection_count()
 
         # Replace bad with a new one
         new_conn = self.cm.replace_connection(bad_conn, self.request, cf)
@@ -259,14 +261,14 @@ class TestConnectionMgr(unittest.TestCase):
         self.assertNotEquals(bad_conn, new_conn)
 
         # The len must be the same
-        self.assertEquals(self.cm.get_connections_total(), old_len)
+        self.assertEquals(self.cm.get_connection_count(), old_len)
 
     def test_remove_conn(self):
-        self.assertEqual(self.cm.get_connections_total(), 0)
+        self.assertEqual(self.cm.get_connection_count(), 0)
 
         conn = self.cm.get_available_connection(self.request, lambda h: Mock())
-        self.assertEqual(self.cm.get_connections_total(), 1)
+        self.assertEqual(self.cm.get_connection_count(), 1)
 
         self.cm.remove_connection(conn, reason='unittest')
 
-        self.assertEqual(self.cm.get_connections_total(), 0)
+        self.assertEqual(self.cm.get_connection_count(), 0)

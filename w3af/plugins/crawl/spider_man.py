@@ -42,9 +42,13 @@ from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 
-# Cohny changed the original http://w3af/spider_man?terminate
-# to http://127.7.7.7/spider_man?terminate because in Opera we got
-# an error if we used the original one! Thanks Cohny!
+#
+# Cohny changed the original terminate URL
+#
+#   http://w3af/spider_man?terminate
+#
+# To the new one because in Opera we got an error (most likely DNS-related).
+#
 TERMINATE_URL = URL('http://127.7.7.7/spider_man?terminate')
 TERMINATE_FAVICON_URL = URL('http://127.7.7.7/favicon.ico')
 
@@ -66,8 +70,12 @@ class spider_man(CrawlPlugin):
         self._listen_port = ports.SPIDERMAN
 
     @runonce(exc_class=RunOnce)
-    def crawl(self, freq):
-        
+    def crawl(self, fuzzable_request, debugging_id):
+        """
+        :param debugging_id: A unique identifier for this call to discover()
+        :param fuzzable_request: A fuzzable_request instance that contains
+                                   (among other things) the URL to test.
+        """
         # Create the proxy server
         try:
             self._proxy = LoggingProxy(self._listen_address,
@@ -75,7 +83,7 @@ class spider_man(CrawlPlugin):
                                        self._uri_opener,
                                        handler_klass=LoggingHandler,
                                        plugin=self,
-                                       target_domain=freq.get_url().get_domain(),
+                                       target_domain=fuzzable_request.get_url().get_domain(),
                                        name='SpiderManProxyThread')
         except ProxyException, proxy_exc:
             om.out.error('%s' % proxy_exc)
@@ -157,7 +165,7 @@ class spider_man(CrawlPlugin):
 
 class LoggingHandler(ProxyHandler):
 
-    def handle_request_in_thread(self, flow):
+    def handle_request_in_thread(self, http_request):
         """
         This method handles EVERY request that was sent by the browser, we
         receive the request and:
@@ -165,18 +173,14 @@ class LoggingHandler(ProxyHandler):
             * Check if it's a request to indicate we should finish, if not
             * Parse it and send to the core
 
-        :param flow: A libmproxy flow containing the request
+        :param http_request: An HTTPRequest (w3af) object
+        :return: An HTTPResponse (w3af) object
         """
-        http_request = self._to_w3af_request(flow.request)
-
         uri = http_request.get_uri()
         msg = '[spider_man] Handling request: %s %s'
         om.out.debug(msg % (http_request.get_method(), uri))
 
-        if uri.get_domain() == self.parent_process.target_domain:
-            grep = True
-        else:
-            grep = False
+        grep = uri.get_domain() == self.parent_process.target_domain
 
         try:
             if self._is_terminate_favicon(http_request):
@@ -189,27 +193,29 @@ class LoggingHandler(ProxyHandler):
                 freq = FuzzableRequest.from_http_request(http_request)
                 self.parent_process.plugin.send_fuzzable_request_to_core(freq)
 
-                # Send the request to the remote webserver
+                # Send the request to the remote web server
                 http_response = self._send_http_request(http_request, grep=grep)
         except Exception, e:
             trace = str(traceback.format_exc())
-            http_response = self._create_error_response(http_request, None, e,
+            http_response = self._create_error_response(http_request,
+                                                        None,
+                                                        e,
                                                         trace=trace)
 
         # Useful logging
         headers = http_response.get_headers()
-        cookie_value, cookie_header = headers.iget('cookie', None)
+        cookie_value, cookie_header = headers.iget('set-cookie', None)
+
         if cookie_value is not None:
-            msg = ('The remote web application sent the following'
-                   ' cookie: "%s" through the spider-man proxy.\nw3af will use'
-                   ' it during the rest of the scan process in order to'
-                   ' maintain the session.')
+            msg = ('The remote web application sent a cookie via the spider-man'
+                   ' proxy. The cookie value is: "%s".\n'
+                   '\n'
+                   'w3af will use this cookie during the rest of the scan process'
+                   ' in order to maintain the session.')
             om.out.information(msg % cookie_value)
 
-        # Send the response (success|error) to the browser
-        http_response = self._to_libmproxy_response(flow.request, http_response)
-        flow.reply(http_response)
-
+        return http_response
+    
     def _is_terminate_favicon(self, http_request):
         """
         :see: https://github.com/andresriancho/w3af/issues/9135
@@ -220,8 +226,7 @@ class LoggingHandler(ProxyHandler):
         return False
 
     def _create_favicon_response(self, http_response):
-        favicon = os.path.join(ROOT_PATH,
-                               'plugins/crawl/spider_man/favicon.ico')
+        favicon = os.path.join(ROOT_PATH, 'plugins/crawl/spider_man/favicon.ico')
 
         headers = Headers((
             ('Connection', 'close'),

@@ -22,9 +22,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 
 class CrawlerHTTPTrafficQueue(object):
-    def __init__(self, http_traffic_queue, debugging_id):
+    def __init__(self, http_traffic_queue):
         self.http_traffic_queue = http_traffic_queue
-        self.debugging_id = debugging_id
         self.count = 0
 
     def put(self, request_response):
@@ -35,3 +34,6 @@ class CrawlerHTTPTrafficQueue(object):
         # om.out.debug(msg % args)
 
         return self.http_traffic_queue.put(request_response)
+
+    def __getattr__(self, name):
+        return getattr(self.http_traffic_queue, name)

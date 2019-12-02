@@ -41,36 +41,50 @@ class TestChromeCrawler(BaseChromeCrawlerTest):
     def test_crawl_one_url(self):
         self._unittest_setup(ExtendedHttpRequestHandler)
 
-        url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
-        self.crawler.crawl(url, self.http_traffic_queue)
+        self.crawler.crawl(self.fuzzable_request,
+                           self.http_response,
+                           self.http_traffic_queue)
 
-        self.assertEqual(self.http_traffic_queue.qsize(), 1)
+        self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
-        request, _ = self.http_traffic_queue.get()
+        # Two HTTP requests, one for each strategy implemented in the
+        # Chrome crawler class.
+        request_1, response_1, debugging_id_1 = self.http_traffic_queue.get()
+        request_2, response_2, debugging_id_2 = self.http_traffic_queue.get()
 
-        self.assertEqual(request.get_url().url_string, url)
+        self.assertEqual(request_1.get_url(), self.url)
+        self.assertEqual(request_2.get_url(), self.url)
 
     def test_crawl_xmlhttprequest(self):
         self._unittest_setup(XmlHttpRequestHandler)
 
-        root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
-        self.crawler.crawl(root_url, self.http_traffic_queue)
+        self.crawler.crawl(self.fuzzable_request,
+                           self.http_response,
+                           self.http_traffic_queue)
 
-        self.assertEqual(self.http_traffic_queue.qsize(), 2)
+        self.assertEqual(self.http_traffic_queue.qsize(), 4)
+
+        request_1, response_1, debugging_id_1 = self.http_traffic_queue.get()
+        request_2, response_2, debugging_id_2 = self.http_traffic_queue.get()
+        request_3, response_3, debugging_id_3 = self.http_traffic_queue.get()
+        request_4, response_4, debugging_id_4 = self.http_traffic_queue.get()
 
         # The first request is to load the main page
-        request, _ = self.http_traffic_queue.get()
-        self.assertEqual(request.get_url().url_string, root_url)
+        self.assertEqual(request_1.get_url(), self.url)
+        self.assertEqual(request_3.get_url(), self.url)
 
         # The second request is the one sent using XMLHttpRequest
-        request, _ = self.http_traffic_queue.get()
-
-        root_url = URL(root_url)
-        server_url = root_url.url_join('/server')
+        # This request is sent on page load, without any interaction
+        server_url = self.url.url_join('/server')
         data = 'foo=bar&lorem=ipsum'
 
-        self.assertEqual(request.get_uri().url_string, server_url.url_string)
-        self.assertEqual(request.get_data(), data)
+        self.assertEqual(request_2.get_method(), 'POST')
+        self.assertEqual(request_2.get_uri(), server_url)
+        self.assertEqual(request_2.get_data(), data)
+
+        self.assertEqual(request_4.get_method(), 'POST')
+        self.assertEqual(request_4.get_uri(), server_url)
+        self.assertEqual(request_4.get_data(), data)
 
 
 class TestChromeCrawlerWithWebSpider(unittest.TestCase):
@@ -80,7 +94,6 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
 
     def setUp(self):
         self.uri_opener = ExtendedUrllib()
-        self.http_traffic_queue = Queue.Queue()
 
         self.pool = Pool(processes=2,
                          worker_names='WorkerThread',
@@ -102,11 +115,13 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
         self.server = s
         self.server_port = p
 
-        self.crawler = ChromeCrawler(self.uri_opener, web_spider=self.web_spider)
+        self.crawler = self.web_spider._chrome_crawler
 
     def tearDown(self):
-        while not self.http_traffic_queue.empty():
-            self.http_traffic_queue.get()
+        http_traffic_queue = self.web_spider._http_traffic_queue
+
+        while not http_traffic_queue.empty():
+            http_traffic_queue.get()
 
         self.crawler.terminate()
         self.server.shutdown()

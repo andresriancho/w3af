@@ -67,7 +67,7 @@ class TestChromePool(unittest.TestCase):
 
     def test_remove(self):
         chrome = self.pool.get(self.http_traffic_queue)
-        self.pool.remove(chrome)
+        self.pool.remove(chrome, 'unittest')
 
         self.assertNotIn(chrome, self.pool._free)
         self.assertNotIn(chrome, self.pool._in_use)

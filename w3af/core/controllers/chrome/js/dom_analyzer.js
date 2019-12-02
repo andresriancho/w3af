@@ -122,6 +122,16 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         'submit'
     ],
 
+    mouse_events: [
+        "mousedown",
+        "mouseup",
+        "click",
+        "dblclick",
+        "mousemove",
+        "mouseover",
+        "mouseout"
+    ],
+
     initialize: function () {
         if(_DOMAnalyzer.initialized) return;
 
@@ -280,7 +290,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                                            "node_type": node_type,
                                            "selector": selector,
                                            "event_type": type,
-                                           "use_capture": useCapture});
+                                           "use_capture": useCapture,
+                                           "event_source": "add_event_listener_other"});
     },
 
     /**
@@ -308,7 +319,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                                            "selector": selector,
                                            "event_type": type,
                                            "use_capture": useCapture,
-                                           "text_content": _DOMAnalyzer.superTrim(element.textContent)});
+                                           "text_content": _DOMAnalyzer.superTrim(element.textContent),
+                                           "event_source": "add_event_listener_element"});
     },
 
     /**
@@ -331,12 +343,18 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             return document;
         }
 
-        let element = document.querySelector(selector);
+        //
+        // The element might be hidden from the user's view, but we want to
+        // dispatch the event anyways, because during the event listener
+        // gathering phase it was visible.
+        //
+        // I'll leave this comment and code, here as a reminder of why
+        // the decision was made.
+        //
+        // if (_DOMAnalyzer.elementIsHidden(element)) return null;
+        //
 
-        // The element might be hidden from the user's view
-        if (_DOMAnalyzer.elementIsHidden(element)) return null;
-
-        return element;
+        return document.querySelector(selector);
     },
 
     /**
@@ -352,13 +370,32 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         // The element might not exist anymore or be hidden from the user's view
         if (element == null) return false;
 
-        let event = document.createEvent("Events");
-        event.initEvent(event_type, true, true);
-        event.altKey   = false;
-        event.shiftKey = false;
-        event.ctrlKey  = false;
-        event.metaKey  = false;
-        event.view     = window;
+        let event;
+
+        //
+        // For an unknown reason ReactJS will handle events of type MouseEvent,
+        // but not a generic event created with document.createEvent() which is
+        // then initialized with event.initEvent("click")
+        //
+        // Because of this we need to have this if statement
+        //
+        if (_DOMAnalyzer.mouse_events.includes(event_type)){
+            let event_init = {
+                'bubbles': true,
+                'cancelable': true
+            };
+            event = new MouseEvent(event_type, event_init);
+        }
+        else
+        {
+            event = document.createEvent("Events");
+            event.initEvent(event_type, true, true);
+            event.altKey   = false;
+            event.shiftKey = false;
+            event.ctrlKey  = false;
+            event.metaKey  = false;
+            event.view     = window;
+        }
 
         element.dispatchEvent(event);
 
@@ -479,7 +516,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 "selector": selector,
                 "event_type": attr_name,
                 "handler": attributes[attr_it].nodeValue,
-                "text_content": _DOMAnalyzer.superTrim(element.textContent)
+                "text_content": _DOMAnalyzer.superTrim(element.textContent),
+                "event_source": "attribute",
             };
 
             events.push(edata);
@@ -538,7 +576,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 "selector": selector,
                 "event_type": property_name,
                 "handler": property_value,
-                "text_content": _DOMAnalyzer.superTrim(element.textContent)
+                "text_content": _DOMAnalyzer.superTrim(element.textContent),
+                "event_source": "property",
             };
 
             events.push(edata)
@@ -659,6 +698,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 ancestor_event.selector = selector;
                 ancestor_event.node_type = element.nodeType;
                 ancestor_event.text_content = text_content;
+                ancestor_event.event_source = "attribute";
 
                 events.push(ancestor_event);
             }
@@ -687,7 +727,10 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     },
 
     /**
-     * Get event listeners in a paginated manner
+     * Get event listeners defined via JavaScript:
+     *
+     *     var el = document.getElementById("div");
+     *     el.addEventListener("click", modify_text, false);
      *
      * @param  {Array}   event_filter     If non-empty, only return these events in the result
      * @param  {Array}   tag_name_filter  If non-empty, only return events for these tag names
@@ -697,6 +740,8 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      */
     getEventListeners: function (event_filter, tag_name_filter, start, count) {
         let filtered_event_listeners = [];
+        let inherit_from_document_or_window = false;
+        let document_or_window = ["!document", "!window"];
 
         for(let elem_it = 0; elem_it < _DOMAnalyzer.event_listeners.length; elem_it++) {
             let event_listener = _DOMAnalyzer.event_listeners[elem_it];
@@ -711,9 +756,111 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             if( event_filter.length > 0 && !event_filter.includes(event_type) ) continue;
 
             filtered_event_listeners.push(event_listener);
+
+            // Check if other elements should inherit this event
+            if (document_or_window.includes(tag_name)) inherit_from_document_or_window = true;
+
+            // If there are enough event listeners in the list we can stop
+            if ( filtered_event_listeners.length > (start + count)) break;
         }
 
+        //
+        // The following code handles the case where click is defined in document or
+        // window, and the child elements (all elements) inherit the handler
+        //
+        if (!inherit_from_document_or_window){
+            return _DOMAnalyzer.sliceAndSerialize(filtered_event_listeners, start, count)
+        }
+
+        if (event_filter.length > 0 && !event_filter.includes("click")){
+            return _DOMAnalyzer.sliceAndSerialize(filtered_event_listeners, start, count)
+        }
+
+        let elements = _DOMAnalyzer.getElementsByFilter(tag_name_filter);
+
+        for(let elem_it = 0; elem_it < elements.length; elem_it++) {
+            let element = elements[elem_it];
+
+            if (! _DOMAnalyzer.cursorIsPointer(element)) continue;
+
+            // <a href="..."> tags can be extracted with other (much faster) methods
+            if (_DOMAnalyzer.isATagWithHref(element)) continue;
+
+            // Child elements of <a href="..."> tags can be extracted with other
+            // (much faster) methods
+            if (_DOMAnalyzer.isChildOfATagWithHref(element)) continue;
+
+            // We get here only when:
+            //
+            //  - There is a 'click' handler for document or window
+            //  - There is no event_filter, or the filter includes 'click'
+            //  - The element can be clicked (cursor is pointer)
+            //  - The element is not an A tag with an href
+            //  - The element is not a child of an A tag with an href
+            //
+            // Include this element in the result
+            let selector = OptimalSelect.getSingleSelector(element);
+
+            let edata = {
+                "tag_name": element.tagName.toLowerCase(),
+                "node_type": element.nodeType,
+                "selector": selector,
+                "event_type": "click",
+                "text_content": _DOMAnalyzer.superTrim(element.textContent),
+                "event_source": "inherit_window_document",
+            };
+
+            filtered_event_listeners.push(edata);
+        }
+
+        return _DOMAnalyzer.sliceAndSerialize(filtered_event_listeners, start, count)
+    },
+
+    /**
+     * Return true if this element tag name is "a" and it has an "href"
+     */
+    isATagWithHref: function (element) {
+        if (element.tagName.toLowerCase() !== "a") return false;
+
+        // Now check if the tag has an "href" attribute
+        for( let attr_it = 0; attr_it < element.attributes.length; attr_it++ ){
+            let attr_name = element.attributes[attr_it].nodeName;
+
+            attr_name = attr_name.toLocaleLowerCase();
+
+            if( attr_name === "href" ) return true;
+        }
+
+        return false;
+    },
+
+    /**
+     * Return true if this element is a child of an <a href="..."> tag
+     */
+    isChildOfATagWithHref: function (element) {
+        let ancestors = _DOMAnalyzer.getAncestors(element, "a");
+
+        for( let ancestor_it = 0; ancestor_it < ancestors.length; ancestor_it++ ){
+            let ancestor_elem = ancestors[ancestor_it];
+            if ( _DOMAnalyzer.isATagWithHref(ancestor_elem) ) return true;
+        }
+
+        return false;
+    },
+
+    sliceAndSerialize: function (filtered_event_listeners, start, count) {
         return JSON.stringify(filtered_event_listeners.slice(start, start + count));
+    },
+
+    /**
+     * Checks the computed style of an element and returns true if the
+     * cursor (mouse pointer) is set to 'pointer'.
+     *
+     * The cursor is set to 'pointer' for elements which can be clicked,
+     * such as "a" tags and div tags with "onclick".
+     */
+    cursorIsPointer: function (element) {
+        return window.getComputedStyle(element).cursor === "pointer";
     },
 
     /**
@@ -738,8 +885,33 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         return _DOMAnalyzer.set_intervals.slice(start, start + count);
     },
 
+
     /**
-     * Get elements with event handlers
+     * Get elements by filter returns all elements from the DOM which match
+     * the tag name filter.
+     *
+     * If tag_name_filter is empty then all elements are returned.
+     *
+     * When the tag_name_filter is a list, only elements with those tags are returned.
+     *
+     * @param  {Array}   tag_name_filter  If non-empty, only return events for these tag names
+     *
+     */
+    getElementsByFilter: function (tag_name_filter) {
+        if( tag_name_filter.length === 0 ){
+            return document.getElementsByTagName("*");
+        }
+        else
+        {
+            let selector = tag_name_filter.join(',');
+            return document.querySelectorAll(selector);
+        }
+    },
+
+    /**
+     * Get elements with event handlers defined in HTML:
+     *
+     *      <div onclick="javascript:...">
      *
      * @param  {Array}   event_filter     If non-empty, only return these events in the result
      * @param  {Array}   tag_name_filter  If non-empty, only return events for these tag names
@@ -749,12 +921,12 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      */
     getElementsWithEventHandlers: function (event_filter, tag_name_filter, start, count) {
 
-        let all_elements = document.getElementsByTagName("*");
+        let elements = _DOMAnalyzer.getElementsByFilter(tag_name_filter);
         let events = [];
         let ignored_events = 0;
 
-        for(let elem_it = 0; elem_it < all_elements.length; elem_it++) {
-            let element = all_elements[elem_it];
+        for(let elem_it = 0; elem_it < elements.length; elem_it++) {
+            let element = elements[elem_it];
 
             if (_DOMAnalyzer.elementIsHidden(element)) continue;
 

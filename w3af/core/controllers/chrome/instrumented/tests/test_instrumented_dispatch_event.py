@@ -38,7 +38,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
                                             u'event_type': u'click',
                                             u'node_type': 1,
                                             u'selector': u'#outside',
-                                            u'text_content': u'onetwo'}])
+                                            u'text_content': u'onetwo',
+                                            u'event_source': u'add_event_listener_element'}])
 
         dom_before = self.ic.get_dom()
 
@@ -64,7 +65,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
                                                              u'event_type': u'click',
                                                              u'node_type': 1,
                                                              u'selector': u'#outside',
-                                                             u'text_content': u'onetwo'}])
+                                                             u'text_content': u'onetwo',
+                                                             u'event_source': u'add_event_listener_element'}])
 
     def test_dispatch_click_event_is_async(self):
         self._unittest_setup(OnClickEventTimeoutRequestHandler)
@@ -76,7 +78,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
                                             u'event_type': u'click',
                                             u'node_type': 1,
                                             u'selector': u'#outside',
-                                            u'text_content': u'onetwo'}])
+                                            u'text_content': u'onetwo',
+                                            u'event_source': u'add_event_listener_element'}])
 
         dom_before = self.ic.get_dom()
 
@@ -113,7 +116,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
                                                              u'event_type': u'click',
                                                              u'node_type': 1,
                                                              u'selector': u'#outside',
-                                                             u'text_content': u'onetwo'}])
+                                                             u'text_content': u'onetwo',
+                                                             u'event_source': u'add_event_listener_element'}])
 
     def test_dispatch_click_event_to_document(self):
         self._unittest_setup(EventListenerInDocument)
@@ -124,7 +128,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
         self.assertEqual(event_listeners, [{u'event_type': u'click',
                                             u'tag_name': u'!document',
                                             u'node_type': 9,
-                                            u'selector': u'!document'}])
+                                            u'selector': u'!document',
+                                            u'event_source': u'add_event_listener_other'}])
 
         dom_before = self.ic.get_dom()
 
@@ -144,7 +149,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
         self.assertEqual(self.ic.get_js_event_listeners(), [{u'event_type': u'click',
                                                              u'tag_name': u'!document',
                                                              u'node_type': 9,
-                                                             u'selector': u'!document'}])
+                                                             u'selector': u'!document',
+                                                             u'event_source': u'add_event_listener_other'}])
 
     def test_dispatch_click_event_to_window(self):
         self._unittest_setup(EventListenerInWindow)
@@ -155,7 +161,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
         self.assertEqual(event_listeners, [{u'event_type': u'click',
                                             u'tag_name': u'!window',
                                             u'node_type': -1,
-                                            u'selector': u'!window'}])
+                                            u'selector': u'!window',
+                                            u'event_source': u'add_event_listener_other'}])
 
         dom_before = self.ic.get_dom()
 
@@ -175,7 +182,8 @@ class TestChromeCrawlerDispatchEvents(BaseInstrumentedUnittest):
         self.assertEqual(self.ic.get_js_event_listeners(), [{u'event_type': u'click',
                                                              u'tag_name': u'!window',
                                                              u'node_type': -1,
-                                                             u'selector': u'!window'}])
+                                                             u'selector': u'!window',
+                                                             u'event_source': u'add_event_listener_other'}])
 
 
 class OnClickEventRequestHandler(ExtendedHttpRequestHandler):

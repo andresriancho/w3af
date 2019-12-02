@@ -19,10 +19,14 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import time
 import Queue
 import urllib2
 import unittest
+import subprocess
+
+from multiprocessing.pool import ThreadPool
 
 from w3af.core.controllers.chrome.proxy.main import LoggingProxy
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -68,3 +72,28 @@ class TestProxy(unittest.TestCase):
         # print('Time with proxy: %.2f' % spent_via_proxy)
         # print('Time without proxy: %.2f' % spent_no_proxy)
         self.assertLess(spent_via_proxy, spent_no_proxy * 1.05)
+
+    def test_no_connections_in_close_wait(self):
+        processes = 100
+        http_requests = processes * 4
+
+        # Setup the opener
+        proxy = urllib2.ProxyHandler({'http': '127.0.0.1:%s' % self.proxy.get_bind_port()})
+        opener = urllib2.build_opener(proxy)
+
+        pool = ThreadPool(processes=processes)
+
+        def open_read(url):
+            response = opener.open(url)
+            response.read()
+
+        args = ['https://en.wikipedia.org/wiki/Cross-site_scripting'] * http_requests
+        pool.map(open_read, args)
+
+        pool.close()
+        pool.join()
+
+        cmd = 'lsof -n -p %s' % os.getpid()
+        lsof = subprocess.check_output(cmd, shell=True)
+
+        self.assertNotIn('CLOSE_WAIT', lsof)

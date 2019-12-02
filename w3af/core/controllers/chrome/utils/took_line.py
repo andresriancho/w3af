@@ -27,13 +27,22 @@ import w3af.core.controllers.output_manager as om
 
 class TookLine(object):
 
+    TOKEN = '{seconds}'
+
     def __init__(self, msg_fmt):
-        self._start = None
+        """
+        :param msg_fmt: A string containing the message to be sent to the debug
+                        log. The message should contain the TOKEN, which will be
+                        replaced by the time spent between the creation of the
+                        instance and the call to send().
+        """
         self._msg_fmt = msg_fmt
         self._start = time.time()
 
     def send(self):
         spent = time.time() - self._start
-        spent = round(spent, 2)
+        spent = '%.2f' % spent
 
-        om.out.debug(self._msg_fmt % spent)
+        msg = self._msg_fmt.replace(self.TOKEN, spent)
+
+        om.out.debug(msg)

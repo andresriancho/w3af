@@ -49,8 +49,11 @@ class HTMLParser(SGMLParser):
                                      'application/xhtml+xml',
                                      'application/xml')
 
-    PARSE_TAGS = SGMLParser.PARSE_TAGS.union({'form', 'input', 'textarea',
-                                              'select', 'option'})
+    PARSE_TAGS = SGMLParser.PARSE_TAGS.union({'form',
+                                              'input',
+                                              'textarea',
+                                              'select',
+                                              'option'})
 
     def __init__(self, http_resp):
         # An internal list to be used to save input tags found

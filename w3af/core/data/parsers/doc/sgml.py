@@ -78,7 +78,7 @@ class SGMLParser(BaseParser):
     """
     ANY_TAG_MATCH = re.compile('(<.*?>)', re.UNICODE)
 
-    EMAIL_RE = re.compile('([\w\.%-]{1,45}@([A-Z0-9\.-]{1,45}\.){1,10}[A-Z]{2,4})',
+    EMAIL_RE = re.compile(r'([\w.%-]{1,45}@([A-Z0-9.-]{1,45}\.){1,10}[A-Z]{2,4})',
                           re.I | re.U)
 
     META_URL_REDIR_RE = re.compile(r".*?URL.*?='?\"?([^'\"]*)'?\"?", re.I | re.U)

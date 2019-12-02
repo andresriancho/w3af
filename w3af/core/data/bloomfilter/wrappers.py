@@ -58,12 +58,14 @@ class GenericBloomFilter(object):
 
     @staticmethod
     def get_temp_file():
-        #
-        #    Create the temp file
-        #
+        """
+        Create the temp file
+        """
         tempdir = get_temp_dir()
+
         if not os.path.exists(tempdir):
             os.makedirs(tempdir)
+
         filename = ''.join([choice(string.letters) for _ in range(12)])
         temp_file = os.path.join(tempdir, filename + '-w3af.bloom')
         return temp_file

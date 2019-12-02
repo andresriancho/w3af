@@ -99,6 +99,16 @@ class Plugin(Configurable):
     def get_w3af_core(self):
         return self._w3af_core
 
+    def has_pending_work(self):
+        """
+        Plugins might start tasks in async threads. Those tasks might be running
+        after the call to audit() or discover() exits. This method is called by
+        the framework to check if any of those tasks is still running.
+
+        :return: True if there are async threads started by the plugin still running
+        """
+        return False
+
     def set_options(self, options_list):
         """
         Sets the Options given on the OptionList to self. The options are the

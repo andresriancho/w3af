@@ -36,9 +36,8 @@ class ChromeCrawlerDOMDump(object):
 
     RENDERED_VS_RAW_RATIO = 0.1
 
-    def __init__(self, pool, web_spider, debugging_id):
-        self._pool = pool
-        self._web_spider = web_spider
+    def __init__(self, pool, debugging_id):
+        self._chrome_pool = pool
         self._debugging_id = debugging_id
 
     def get_name(self):
@@ -73,9 +72,21 @@ class ChromeCrawlerDOMDump(object):
         :return: None, the new URLs and forms are sent to the chrome instance
                  http_traffic_queue.
         """
-        # In some cases (mostly unittests) we don't have a web spider instance,
-        # so we can't parse the DOM. Just ignore all this method.
-        if self._web_spider is None:
+        #
+        # Get the first HTTP response.
+        #
+        # Should never be None, but in case it is... we want to find it early
+        # on the crawl() method.
+        #
+        first_http_response = chrome.get_first_response()
+        if first_http_response is None:
+            #
+            # This should never happen, because we reached this code section after
+            # crawler/main.py did an initial page load
+            #
+            msg = 'The %s browser first HTTP response is None (did: %s)'
+            args = (chrome, self._debugging_id)
+            om.out.debug(msg % args)
             return
 
         try:
@@ -87,9 +98,9 @@ class ChromeCrawlerDOMDump(object):
 
             # Since we got an error we remove this chrome instance from the
             # pool, it might be in an error state
-            self._pool.remove(chrome)
+            self._chrome_pool.remove(chrome, 'failed to get DOM')
 
-            raise ChromeCrawlerException('Failed to get the DOM from chrome browser')
+            raise
 
         if dom is None:
             msg = 'Chrome returned a null DOM (did: %s)'
@@ -98,16 +109,9 @@ class ChromeCrawlerDOMDump(object):
 
             # Since we got an error we remove this chrome instance from the
             # pool, it might be in an error state
-            self._pool.remove(chrome)
+            self._chrome_pool.remove(chrome, 'DOM was None')
 
             raise ChromeCrawlerException('Failed to get the DOM from chrome browser')
-
-        first_http_response = chrome.get_first_response()
-        if first_http_response is None:
-            msg = 'The %s browser first HTTP response is None (did: %s)'
-            args = (chrome, self._debugging_id)
-            om.out.debug(msg % args)
-            return
 
         if not self._should_parse_dom(dom, first_http_response.get_body()):
             msg = 'Decided not to parse the DOM (did: %s)'
@@ -120,6 +124,13 @@ class ChromeCrawlerDOMDump(object):
         dom_http_response = first_http_response.copy()
         dom_http_response.set_body(dom)
 
-        web_spider = self._web_spider
-        web_spider.extract_html_forms(dom_http_response, first_http_request)
-        web_spider.extract_links_and_verify(dom_http_response, first_http_request)
+        # This will call CrawlFilterQueue.put()
+        queue_data = (first_http_request,
+                      dom_http_response,
+                      self._debugging_id)
+
+        http_traffic_queue = chrome.get_traffic_queue()
+        http_traffic_queue.put(queue_data)
+
+    def get_debugging_id(self):
+        return self._debugging_id

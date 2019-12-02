@@ -61,10 +61,12 @@ class BrowserThread(Process):
 
         proxy_cfg = {'http': 'http://127.0.0.1:%s/' % self.proxy_port,
                      'https': 'http://127.0.0.1:%s/' % self.proxy_port}
+
         proxy_support = urllib2.ProxyHandler(proxy_cfg)
         opener = urllib2.build_opener(proxy_support)
+
         # Avoid this, it might influence other tests!
-        #urllib2.install_opener(opener)
+        # urllib2.install_opener(opener)
 
         all_urls = BROWSE_URLS
 
@@ -88,7 +90,7 @@ class BrowserThread(Process):
                 try:
                     response = opener.open(full_url)
                 except Exception, ex:
-                    self.responses.append(str(ex))
+                    self.responses.append(ex.read())
                 else:
                     self.responses.append(response.read())
 

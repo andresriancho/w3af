@@ -41,7 +41,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      # We need 0.1.8 because of mitmproxy
                      PIPDependency('pyasn1', 'pyasn1', '0.4.2'),
 
-                     PIPDependency('lxml', 'lxml', '3.4.4'),
+                     PIPDependency('lxml', 'lxml', '3.6.0'),
                      PIPDependency('scapy.config', 'scapy', '2.4.0'),
                      PIPDependency('guess_language', 'guess-language', '0.2'),
                      PIPDependency('cluster', 'cluster', '1.1.1b3'),
@@ -64,7 +64,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('termcolor', 'termcolor', '1.1.0'),
 
                      # We "outsource" the HTTP proxy feature to mitmproxy
-                     PIPDependency('mitmproxy', 'mitmproxy', '0.13'),
+                     PIPDependency('mitmproxy', 'mitmproxy', '0.18.3'),
 
                      # https://gist.github.com/andresriancho/cf2fa1ce239b30f37bd9
                      PIPDependency('ruamel.ordereddict',
@@ -92,7 +92,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('diff_match_patch', 'diff-match-patch', '20121119'),
 
                      # OpenAPI documentation parser
-                     PIPDependency('bravado_core', 'bravado-core', '5.12.1'),
+                     PIPDependency('bravado_core', 'bravado-core', '5.15.0'),
 
                      # Fast compression library
                      PIPDependency('lz4', 'lz4', '1.1.0'),

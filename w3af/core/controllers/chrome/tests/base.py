@@ -34,8 +34,7 @@ class BaseInstrumentedUnittest(unittest.TestCase):
     SERVER_ROOT_PATH = '/tmp/'
 
     def setUp(self):
-        if int(os.getenv('CHROME_DEBUG', 0)) == 1:
-            set_debugging_in_output_manager()
+        set_debugging_in_output_manager()
 
         self.uri_opener = ExtendedUrllib()
         self.http_traffic_queue = Queue.Queue()

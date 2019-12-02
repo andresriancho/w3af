@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 
 import w3af.core.controllers.output_manager as om
+import w3af.core.data.kb.config as cf
 
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.exceptions import ScanMustStopException
@@ -81,7 +82,10 @@ class audit(BaseConsumer):
                            ' unhandled exception was found')
                 self._log_end_took(msg_fmt, start_time, plugin)
 
-                self.handle_exception('audit', plugin.get_name(), 'plugin.end()', e)
+                self.handle_exception('audit',
+                                      plugin.get_name(),
+                                      'plugin.end()',
+                                      e)
 
             else:
                 msg_fmt = 'Spent %.2f seconds running %s.end()'
@@ -97,8 +101,11 @@ class audit(BaseConsumer):
         """
         Consume a fuzzable_request that was found by the crawl/infrastructure
         plugins. Basically perform these steps:
-        
-            * GET the FuzzableRequest and get a handler to the HTTPResponse inst
+
+            * Check if this FuzzableRequest should be audited
+
+            * HTTP GET the FuzzableRequest to get the original HTTPResponse instance
+
             * Send the fuzzable_request and http_response instances to all
               plugins in different threads in order for them to work on them
         
@@ -108,6 +115,9 @@ class audit(BaseConsumer):
         
         :param fuzzable_request: A FuzzableRequest instance
         """
+        if not self._should_audit(fuzzable_request):
+            return
+
         try:
             orig_resp = self.get_original_response(fuzzable_request)
         except Exception, e:
@@ -138,6 +148,33 @@ class audit(BaseConsumer):
             args = (plugin, fuzzable_request, orig_resp, debugging_id)
 
             self._threadpool.apply_async(self._audit, args)
+
+    def _should_audit(self, fuzzable_request):
+        """
+        Perform different checks to make sure this fuzzable_request can be
+        audited according to the user configuration.
+
+        :param fuzzable_request: A FuzzableRequest instance that might need an audit
+        :return: True if the FuzzableRequest should be audited
+        """
+        #
+        # First setup the blacklist
+        #
+        blacklist_urls = cf.cf.get('blacklist_audit') or []
+        blacklist_urls = {url.uri2url() for url in blacklist_urls}
+
+        #
+        # Then query the blacklist
+        #
+        url = fuzzable_request.get_uri().uri2url()
+
+        if url in blacklist_urls:
+            msg = ('%s was included in the audit blacklist, the scan engine'
+                   ' is NOT going to perform fuzzing on this URL')
+            om.out.debug(msg % url)
+            return False
+
+        return True
 
     def _run_observers(self, fuzzable_request):
         """

@@ -62,7 +62,11 @@ class OpenAPI(BaseParser):
                      'text/yaml',
                      'text/x-yaml',
                      'application/yaml',
-                     'application/x-yaml',)
+                     'application/x-yaml',
+                     'application/octet-stream',
+                     'application/vnd.oai.openapi',
+                     'application/vnd.oai.openapi+json',
+                     'application/vnd.oai.openapi;version=2.0')
 
     KEYWORDS = ('consumes',
                 'produces',
@@ -116,21 +120,31 @@ class OpenAPI(BaseParser):
     def is_valid_json_or_yaml(http_resp):
         """
         :param http_resp: The HTTP response we want to parse
-        :return: True if it seems that this page is an open api doc
+        :return: True if it seems that this page is valid JSON / YAML that represents a dict
         """
-        try:
-            json.loads(http_resp.body)
-        except ValueError:
-            pass
-        else:
-            return True
+        spec_dict = None
 
         try:
-            load(http_resp.body, Loader=Loader)
-        except:
-            return False
-        else:
+            spec_dict = json.loads(http_resp.body)
+        except ValueError:
+
+            try:
+                spec_dict = load(http_resp.body, Loader=Loader)
+            except:
+                pass
+
+        if isinstance(spec_dict, dict):
             return True
+
+        return False
+
+    @staticmethod
+    def looks_like_json_or_yaml(http_resp):
+        """
+        :param http_resp: The HTTP response we want to parse
+        :return: True if it seems that this response body holds JSON or YAML
+        """
+        return ':' in '\n'.join(http_resp.body.split('\n')[:20])
 
     @staticmethod
     def can_parse(http_resp):
@@ -140,8 +154,23 @@ class OpenAPI(BaseParser):
 
         :return: True if it seems that the HTTP response contains an Open API spec
         """
-        # Only parse JSON and YAML
-        if not OpenAPI.content_type_match(http_resp):
+        #
+        # In the past we had this check:
+        #
+        # if not OpenAPI.content_type_match(http_resp):
+        #     return False
+        #
+        # But real-life testing showed that it was too restrictive. Some web
+        # servers and frameworks did not return the "expected" content-types
+        # which triggered bugs in can_parse()
+        #
+        # Had to replace it with two other checks, which is worse in performance,
+        # more permissive, but should fix the bug
+        #
+        if http_resp.is_image():
+            return False
+
+        if not OpenAPI.looks_like_json_or_yaml(http_resp):
             return False
 
         # Only parse documents that look like Open API docs

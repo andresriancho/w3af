@@ -240,9 +240,11 @@ class SpecificationHandler(object):
             try:
                 spec_dict = load(self.http_response.body, Loader=Loader)
             except Exception:
+                #
                 # Oops! We should never reach here because is_valid_json_or_yaml
                 # checks that we have a JSON or YAML object, but well... just in
                 # case we use a try / except.
+                #
                 msg = 'The OpenAPI specification at %s is not in JSON or YAML format'
                 args = (self.http_response.get_url(),)
 

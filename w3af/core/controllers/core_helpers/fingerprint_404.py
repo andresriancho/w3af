@@ -24,9 +24,8 @@ from __future__ import with_statement
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
-from w3af.core.data.dc.headers import Headers
 from w3af.core.data.fuzzer.utils import rand_alnum
-from w3af.core.data.url.helpers import NO_CONTENT_MSG
+from w3af.core.data.url.helpers import is_no_content_response
 from w3af.core.data.db.cached_disk_dict import CachedDiskDict
 
 from w3af.core.controllers.misc.diff import chunked_diff
@@ -163,10 +162,8 @@ class Fingerprint404(object):
         #
         # The following iff fixes the race condition
         #
-        if http_response.get_code() == 204:
-            if http_response.get_msg() == NO_CONTENT_MSG:
-                if http_response.get_headers() == Headers():
-                    return True
+        if is_no_content_response(http_response):
+            return True
 
         return False
 

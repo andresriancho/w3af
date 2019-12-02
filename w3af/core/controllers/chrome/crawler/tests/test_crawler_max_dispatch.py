@@ -32,7 +32,7 @@ class TestCrawlMaxDispatchEvents(BaseChromeCrawlerTest):
 
         root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
-        pointer = 'w3af.core.controllers.chrome.crawler.js.ChromeCrawlerJS.MAX_EVENTS_TO_DISPATCH'
+        pointer = 'w3af.core.controllers.chrome.crawler.strategies.js.ChromeCrawlerJS.MAX_EVENTS_TO_DISPATCH'
 
         with patch(pointer, new_callable=PropertyMock) as max_mock:
             max_mock.return_value = 1
@@ -60,7 +60,7 @@ class TestCrawlMaxDispatchEvents(BaseChromeCrawlerTest):
 
         root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
-        pointer = 'w3af.core.controllers.chrome.crawler.js.ChromeCrawlerJS.MAX_EVENTS_TO_DISPATCH'
+        pointer = 'w3af.core.controllers.chrome.crawler.strategies.js.ChromeCrawlerJS.MAX_EVENTS_TO_DISPATCH'
 
         with patch(pointer, new_callable=PropertyMock) as max_mock:
             max_mock.return_value = 2

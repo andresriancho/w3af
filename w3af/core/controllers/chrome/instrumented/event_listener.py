@@ -91,8 +91,10 @@ class EventListener(object):
 
         str_a = smart_str_ignore(str_a)
         str_b = smart_str_ignore(str_b)
-        
+
+        # pylint: disable=E1101
         edit_distance = Levenshtein.distance(str_a, str_b)
+        # pylint: enable=E1101
 
         if edit_distance <= max_edit_distance:
             return True
@@ -109,7 +111,10 @@ class EventListener(object):
             raise AttributeError('%s is not a known attribute' % item)
 
     def get(self, item, default=None):
-        return self._event_as_dict.get(item) or default
+        if item not in self._event_as_dict:
+            return default
+
+        return self._event_as_dict.get(item)
 
     def __setitem__(self, key, value):
         self._event_as_dict[key] = value
@@ -128,6 +133,9 @@ class EventListener(object):
                 return False
 
         return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
     def __len__(self):
         return len(self._event_as_dict)

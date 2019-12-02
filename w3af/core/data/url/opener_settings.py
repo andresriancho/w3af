@@ -318,7 +318,7 @@ class OpenerSettings(Configurable):
                        ' (eg. www.target.com)')
                 raise BaseFrameworkException(msg)
         else:
-            if not hasattr(self, '_password_mgr'):
+            if self._password_mgr is None:
                 # Create a new password manager
                 self._password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
 
@@ -351,7 +351,7 @@ class OpenerSettings(Configurable):
         cfg.save('ntlm_auth_user', username)
         cfg.save('ntlm_auth_url', url)
 
-        if not hasattr(self, '_password_mgr'):
+        if self._password_mgr is None:
             # create a new password manager
             self._password_mgr = urllib2.HTTPPasswordMgrWithDefaultRealm()
 
@@ -363,6 +363,12 @@ class OpenerSettings(Configurable):
         self._ntlm_auth_handler = HTTPNtlmAuthHandler(self._password_mgr)
 
         self.need_update = True
+
+    def get_keep_alive_handlers(self):
+        return {
+            self._ka_http,
+            self._ka_https
+        }
 
     def build_openers(self):
         # Instantiate the handlers passing the proxy as parameter

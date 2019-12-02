@@ -38,6 +38,8 @@ class LoggingHandler(ProxyHandler):
 
     HEADLESS_RE = re.compile('HeadlessChrome/.*? ')
 
+    DEFAULT_LANGUAGE = 'en-GB,en-US;q=0.9,en;q=0.8'
+
     def _target_is_private_site(self):
         """
         :return: True if the target site w3af is scanning is a private site
@@ -58,7 +60,11 @@ class LoggingHandler(ProxyHandler):
         domain = targets[0].get_domain()
         return is_private_site(domain)
 
-    def _send_http_request(self, http_request, grep=True):
+    def _send_http_request(self,
+                           http_request,
+                           grep=True,
+                           cache=False,
+                           debugging_id=None):
         """
         Send a w3af HTTP request to the web server using w3af's HTTP lib,
         capture the HTTP response and send it to the upstream Queue.
@@ -93,6 +99,7 @@ class LoggingHandler(ProxyHandler):
         try:
             http_response = super(LoggingHandler, self)._send_http_request(http_request,
                                                                            grep=grep,
+                                                                           cache=True,
                                                                            debugging_id=self.parent_process.debugging_id)
         finally:
             self.parent_process.decrease_pending_http_request_count()
@@ -105,7 +112,11 @@ class LoggingHandler(ProxyHandler):
 
         # Send the request upstream
         fuzzable_request = FuzzableRequest.from_http_request(http_request)
-        self.parent_process.queue.put((fuzzable_request, http_response))
+        queue_data = (fuzzable_request,
+                      http_response,
+                      self.parent_process.debugging_id)
+
+        self.parent_process.queue.put(queue_data)
 
         self.parent_process.set_first_request_response(fuzzable_request, http_response)
 
@@ -114,9 +125,10 @@ class LoggingHandler(ProxyHandler):
                 http_response.get_code(),
                 len(http_response.get_body()),
                 http_response.get_wait_time(),
+                http_response.get_from_cache(),
                 self.parent_process.debugging_id)
         msg = ('Chrome proxy received HTTP response for %s'
-               ' (code: %s, len: %s, rtt: %.2f, did: %s)')
+               ' (code: %s, len: %s, rtt: %.2f, from_cache: %s, did: %s)')
         om.out.debug(msg % args)
 
         return http_response
@@ -145,7 +157,7 @@ class LoggingHandler(ProxyHandler):
             # Already set, just return
             return
 
-        headers['Accept-Language'] = 'en-GB,en-US;q=0.9,en;q=0.8'
+        headers['Accept-Language'] = self.DEFAULT_LANGUAGE
         http_request.set_headers(headers)
 
     def _remove_user_agent_headless(self, http_request):

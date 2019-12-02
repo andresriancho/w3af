@@ -66,6 +66,13 @@ class InstrumentedChromeBase(object):
         self.chrome_process = self.start_chrome_process()
         self.chrome_conn = self.connect_to_chrome()
 
+    def set_traffic_queue(self, http_traffic_queue):
+        self.http_traffic_queue = http_traffic_queue
+        self.proxy.set_traffic_queue(http_traffic_queue)
+
+    def get_traffic_queue(self):
+        return self.http_traffic_queue
+
     def start_proxy(self):
         proxy = LoggingProxy(self.PROXY_HOST,
                              0,
@@ -96,20 +103,41 @@ class InstrumentedChromeBase(object):
         chrome_process.set_proxy(proxy_host, proxy_port)
 
         chrome_process.start()
-        chrome_process.wait_for_start()
+
+        if not chrome_process.wait_for_start():
+            stdout = '\n'.join(chrome_process.stdout)
+            stderr = '\n'.join(chrome_process.stderr)
+            args = (chrome_process.START_TIMEOUT_SEC, stdout, stderr)
+
+            msg = ('Chrome process failed to start in %s seconds. The process'
+                   ' stdout and stderr are:\n'
+                   '\n'
+                   '%s\n'
+                   '\n'
+                   '%s')
+
+            raise InstrumentedChromeException(msg % args)
 
         return chrome_process
 
     def connect_to_chrome(self):
         port = self.chrome_process.get_devtools_port()
+        chrome_id = self.chrome_process.get_id()
 
+        #
         # The timeout we specify here is the websocket timeout, which is used
-        # for send() and recv() calls.
+        # for send() and recv() calls and is associated with the select.select()
+        # timeout defined in custom_websocket.py
+        #
+        # The timeout specifies how much time to wait for a specific response
+        # coming from Chrome
+        #
         try:
             chrome_conn = DebugChromeInterface(host=self.CHROME_HOST,
                                                port=port,
-                                               timeout=0.001,
-                                               debugging_id=self.debugging_id)
+                                               timeout=30,
+                                               debugging_id=self.debugging_id,
+                                               chrome_id=chrome_id)
         except ConnectionError:
             msg = 'Failed to connect to Chrome on port %s'
             raise InstrumentedChromeException(msg % port)
@@ -223,15 +251,24 @@ class InstrumentedChromeBase(object):
 
         if self.chrome_conn is not None:
             try:
+                # Close the browser in a clean way
+                self.chrome_conn.Browser.close(ignore_result=True)
+            except Exception as e:
+                msg = 'Failed call Browser.close(), exception: "%s" (did: %s)'
+                args = (e, self.debugging_id)
+                om.out.debug(msg % args)
+
+            try:
                 with AllLoggingDisabled():
                     self.chrome_conn.close()
-            except Exception, e:
+            except Exception as e:
                 msg = 'Failed to close chrome connection, exception: "%s" (did: %s)'
                 args = (e, self.debugging_id)
                 om.out.debug(msg % args)
 
         if self.chrome_process is not None:
             try:
+                # Kill the PID (if the process still exists after Browser.close())
                 self.chrome_process.terminate()
             except Exception, e:
                 msg = 'Failed to terminate chrome process, exception: "%s" (did: %s)'
