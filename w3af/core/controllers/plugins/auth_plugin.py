@@ -126,15 +126,19 @@ class AuthPlugin(Plugin):
         new_blacklist_audit = []
 
         for new_url in args:
+            new_url = new_url.uri2url()
+
             if new_url not in blacklist_audit:
-                new_blacklist_audit.append(new_url.uri2url())
+                new_blacklist_audit.append(new_url)
+
+        if not new_blacklist_audit:
+            return
 
         blacklist_audit.extend(new_blacklist_audit)
         cf.cf.save('blacklist_audit', blacklist_audit)
 
-        if new_blacklist_audit:
-            args = ('\n - '.join(str(u) for u in new_blacklist_audit),)
-            om.out.information(self.BLACKLIST_LOGIN_URL_MESSAGE % args)
+        args = ('\n - '.join(str(u) for u in new_blacklist_audit),)
+        om.out.information(self.BLACKLIST_LOGIN_URL_MESSAGE % args)
 
     def _log_http_response(self, http_response):
         if is_no_content_response(http_response):
