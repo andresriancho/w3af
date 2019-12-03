@@ -39,7 +39,15 @@ class CustomWebSocket(WebSocket):
                                               get_mask_key=get_mask_key_zero,
                                               fire_cont_frame=fire_cont_frame,
                                               enable_multithread=enable_multithread,
-                                              skip_utf8_validation=skip_utf8_validation)
+                                              #
+                                              # UTF-8 validation in the websocket library
+                                              # is a very CPU-intensive process which, in
+                                              # some cases can take a LONG time
+                                              #
+                                              # Disabling this in order to prevent timeouts
+                                              # when reading from the websocket
+                                              #
+                                              skip_utf8_validation=True)
 
         self.frame_buffer = CustomFrameBuffer(self._recv, skip_utf8_validation)
 
