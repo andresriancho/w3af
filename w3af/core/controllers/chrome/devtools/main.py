@@ -416,7 +416,7 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
         :param message_id: The result identifier to match in the chrome message
         :return: The CommandResult instance to .get() to retrieve the result
         """
-        command_result = CommandResult(message_id)
+        command_result = CommandResult(message_id, self.debugging_id)
         id_handler = functools.partial(self._result_id_match_handler, command_result)
 
         command_result.set_id_handler(id_handler)
@@ -589,11 +589,18 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
             # pylint: disable=E0702
             raise exc_type, exc_value, exc_traceback
 
-        generic_element = DebugGenericElement(attr, self)
+        generic_element = DebugGenericElement(attr,
+                                              self,
+                                              debugging_id=self.debugging_id,
+                                              chrome_id=self.chrome_id)
         return generic_element
 
 
 class DebugGenericElement(GenericElement):
+    def __init__(self, name, parent, debugging_id=None, chrome_id=None):
+        super(DebugGenericElement, self).__init__(name, parent)
+        self.debugging_id = debugging_id
+        self.chrome_id = chrome_id
 
     def __getattr__(self, attr):
         func_name = '{}.{}'.format(self.name, attr)
@@ -607,6 +614,8 @@ class DebugGenericElement(GenericElement):
             message_id = self.parent.message_counter.new()
 
             call_obj = {'id': message_id,
+                        'debugging_id': self.debugging_id,
+                        'chrome_id': self.chrome_id,
                         'method': func_name,
                         'params': kwargs}
             call_str = json.dumps(call_obj)

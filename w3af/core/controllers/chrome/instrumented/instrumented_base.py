@@ -59,12 +59,18 @@ class InstrumentedChromeBase(object):
         self.uri_opener = uri_opener
         self.http_traffic_queue = http_traffic_queue
 
-        self.id = rand_alnum(8)
         self.debugging_id = None
 
         self.proxy = self.start_proxy()
         self.chrome_process = self.start_chrome_process()
         self.chrome_conn = self.connect_to_chrome()
+
+    @property
+    def id(self):
+        if not self.chrome_process:
+            return None
+
+        return self.chrome_process.get_id()
 
     def set_traffic_queue(self, http_traffic_queue):
         self.http_traffic_queue = http_traffic_queue

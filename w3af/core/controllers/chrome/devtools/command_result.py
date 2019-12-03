@@ -28,7 +28,7 @@ from w3af.core.controllers.chrome.devtools.exceptions import ChromeInterfaceTime
 
 
 class CommandResult(object):
-    def __init__(self, message_id):
+    def __init__(self, message_id, debugging_id):
         self.message_id = message_id
         self.message = None
         self.id_handler = None
@@ -36,6 +36,7 @@ class CommandResult(object):
         self.exc_type = None
         self.exc_value = None
         self.exc_traceback = None
+        self.debugging_id = debugging_id
 
     def get(self, timeout):
         # Raise any exceptions right away
@@ -52,12 +53,12 @@ class CommandResult(object):
         spent = time.time() - start
 
         if not was_set:
-            msg = 'Timeout waiting for message with ID %s (timeout: %.2f, waited: %.2f)'
-            args = (self.message_id, timeout, spent)
+            msg = 'Timeout waiting for message with ID %s (timeout: %.2f, waited: %.2f, did: %s)'
+            args = (self.message_id, timeout, spent, self.debugging_id)
             raise ChromeInterfaceTimeout(msg % args)
 
-        msg = 'Waited %.2f seconds for message with ID %s (timeout: %.2f)'
-        args = (spent, self.message_id, timeout)
+        msg = 'Waited %.2f seconds for message with ID %s (timeout: %.2f, did: %s)'
+        args = (spent, self.message_id, timeout, self.debugging_id)
         om.out.debug(msg % args)
 
         return self.message
