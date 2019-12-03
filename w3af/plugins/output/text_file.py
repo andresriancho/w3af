@@ -174,6 +174,7 @@ class text_file(OutputPlugin):
         :param message: The message to write to the file
         :param log_type: Type of message are we writing to the file
         :param new_line: Add a new line after the message
+        :param flush: Force flushing to disk
         """
         if not self._initialized:
             self._init()
@@ -185,7 +186,7 @@ class text_file(OutputPlugin):
             to_print += '\n'
 
         now = time.localtime(time.time())
-        the_time = time.strftime("%c", now)
+        the_time = time.strftime('%c', now)
 
         if self._show_caller:
             timestamp = LONG_LOG_FMT % (the_time, log_type, self.get_caller())
@@ -244,7 +245,7 @@ class text_file(OutputPlugin):
         :param options_dict: A dict with the options for every plugin.
         """
         now = time.localtime(time.time())
-        the_time = time.strftime("%c", now)
+        the_time = time.strftime('%c', now)
         timestamp = '[ %s - Enabled plugins ] ' % the_time
 
         to_print = ''
@@ -328,7 +329,7 @@ class text_file(OutputPlugin):
             return
 
         now = time.localtime(time.time())
-        the_time = time.strftime("%c", now)
+        the_time = time.strftime('%c', now)
 
         request_hdr = REQUEST_HEADER_FMT % (response.id, the_time)
         self._write_to_http_log(request_hdr)
