@@ -180,3 +180,4 @@ class TestChromeCrawlerGetEventListeners(unittest.TestCase):
 
         for url, min_event_count in self.TESTS.iteritems():
             self._count_event_listeners(url, min_event_count)
+
