@@ -162,7 +162,7 @@ class Frame(object):
             child_frame.detach(frame_manager)
 
             # Remove from the parent (self instance) and frame manager
-            self.child_frames.pop(child_frame_id)
+            self.child_frames.pop(child_frame_id, None)
             frame_manager.remove_frame(child_frame_id)
 
         #
