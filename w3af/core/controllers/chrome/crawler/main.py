@@ -241,9 +241,9 @@ class ChromeCrawler(object):
                                              debugging_id=debugging_id)
         except (ChromeInterfaceException, ChromeInterfaceTimeout) as cie:
             msg = ('Failed to perform the initial page load of %s in'
-                   ' chrome crawler: "%s". Will skip this crawl strategy'
-                   ' and try the next one. (did: %s)')
-            args = (url, cie, debugging_id)
+                   ' chrome crawler: "%s". Will skip the %s crawl strategy'
+                   ' (did: %s)')
+            args = (url, cie, crawl_strategy.get_name(), debugging_id)
             om.out.debug(msg % args)
 
             # These are soft exceptions, just skip this crawl strategy
