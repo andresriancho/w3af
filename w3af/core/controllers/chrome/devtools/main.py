@@ -503,6 +503,10 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
                 break
 
             else:
+                # WebSocket.recv() returns no data for some websocket opcodes
+                if not data:
+                    continue
+
                 # The data we receive from the wire can contain more than one
                 # JSON document, we use parse_multi_json_docs() to parse all of
                 # those messages and return them one by one
