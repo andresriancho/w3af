@@ -33,7 +33,6 @@ from w3af.core.controllers.chrome.process import ChromeProcess
 from w3af.core.controllers.chrome.proxy.main import LoggingProxy
 from w3af.core.controllers.chrome.instrumented.utils import AllLoggingDisabled
 from w3af.core.controllers.chrome.instrumented.exceptions import InstrumentedChromeException
-from w3af.core.data.fuzzer.utils import rand_alnum
 
 
 class InstrumentedChromeBase(object):
