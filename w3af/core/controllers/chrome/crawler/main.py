@@ -155,6 +155,10 @@ class ChromeCrawler(object):
     def get_pending_tasks(self):
         return self._worker_pool.get_running_task_count()
 
+    def wait_for_pending_tasks(self):
+        while self.has_pending_work():
+            time.sleep(0.1)
+
     def log_pending_tasks(self):
         msg = 'ChromeCrawler status (%s running tasks, %s workers, %s tasks in queue)'
         args = (self.get_pending_tasks() - self._worker_pool.get_inqueue().qsize(),
