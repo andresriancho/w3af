@@ -93,7 +93,7 @@ class TestProxy(unittest.TestCase):
         pool.close()
         pool.join()
 
-        cmd = 'lsof -n -p %s' % os.getpid()
+        cmd = 'lsof -n -p %s 2>&1' % os.getpid()
         lsof = subprocess.check_output(cmd, shell=True)
 
         self.assertNotIn('CLOSE_WAIT', lsof)
