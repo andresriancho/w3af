@@ -18,18 +18,18 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import Queue
+import time
 import unittest
 
 import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.output_manager import manager
 from w3af.core.controllers.threads.threadpool import Pool
-from w3af.core.controllers.chrome.crawler.main import ChromeCrawler
 from w3af.core.controllers.chrome.crawler.tests.base import BaseChromeCrawlerTest
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.data.db.variant_db import PATH_MAX_VARIANTS
 from w3af.core.data.parsers.doc.url import URL
@@ -45,15 +45,13 @@ class TestChromeCrawler(BaseChromeCrawlerTest):
                            self.http_response,
                            self.http_traffic_queue)
 
-        self.assertEqual(self.http_traffic_queue.qsize(), 2)
+        self.assertEqual(self.http_traffic_queue.qsize(), 1)
 
-        # Two HTTP requests, one for each strategy implemented in the
+        # One HTTP request, one for each RW strategy implemented in the
         # Chrome crawler class.
         request_1, response_1, debugging_id_1 = self.http_traffic_queue.get()
-        request_2, response_2, debugging_id_2 = self.http_traffic_queue.get()
 
         self.assertEqual(request_1.get_url(), self.url)
-        self.assertEqual(request_2.get_url(), self.url)
 
     def test_crawl_xmlhttprequest(self):
         self._unittest_setup(XmlHttpRequestHandler)
@@ -62,16 +60,13 @@ class TestChromeCrawler(BaseChromeCrawlerTest):
                            self.http_response,
                            self.http_traffic_queue)
 
-        self.assertEqual(self.http_traffic_queue.qsize(), 4)
+        self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
         request_1, response_1, debugging_id_1 = self.http_traffic_queue.get()
         request_2, response_2, debugging_id_2 = self.http_traffic_queue.get()
-        request_3, response_3, debugging_id_3 = self.http_traffic_queue.get()
-        request_4, response_4, debugging_id_4 = self.http_traffic_queue.get()
 
         # The first request is to load the main page
         self.assertEqual(request_1.get_url(), self.url)
-        self.assertEqual(request_3.get_url(), self.url)
 
         # The second request is the one sent using XMLHttpRequest
         # This request is sent on page load, without any interaction
@@ -81,10 +76,6 @@ class TestChromeCrawler(BaseChromeCrawlerTest):
         self.assertEqual(request_2.get_method(), 'POST')
         self.assertEqual(request_2.get_uri(), server_url)
         self.assertEqual(request_2.get_data(), data)
-
-        self.assertEqual(request_4.get_method(), 'POST')
-        self.assertEqual(request_4.get_uri(), server_url)
-        self.assertEqual(request_4.get_data(), data)
 
 
 class TestChromeCrawlerWithWebSpider(unittest.TestCase):
@@ -107,26 +98,13 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
         fp_404_db = fingerprint_404_singleton(cleanup=True)
         fp_404_db.set_url_opener(self.uri_opener)
 
-        t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
-                                                webroot=self.SERVER_ROOT_PATH,
-                                                handler=ExtendedHttpRequestHandler)
-
-        self.server_thread = t
-        self.server = s
-        self.server_port = p
-
-        self.crawler = self.web_spider._chrome_crawler
-
     def tearDown(self):
-        http_traffic_queue = self.web_spider._http_traffic_queue
+        # Process all events from the http traffic queue
+        self.web_spider.has_pending_work()
+        self.web_spider.end()
 
-        while not http_traffic_queue.empty():
-            http_traffic_queue.get()
-
-        self.crawler.terminate()
         self.server.shutdown()
         self.server_thread.join()
-        self.web_spider.end()
 
         manager.terminate()
 
@@ -147,14 +125,19 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
 
         target_url = URL(target_url)
         cf.cf.save('targets', [target_url, ])
-        self.web_spider._handle_first_run()
 
-        self.crawler.crawl(target_url, self.http_traffic_queue)
+        fuzzable_request = FuzzableRequest(target_url)
+        self.web_spider.crawl(fuzzable_request, '0xdeadbeef')
+
+        # Let the task start in ChromeCrawler._worker_pool before asking if there
+        # is pending work
+        time.sleep(1)
+
+        while self.web_spider.has_pending_work():
+            time.sleep(0.5)
 
         # The crawler sends a few requests to the target URL
-        while not self.http_traffic_queue.empty():
-            request, _ = self.http_traffic_queue.get()
-            self.assertEqual(request.get_url(), target_url)
+        self.assertGreaterEqual(self.web_spider._chrome_identified_http_requests, 1)
 
         # But the links to the dynamically generated <a> tags should be in
         # the web_spider output queue
