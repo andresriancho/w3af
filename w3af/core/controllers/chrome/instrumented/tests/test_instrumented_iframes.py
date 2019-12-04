@@ -43,7 +43,7 @@ class TestInstrumentedChromeOneIframe(BaseInstrumentedUnittest):
         #
         # The first request / response
         #
-        request, response = self.http_traffic_queue.get()
+        request, response, _ = self.http_traffic_queue.get()
 
         self.assertEqual(request.get_url().url_string, url)
         self.assertEqual(response.get_url().url_string, url)
@@ -54,7 +54,7 @@ class TestInstrumentedChromeOneIframe(BaseInstrumentedUnittest):
         #
         # The second request / response
         #
-        request, response = self.http_traffic_queue.get()
+        request, response, _ = self.http_traffic_queue.get()
         iframe_url = url + 'iframe'
 
         self.assertEqual(request.get_url().url_string, iframe_url)
@@ -128,7 +128,7 @@ class TestInstrumentedChromeIframeWithDelay(BaseInstrumentedUnittest):
         #
         # The first request / response
         #
-        request, response = self.http_traffic_queue.get()
+        request, response, _ = self.http_traffic_queue.get()
 
         self.assertEqual(request.get_url().url_string, url)
         self.assertEqual(response.get_url().url_string, url)
@@ -139,7 +139,7 @@ class TestInstrumentedChromeIframeWithDelay(BaseInstrumentedUnittest):
         #
         # The second request / response
         #
-        request, response = self.http_traffic_queue.get()
+        request, response, _ = self.http_traffic_queue.get()
         iframe_url = url + 'iframe'
 
         self.assertEqual(request.get_url().url_string, iframe_url)
@@ -215,7 +215,7 @@ class TestInstrumentedChromeNestedIframeWithDelay(BaseInstrumentedUnittest):
         #
         # The first request / response
         #
-        request, response = self.http_traffic_queue.get()
+        request, response, _ = self.http_traffic_queue.get()
 
         self.assertEqual(request.get_url().url_string, url)
         self.assertEqual(response.get_url().url_string, url)
@@ -226,7 +226,7 @@ class TestInstrumentedChromeNestedIframeWithDelay(BaseInstrumentedUnittest):
         #
         # The second request / response
         #
-        request, response = self.http_traffic_queue.get()
+        request, response, _ = self.http_traffic_queue.get()
         iframe_url = url + 'iframe-1'
 
         self.assertEqual(request.get_url().url_string, iframe_url)
@@ -238,7 +238,7 @@ class TestInstrumentedChromeNestedIframeWithDelay(BaseInstrumentedUnittest):
         #
         # The third request / response
         #
-        request, response = self.http_traffic_queue.get()
+        request, response, _ = self.http_traffic_queue.get()
         iframe_url = url + 'iframe-2'
 
         self.assertEqual(request.get_url().url_string, iframe_url)
