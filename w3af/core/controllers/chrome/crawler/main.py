@@ -125,8 +125,8 @@ class ChromeCrawler(object):
         return True
 
     def get_crawl_strategy_instances(self, debugging_id):
-        yield ChromeCrawlerJS(self._chrome_pool, self._crawler_state, debugging_id)
-        yield ChromeCrawlerDOMDump(self._chrome_pool, debugging_id)
+        yield ChromeCrawlerJS(self._chrome_pool, self._crawler_state, debugging_id + '.js')
+        yield ChromeCrawlerDOMDump(self._chrome_pool, debugging_id + '.dom')
 
     def _should_crawl_with_chrome(self, fuzzable_request, http_response):
         """
