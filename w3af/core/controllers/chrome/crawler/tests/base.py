@@ -107,7 +107,10 @@ class BaseChromeCrawlerTest(unittest.TestCase):
         headers = Headers([('content-type', 'text/html')])
         http_response = HTTPResponse(200, '', headers, url, url, _id=1)
 
-        self.crawler.crawl(fuzzable_request, http_response, self.http_traffic_queue)
+        self.crawler.crawl(fuzzable_request,
+                           http_response,
+                           self.http_traffic_queue,
+                           _async=False)
 
         found_uris = self._get_found_urls()
 
