@@ -21,61 +21,80 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.controllers.chrome.crawler.tests.base import BaseChromeCrawlerTest
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.chrome.crawler.strategies.js import ChromeCrawlerJS
+from w3af.core.data.url.HTTPResponse import HTTPResponse
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.dc.headers import Headers
 
 
 class TestStateAcrossPages(BaseChromeCrawlerTest):
 
+    def _get_request_response(self, _id):
+        base_url_fmt = 'http://%s:%s/page-%%s' % (self.SERVER_HOST, self.server_port)
+
+        url = URL(base_url_fmt % _id)
+        fuzzable_request = FuzzableRequest(url)
+
+        headers = Headers([('content-type', 'text/html')])
+        http_response = HTTPResponse(200, '', headers, url, url, _id=1)
+
+        return fuzzable_request, http_response
+
     def test_crawl_pages_with_same_footer(self):
         self._unittest_setup(MultiplePagesWithSameFooter)
 
-        base_url_fmt = 'http://%s:%s/page-%%s' % (self.SERVER_HOST, self.server_port)
         log_url = 'http://%s:%s/log' % (self.SERVER_HOST, self.server_port)
 
         #
         # When we crawl the first page the crawler's state is empty, thus it will
         # find the onclick in div and dispatch it:
         #
-        url = base_url_fmt % 1
-        self.crawler.crawl(url, self.http_traffic_queue)
+        fuzzable_request_1, http_response_1 = self._get_request_response(1)
+        self.crawler.crawl(fuzzable_request_1,
+                           http_response_1,
+                           self.http_traffic_queue)
+        self.crawler.wait_for_pending_tasks()
 
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
         # /page-1 is loaded
-        request, _ = self.http_traffic_queue.get()
-        self.assertEqual(request.get_url().url_string, url)
+        request, _, _ = self.http_traffic_queue.get()
+        self.assertEqual(request.get_url(), fuzzable_request_1.get_uri())
 
         # /log request is sent in learnMoreAboutUs()
-        request, _ = self.http_traffic_queue.get()
+        request, _, _ = self.http_traffic_queue.get()
         self.assertEqual(request.get_url().url_string, log_url)
 
         #
         # When we crawl the exact same page again, the crawler state already contains
-        # an entry for the div.onclick, so it will not run it again
+        # the URL, _should_crawl_with_chrome() will return False
         #
-        url = base_url_fmt % 1
-        self.crawler.crawl(url, self.http_traffic_queue)
+        fuzzable_request_1, http_response_1 = self._get_request_response(1)
+        self.crawler.crawl(fuzzable_request_1,
+                           http_response_1,
+                           self.http_traffic_queue)
+        self.crawler.wait_for_pending_tasks()
 
-        self.assertEqual(self.http_traffic_queue.qsize(), 1)
-
-        # /page-1 is loaded
-        request, _ = self.http_traffic_queue.get()
-        self.assertEqual(request.get_url().url_string, url)
+        self.assertEqual(self.http_traffic_queue.qsize(), 0)
 
         #
         # But if will run the same div.onclick if it is found in a different URL
-        # (notice the % 2 used right below to generate the different URL)
+        # (notice the 2 used right below to generate the different URL)
         #
-        url = base_url_fmt % 2
-        self.crawler.crawl(url, self.http_traffic_queue)
+        fuzzable_request_2, http_response_2 = self._get_request_response(2)
+        self.crawler.crawl(fuzzable_request_2,
+                           http_response_2,
+                           self.http_traffic_queue)
+        self.crawler.wait_for_pending_tasks()
 
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
         # /page-1 is loaded
-        request, _ = self.http_traffic_queue.get()
-        self.assertEqual(request.get_url().url_string, url)
+        request, _, _ = self.http_traffic_queue.get()
+        self.assertEqual(request.get_url(), fuzzable_request_2.get_uri())
 
         # /log request is sent in learnMoreAboutUs()
-        request, _ = self.http_traffic_queue.get()
+        request, _, _ = self.http_traffic_queue.get()
         self.assertEqual(request.get_url().url_string, log_url)
 
         #
@@ -91,19 +110,23 @@ class TestStateAcrossPages(BaseChromeCrawlerTest):
 
         for i in xrange(ChromeCrawlerJS.MAX_SIMILAR_EVENT_DISPATCH):
             page_index = i + 100
-            url = base_url_fmt % page_index
-            self.crawler.crawl(url, self.http_traffic_queue)
+
+            fuzzable_request_n, http_response_n = self._get_request_response(page_index)
+            self.crawler.crawl(fuzzable_request_n,
+                               http_response_n,
+                               self.http_traffic_queue)
+            self.crawler.wait_for_pending_tasks()
 
             if self.http_traffic_queue.qsize() == 1:
                 success = True
                 break
 
             # /page-1 is loaded
-            request, _ = self.http_traffic_queue.get()
-            self.assertEqual(request.get_url().url_string, url)
+            request, _, _ = self.http_traffic_queue.get()
+            self.assertEqual(request.get_url(), fuzzable_request_n.get_uri())
 
             # /log request is sent in learnMoreAboutUs()
-            request, _ = self.http_traffic_queue.get()
+            request, _, _ = self.http_traffic_queue.get()
             self.assertEqual(request.get_url().url_string, log_url)
 
         self.assertTrue(success)
