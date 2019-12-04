@@ -54,6 +54,9 @@ class ChromeCrawler(object):
     MIN_WORKER_THREADS = 1
     MIN_CHROME_POOL_INSTANCES = BaseConsumer.THREAD_POOL_SIZE
 
+    RO_CRAWL_STRATEGIES = {ChromeCrawlerDOMDump.get_name(): ChromeCrawlerDOMDump}
+    RW_CRAWL_STRATEGIES = {ChromeCrawlerJS.get_name(): ChromeCrawlerJS}
+
     def __init__(self,
                  uri_opener,
                  max_instances=None):
@@ -72,7 +75,7 @@ class ChromeCrawler(object):
         #
         max_instances = max(max_instances, self.MIN_CHROME_POOL_INSTANCES)
         max_worker_threads = max(max_instances - 1, self.MIN_WORKER_THREADS)
-        worker_inqueue_max_size = max_worker_threads * 2
+        worker_inqueue_max_size = max_worker_threads * 20
 
         self._worker_pool = Pool(processes=max_worker_threads,
                                  worker_names='ChromeWorkerThread',
@@ -124,10 +127,6 @@ class ChromeCrawler(object):
 
         return True
 
-    def get_crawl_strategy_instances(self, debugging_id):
-        yield ChromeCrawlerJS(self._chrome_pool, self._crawler_state, debugging_id + '.js')
-        yield ChromeCrawlerDOMDump(self._chrome_pool, debugging_id + '.dom')
-
     def _should_crawl_with_chrome(self, fuzzable_request, http_response):
         """
         :param fuzzable_request: The HTTP request to use as starting point
@@ -169,8 +168,19 @@ class ChromeCrawler(object):
 
         :return: None
         """
-        for crawl_strategy in self.get_crawl_strategy_instances(debugging_id):
-            args = (crawl_strategy, fuzzable_request, http_traffic_queue)
+        for i, crawl_strategy_name in enumerate(self.RW_CRAWL_STRATEGIES):
+            run_ro_strategies = i == 0
+
+            args = (crawl_strategy_name,
+                    fuzzable_request,
+                    http_traffic_queue,
+                    run_ro_strategies,
+                    debugging_id)
+
+            #
+            # Note that we're not waiting for the tasks to finish, the caller
+            # should use has_pending_work() to make sure all tasks are done
+            #
             self._worker_pool.apply_async(self._crawl_with_strategy_wrapper,
                                           args=args)
 
@@ -180,22 +190,54 @@ class ChromeCrawler(object):
 
         :return: None
         """
-        for crawl_strategy in self.get_crawl_strategy_instances(debugging_id):
-            self._crawl_with_strategy_wrapper(crawl_strategy, fuzzable_request, http_traffic_queue)
+        for i, crawl_strategy_name in enumerate(self.RW_CRAWL_STRATEGIES):
+            run_ro_strategies = i == 0
 
-    def _crawl_with_strategy_wrapper(self, crawl_strategy, fuzzable_request, http_traffic_queue):
+            args = (crawl_strategy_name,
+                    fuzzable_request,
+                    http_traffic_queue,
+                    run_ro_strategies,
+                    debugging_id)
+
+            self._crawl_with_strategy_wrapper(*args)
+
+    def _get_crawl_strategy_instance(self, crawl_strategy_name, debugging_id):
+        if crawl_strategy_name == ChromeCrawlerJS.get_name():
+            return ChromeCrawlerJS(self._chrome_pool,
+                                   self._crawler_state,
+                                   debugging_id + '.js')
+
+        if crawl_strategy_name == ChromeCrawlerDOMDump.get_name():
+            return ChromeCrawlerDOMDump(self._chrome_pool,
+                                        debugging_id + '.dom')
+
+        raise RuntimeError('Invalid crawl strategy name: %s' % crawl_strategy_name)
+
+    def _crawl_with_strategy_wrapper(self,
+                                     crawl_strategy_name,
+                                     fuzzable_request,
+                                     http_traffic_queue,
+                                     run_ro_strategies,
+                                     debugging_id):
         """
         Wrapper around _crawl_with_strategy() to handle exceptions and create tasks
 
-        :param crawl_strategy: Crawl strategy to run
+        :param crawl_strategy_name: Name of the crawl strategy to run
         :param fuzzable_request: The FuzzableRequest instance that holds the URL to crawl
         :param http_traffic_queue: Queue to send HTTP requests and responses to
+        :param run_ro_strategies: Run the read-only crawling strategies after
+                                  loading the URL in the browser. This is a performance
+                                  improvement to prevent double loading. This should be
+                                  set only in the first load of a specific URL.
         :return: None
         """
+        crawl_strategy = self._get_crawl_strategy_instance(crawl_strategy_name, debugging_id)
+
         try:
             self._crawl_with_strategy(crawl_strategy,
                                       fuzzable_request.get_uri(),
-                                      http_traffic_queue)
+                                      http_traffic_queue,
+                                      run_ro_strategies)
         except Exception as e:
             add_traceback_string(e)
 
@@ -210,13 +252,14 @@ class ChromeCrawler(object):
 
         return True
 
-    def _crawl_with_strategy(self, crawl_strategy, url, http_traffic_queue):
+    def _crawl_with_strategy(self, crawl_strategy, url, http_traffic_queue, run_ro_strategies):
         """
         Use one of the crawling strategies to extract links from the loaded page.
 
         :param crawl_strategy: Crawl strategy to run
         :param url: URL to crawl
         :param http_traffic_queue: Queue to send HTTP requests and responses to
+        :param run_ro_strategies: True if read-only crawl strategies should be run
         :return: None
         """
         chrome = self._get_chrome_from_pool(url,
@@ -224,7 +267,10 @@ class ChromeCrawler(object):
                                             crawl_strategy.get_debugging_id())
 
         try:
-            self._crawl_with_strategy_and_chrome(crawl_strategy, url, chrome)
+            self._crawl_with_strategy_and_chrome(crawl_strategy,
+                                                 url,
+                                                 chrome,
+                                                 run_ro_strategies)
         except Exception:
             self._chrome_pool.remove(chrome, 'generic exception')
             raise
@@ -232,7 +278,11 @@ class ChromeCrawler(object):
             # Success! Return the chrome instance to the pool
             self._chrome_pool.free(chrome)
 
-    def _crawl_with_strategy_and_chrome(self, crawl_strategy, url, chrome):
+    def _crawl_with_strategy_and_chrome(self,
+                                        crawl_strategy,
+                                        url,
+                                        chrome,
+                                        run_ro_strategies):
         debugging_id = crawl_strategy.get_debugging_id()
 
         try:
@@ -260,6 +310,9 @@ class ChromeCrawler(object):
             # the framework's exception handler
             raise
 
+        if run_ro_strategies:
+            self._run_read_only_crawl_strategies(chrome, url, debugging_id)
+
         args = (crawl_strategy.get_name(), url, debugging_id)
         msg = 'Spent {seconds} seconds in crawl strategy %s for %s (did: %s)' % args
         took_line = TookLine(msg)
@@ -268,9 +321,9 @@ class ChromeCrawler(object):
             crawl_strategy.crawl(chrome, url)
         except (ChromeInterfaceException, ChromeInterfaceTimeout, ChromeCrawlerException) as ce:
             msg = ('Failed to crawl %s using chrome crawler: "%s".'
-                   ' Will skip this crawl strategy and try the next one.'
+                   ' Will skip the %s crawl strategy and try the next one.'
                    ' (did: %s)')
-            args = (url, ce, debugging_id)
+            args = (url, ce, crawl_strategy.get_name(), debugging_id)
             om.out.debug(msg % args)
 
             # These are soft exceptions, just skip this crawl strategy
@@ -318,6 +371,30 @@ class ChromeCrawler(object):
             raise
 
         took_line.send()
+
+    def _run_read_only_crawl_strategies(self, chrome, url, debugging_id):
+        """
+        Run all the read-only JS crawling strategies
+
+        :param chrome: The chrome instance where the initial page was loaded
+        :param url: The URL that has been loaded
+        :return: None
+        """
+        for crawl_strategy_name in self.RO_CRAWL_STRATEGIES:
+            crawl_strategy = self._get_crawl_strategy_instance(crawl_strategy_name, debugging_id)
+
+            try:
+                crawl_strategy.crawl(chrome, url)
+            except (ChromeInterfaceException, ChromeInterfaceTimeout, ChromeCrawlerException) as ce:
+                msg = ('Failed to crawl %s using chrome crawler: "%s".'
+                       ' Will skip the %s crawl strategy and try the next one.'
+                       ' (did: %s)')
+                args = (url, ce, crawl_strategy_name, debugging_id)
+                om.out.debug(msg % args)
+
+                # These are soft exceptions, just skip this crawl strategy
+                # and continue with the next one
+                return
 
     def _cleanup(self,
                  url,
@@ -459,11 +536,11 @@ class ChromeCrawler(object):
 
         self._terminate_worker_pool()
 
-        self._chrome_pool.terminate()
-        self._chrome_pool = None
+        if self._chrome_pool is not None:
+            self._chrome_pool.terminate()
+            self._chrome_pool = None
 
         self._crawler_state = None
-
         self._uri_opener = None
 
     def _terminate_worker_pool(self):

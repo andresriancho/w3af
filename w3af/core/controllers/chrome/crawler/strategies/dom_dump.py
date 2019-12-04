@@ -40,7 +40,8 @@ class ChromeCrawlerDOMDump(object):
         self._chrome_pool = pool
         self._debugging_id = debugging_id
 
-    def get_name(self):
+    @staticmethod
+    def get_name():
         return 'DOM dump'
 
     def _should_parse_dom(self, dom, raw_body):

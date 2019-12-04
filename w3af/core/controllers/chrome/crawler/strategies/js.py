@@ -111,7 +111,8 @@ class ChromeCrawlerJS(object):
     def get_debugging_id(self):
         return self._debugging_id
 
-    def get_name(self):
+    @staticmethod
+    def get_name():
         return 'JS events'
 
     def crawl(self,
