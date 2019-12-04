@@ -127,8 +127,7 @@ class ReactBasicTest(BaseChromeCrawlerTest):
             'https://84ol32ono9.csb.app/sandbox-service-worker.js',
             'https://aiwi8rnkp5.execute-api.eu-west-1.amazonaws.com/prod/packages/babel-runtime.*?',
             'https://codesandbox.io/api/v1/sandboxes/84ol32ono9',
-            'https://codesandbox.io/static/browserfs3/browserfs.min.js',
-            'https://codesandbox.io/static/browserfs4/browserfs.min.js',
+            'https://codesandbox.io/static/browserfs.*/browserfs.min.js',
             'https://codesandbox.io/static/js/babel..*?.min.js',
             'https://codesandbox.io/static/js/common-sandbox..*?.chunk.js',
             'https://codesandbox.io/static/js/default~app~embed~sandbox..*?.chunk.js',
@@ -163,22 +162,23 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         expected_uris = {
             'https://api.github.com/repos/jeffersonRibeiro/react-shopping-cart',
             'https://buttons.github.io/buttons.js',
-            'https://fonts.googleapis.com/css?family=Roboto',
+            'https://fonts.googleapis.com/css\\?family=Roboto',
             'https://fonts.gstatic.com/s/roboto/v20/KFOmCnqEu92Fr1Mu4mxP.ttf',
             'https://react-shopping-cart-67954.firebaseapp.com/',
             'https://react-shopping-cart-67954.firebaseapp.com/normalize.css',
-            'https://react-shopping-cart-67954.firebaseapp.com/static/css/main.d7a52d39.chunk.css',
-            'https://react-shopping-cart-67954.firebaseapp.com/static/js/1.4c944e9c.chunk.js',
-            'https://react-shopping-cart-67954.firebaseapp.com/static/js/main.8768098a.chunk.js',
+            'https://react-shopping-cart-67954.firebaseapp.com/static/css/main..*.chunk.css',
+            'https://react-shopping-cart-67954.firebaseapp.com/static/js/1..*.chunk.js',
+            'https://react-shopping-cart-67954.firebaseapp.com/static/js/main..*.chunk.js',
             'https://react-shopping-cart-67954.firebaseio.com/products.json',
             'https://www.google-analytics.com/analytics.js',
-            'https://www.googletagmanager.com/gtag/js?id=UA-85006284-3',
+            'https://www.googletagmanager.com/gtag/js\\?id=UA-85006284-3',
         }
 
-        self.assertEqual(found_uris, expected_uris)
+        self._multi_regex_match(expected_uris, found_uris)
 
         expected_messages = '''
-        Dispatching "click" on CSS selector "button1"
+        Dispatching "click" on CSS selector ".filters .filters-available-size:nth-child(2) [type]"
+        Dispatching "click" on CSS selector ".filters .filters-available-size:nth-child(4) label"
         '''
 
         found, not_found = self._log_contains(expected_messages)
