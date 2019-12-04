@@ -24,14 +24,14 @@ from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandle
 
 class TestChromeCrawlerDOMChanges(BaseInstrumentedUnittest):
     def test_onclick_change_location_detect_dom_change(self):
-        """
-        The goal of this test is to make sure these steps work:
-
-            * The onclick handler in the div tag is detected
-            * The div tag can be clicked
-            * The browser navigates to the /a location
-            * The browser detects that the click triggered a full DOM change
-        """
+        #
+        # The goal of this test is to make sure these steps work:
+        #
+        #    * The onclick handler in the div tag is detected
+        #    * The div tag can be clicked
+        #    * The browser navigates to the /a location
+        #    * The browser detects that the click triggered a full DOM change
+        #
         self._unittest_setup(TwoPagesRequestHandler)
 
         self.assertEqual(self.ic.get_js_set_timeouts(), [])
