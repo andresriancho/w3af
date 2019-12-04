@@ -405,6 +405,8 @@ class web_spider(CrawlPlugin):
         # queue which is used to receive the messages is empty
         self._process_chrome_queue()
 
+        # Note that this is an async call, tasks will be queued but we don't
+        # wait for the result. The result is processed in _process_chrome_queue
         self._chrome_crawler.crawl(fuzzable_req,
                                    http_response,
                                    self._http_traffic_queue,
