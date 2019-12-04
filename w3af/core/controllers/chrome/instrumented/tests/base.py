@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import print_function
 
+import time
 import Queue
 import unittest
 
@@ -47,7 +48,7 @@ class BaseEventListenerCountTest(unittest.TestCase):
         self.ic.load_url(url)
 
         loaded = self.ic.wait_for_load()
-        
+
         if not loaded:
             self.ic.stop()
 
@@ -69,8 +70,10 @@ class BaseEventListenerCountTest(unittest.TestCase):
         # pprint.pprint(event_types)
         # print()
 
-    def _get_event_listeners(self, url):
+    def _get_event_listeners(self, url, wait_secs=0):
         self._load_url(url)
+
+        time.sleep(wait_secs)
 
         try:
             all_event_listeners = [el for el in self.ic.get_all_event_listeners()]

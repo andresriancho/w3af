@@ -32,12 +32,13 @@ class TestCountEventListeners(BaseEventListenerCountTest):
         url = 'https://84ol32ono9.csb.app/'
         event_listeners = self._get_event_listeners(url)
 
-        expected_selectors = {'!window', '!document', 'button'}
+        expected_selectors = {'!document', 'button'}
         found_selectors = {el.selector for el in event_listeners}
         self.assertEqual(found_selectors, expected_selectors)
 
-        button_el = event_listeners[2]
-        self.assertEqual(button_el.event_type, 'click')
+        expected_event_types = {'click'}
+        found_event_types = {el.event_type for el in event_listeners}
+        self.assertEqual(found_event_types, expected_event_types)
 
     def test_add_to_cart(self):
         url = 'https://react-shopping-cart-67954.firebaseapp.com/'
@@ -68,7 +69,7 @@ class TestCountEventListeners(BaseEventListenerCountTest):
     def test_tshirt_sizes(self):
         url = 'https://5oiu5.csb.app/'
 
-        event_listeners = self._get_event_listeners(url)
+        event_listeners = self._get_event_listeners(url, wait_secs=5)
 
         expected_event_listeners = {
             EventListener({u'event_type': u'load',
