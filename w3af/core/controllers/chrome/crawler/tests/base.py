@@ -96,13 +96,18 @@ class BaseChromeCrawlerTest(unittest.TestCase):
         uris = set()
 
         while not self.http_traffic_queue.empty():
-            request, response = self.http_traffic_queue.get_nowait()
+            request, response, debugging_id = self.http_traffic_queue.get_nowait()
             uris.add(str(request.get_uri()))
 
         return uris
 
     def _crawl(self, url):
-        self.crawler.crawl(url, self.http_traffic_queue)
+        url = URL(url)
+        fuzzable_request = FuzzableRequest(url)
+        headers = Headers([('content-type', 'text/html')])
+        http_response = HTTPResponse(200, '', headers, url, url, _id=1)
+
+        self.crawler.crawl(fuzzable_request, http_response, self.http_traffic_queue)
 
         found_uris = self._get_found_urls()
 
