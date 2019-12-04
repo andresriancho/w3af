@@ -52,8 +52,8 @@ class TestStateAcrossPages(BaseChromeCrawlerTest):
         fuzzable_request_1, http_response_1 = self._get_request_response(1)
         self.crawler.crawl(fuzzable_request_1,
                            http_response_1,
-                           self.http_traffic_queue)
-        self.crawler.wait_for_pending_tasks()
+                           self.http_traffic_queue,
+                           _async=False)
 
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
@@ -72,8 +72,8 @@ class TestStateAcrossPages(BaseChromeCrawlerTest):
         fuzzable_request_1, http_response_1 = self._get_request_response(1)
         self.crawler.crawl(fuzzable_request_1,
                            http_response_1,
-                           self.http_traffic_queue)
-        self.crawler.wait_for_pending_tasks()
+                           self.http_traffic_queue,
+                           _async=False)
 
         self.assertEqual(self.http_traffic_queue.qsize(), 0)
 
@@ -84,8 +84,8 @@ class TestStateAcrossPages(BaseChromeCrawlerTest):
         fuzzable_request_2, http_response_2 = self._get_request_response(2)
         self.crawler.crawl(fuzzable_request_2,
                            http_response_2,
-                           self.http_traffic_queue)
-        self.crawler.wait_for_pending_tasks()
+                           self.http_traffic_queue,
+                           _async=False)
 
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
@@ -114,8 +114,8 @@ class TestStateAcrossPages(BaseChromeCrawlerTest):
             fuzzable_request_n, http_response_n = self._get_request_response(page_index)
             self.crawler.crawl(fuzzable_request_n,
                                http_response_n,
-                               self.http_traffic_queue)
-            self.crawler.wait_for_pending_tasks()
+                               self.http_traffic_queue,
+                               _async=False)
 
             if self.http_traffic_queue.qsize() == 1:
                 success = True
