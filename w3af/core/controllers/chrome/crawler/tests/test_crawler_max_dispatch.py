@@ -30,26 +30,25 @@ class TestCrawlMaxDispatchEvents(BaseChromeCrawlerTest):
     def test_crawl_pages_with_multiple_events_one(self):
         self._unittest_setup(MultipleXmlHttpRequestHandler)
 
-        root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
-
         pointer = 'w3af.core.controllers.chrome.crawler.strategies.js.ChromeCrawlerJS.MAX_EVENTS_TO_DISPATCH'
 
         with patch(pointer, new_callable=PropertyMock) as max_mock:
             max_mock.return_value = 1
-            self.crawler.crawl(root_url, self.http_traffic_queue)
+            self.crawler.crawl(self.fuzzable_request,
+                               self.http_response,
+                               self.http_traffic_queue)
 
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
         # The first request is to load the main page
-        request, _ = self.http_traffic_queue.get_nowait()
-        self.assertEqual(request.get_url().url_string, root_url)
+        request, _, _ = self.http_traffic_queue.get_nowait()
+        self.assertEqual(request.get_url(), self.url)
 
         # The second request is the one sent using XMLHttpRequest which
         # is triggered when clicking on the div tag
-        request, _ = self.http_traffic_queue.get_nowait()
+        request, _, _ = self.http_traffic_queue.get_nowait()
 
-        root_url = URL(root_url)
-        server_url = root_url.url_join('/server_0')
+        server_url = self.url.url_join('/server_0')
         data = 'foo=bar&lorem=ipsum'
 
         self.assertEqual(request.get_uri().url_string, server_url.url_string)
@@ -58,26 +57,25 @@ class TestCrawlMaxDispatchEvents(BaseChromeCrawlerTest):
     def test_crawl_pages_with_multiple_events_two(self):
         self._unittest_setup(MultipleXmlHttpRequestHandler)
 
-        root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
-
         pointer = 'w3af.core.controllers.chrome.crawler.strategies.js.ChromeCrawlerJS.MAX_EVENTS_TO_DISPATCH'
 
         with patch(pointer, new_callable=PropertyMock) as max_mock:
             max_mock.return_value = 2
-            self.crawler.crawl(root_url, self.http_traffic_queue)
+            self.crawler.crawl(self.fuzzable_request,
+                               self.http_response,
+                               self.http_traffic_queue)
 
         self.assertEqual(self.http_traffic_queue.qsize(), 3)
 
         # The first request is to load the main page
-        request, _ = self.http_traffic_queue.get_nowait()
-        self.assertEqual(request.get_url().url_string, root_url)
+        request, _, _ = self.http_traffic_queue.get_nowait()
+        self.assertEqual(request.get_url(), self.url)
 
         # The second request is the one sent using XMLHttpRequest which
         # is triggered when clicking on the div tag
-        request, _ = self.http_traffic_queue.get_nowait()
+        request, _, _ = self.http_traffic_queue.get_nowait()
 
-        root_url = URL(root_url)
-        server_url = root_url.url_join('/server_0')
+        server_url = self.url.url_join('/server_0')
         data = 'foo=bar&lorem=ipsum'
 
         self.assertEqual(request.get_uri().url_string, server_url.url_string)
@@ -85,9 +83,9 @@ class TestCrawlMaxDispatchEvents(BaseChromeCrawlerTest):
 
         # The second request is the one sent using XMLHttpRequest which
         # is triggered when clicking on the div tag
-        request, _ = self.http_traffic_queue.get_nowait()
+        request, _, _ = self.http_traffic_queue.get_nowait()
 
-        server_url = root_url.url_join('/server_1')
+        server_url = self.url.url_join('/server_1')
         data = 'foo=bar&lorem=ipsum'
 
         self.assertEqual(request.get_uri().url_string, server_url.url_string)
