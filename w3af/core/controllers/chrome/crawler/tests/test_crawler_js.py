@@ -21,29 +21,28 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.controllers.chrome.crawler.tests.base import BaseChromeCrawlerTest
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.chrome.crawler.strategies.js import ChromeCrawlerJS
-from w3af.core.data.parsers.doc.url import URL
 
 
 class TestChromeCrawlerClick(BaseChromeCrawlerTest):
 
     def test_crawl_xmlhttprequest(self):
         self._unittest_setup(XmlHttpRequestHandler)
-        root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
-        self.crawler.crawl(root_url, self.http_traffic_queue)
+        self.crawler.crawl(self.fuzzable_request,
+                           self.http_response,
+                           self.http_traffic_queue)
 
         self.assertEqual(self.http_traffic_queue.qsize(), 2)
 
         # The first request is to load the main page
-        request, _ = self.http_traffic_queue.get_nowait()
-        self.assertEqual(request.get_url().url_string, root_url)
+        request, _, _ = self.http_traffic_queue.get_nowait()
+        self.assertEqual(request.get_url().url_string, self.url.url_string)
 
         # The second request is the one sent using XMLHttpRequest which
         # is triggered when clicking on the div tag
-        request, _ = self.http_traffic_queue.get_nowait()
+        request, _, _ = self.http_traffic_queue.get_nowait()
 
-        root_url = URL(root_url)
-        server_url = root_url.url_join('/server')
+        server_url = self.url.url_join('/server')
         data = 'foo=bar&lorem=ipsum'
 
         self.assertEqual(request.get_uri().url_string, server_url.url_string)
@@ -51,38 +50,43 @@ class TestChromeCrawlerClick(BaseChromeCrawlerTest):
 
     def test_crawl_full_page_reload(self):
         self._unittest_setup(TwoPagesRequestHandler)
-        root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
-        self.crawler.crawl(root_url, self.http_traffic_queue)
+        self.crawler.crawl(self.fuzzable_request,
+                           self.http_response,
+                           self.http_traffic_queue)
 
-        self.assertEqual(self.http_traffic_queue.qsize(), 3)
+        self.assertEqual(self.http_traffic_queue.qsize(), 4)
 
-        # The first request is to load the main page
-        request, _ = self.http_traffic_queue.get_nowait()
-        self.assertEqual(request.get_url().url_string, root_url)
+        requested_urls = set()
+        expected_urls = {self.url.url_string,
+                         self.url.url_string + 'after-click'}
 
-        # The second request is the one triggered after clicking on the div tag
-        request, _ = self.http_traffic_queue.get_nowait()
-        self.assertEqual(request.get_url().url_string, root_url + 'after-click')
+        while not self.http_traffic_queue.empty():
+            request, _, _ = self.http_traffic_queue.get_nowait()
+
+            requested_urls.add(request.get_url().url_string)
+
+        self.assertEqual(requested_urls, expected_urls)
 
     def test_crawl_full_page_reload_and_xmlhttprequest(self):
         self._unittest_setup(TwoPagesAndXmlHttpRequestHandler)
-        root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
-        self.crawler.crawl(root_url, self.http_traffic_queue)
+        self.crawler.crawl(self.fuzzable_request,
+                           self.http_response,
+                           self.http_traffic_queue)
 
         requested_urls = set()
         requested_data = set()
 
         while not self.http_traffic_queue.empty():
-            request, _ = self.http_traffic_queue.get_nowait()
+            request, _, _ = self.http_traffic_queue.get_nowait()
 
             requested_urls.add(request.get_url().url_string)
             requested_data.add(request.get_data())
 
-        expected_urls = {root_url,
-                         root_url + 'after-click',
-                         root_url + 'server'}
+        expected_urls = {self.url.url_string,
+                         self.url.url_string + 'after-click',
+                         self.url.url_string + 'server'}
 
         expected_data = {'',
                          'foo=bar&lorem=ipsum'}
@@ -92,15 +96,16 @@ class TestChromeCrawlerClick(BaseChromeCrawlerTest):
 
     def test_multiple_xmlhttprequest_actions(self):
         self._unittest_setup(MultipleXmlHttpRequestHandler)
-        root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
-        self.crawler.crawl(root_url, self.http_traffic_queue)
+        self.crawler.crawl(self.fuzzable_request,
+                           self.http_response,
+                           self.http_traffic_queue)
 
         requested_urls = set()
         requested_data = set()
 
         while not self.http_traffic_queue.empty():
-            request, _ = self.http_traffic_queue.get_nowait()
+            request, _, _ = self.http_traffic_queue.get_nowait()
 
             requested_urls.add(request.get_url().url_string)
             requested_data.add(request.get_data())
@@ -117,9 +122,10 @@ class TestChromeCrawlerClick(BaseChromeCrawlerTest):
         #
         #   * Not (most likely) not find any new information
         #
-        expected_urls = {root_url}
+        expected_urls = {self.url.url_string}
+        
         for i in xrange(ChromeCrawlerJS.MAX_SIMILAR_EVENT_DISPATCH):
-            expected_urls.add('%sserver_%s' % (root_url, i))
+            expected_urls.add('%sserver_%s' % (self.url, i))
 
         expected_data = {'',
                          'foo=bar&lorem=ipsum'}
@@ -129,21 +135,22 @@ class TestChromeCrawlerClick(BaseChromeCrawlerTest):
 
     def test_xmlhttprequest_with_dom_modifications(self):
         self._unittest_setup(ModifyDOMHandler)
-        root_url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
 
-        self.crawler.crawl(root_url, self.http_traffic_queue)
+        self.crawler.crawl(self.fuzzable_request,
+                           self.http_response,
+                           self.http_traffic_queue)
 
         requested_urls = set()
         requested_data = set()
 
         while not self.http_traffic_queue.empty():
-            request, _ = self.http_traffic_queue.get_nowait()
+            request, _, _ = self.http_traffic_queue.get_nowait()
 
             requested_urls.add(request.get_url().url_string)
             requested_data.add(request.get_data())
 
-        expected_urls = {root_url,
-                         root_url + 'server_1'}
+        expected_urls = {self.url.url_string,
+                         self.url.url_string + 'server_1'}
 
         expected_data = {'',
                          'foo=bar&lorem=ipsum'}
