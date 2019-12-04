@@ -125,7 +125,6 @@ class ChromeCrawlerDOMDump(object):
         dom_http_response = first_http_response.copy()
         dom_http_response.set_body(dom)
 
-        # This will call CrawlFilterQueue.put()
         queue_data = (first_http_request,
                       dom_http_response,
                       self._debugging_id)
