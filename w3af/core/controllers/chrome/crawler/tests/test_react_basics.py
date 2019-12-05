@@ -80,30 +80,16 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         url = 'https://react-icons-kit.now.sh/'
         found_uris = self._crawl(url)
 
-        expected_uris = {
+        expected_url_regexes = {
             'https://api.github.com/repos/wmira/react-icons-kit',
             'https://buttons.github.io/buttons.js',
-            'https://fonts.googleapis.com/css?family=Roboto',
-            'https://fonts.gstatic.com/s/roboto/v20/KFOmCnqEu92Fr1Mu4mxP.ttf',
+            'https://fonts.googleapis.com/css\\?family=Roboto',
             'https://react-icons-kit.now.sh/',
-            'https://react-icons-kit.now.sh/static/css/main.1969ec6f.chunk.css',
-            'https://react-icons-kit.now.sh/static/js/10.8540d94c.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/11.231df52c.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/12.bb39441f.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/13.b15ad13e.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/14.896ea694.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/2.7fcf3a64.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/3.53088ee4.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/4.3cc6d30f.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/5.61059cf1.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/6.82dd2a0d.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/7.8a170409.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/8.98e8b840.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/9.09bf1d7f.chunk.js',
-            'https://react-icons-kit.now.sh/static/js/main.883b6669.chunk.js',
+            'https://react-icons-kit.now.sh/static/css/main..*?.chunk.css',
+            'https://react-icons-kit.now.sh/static/js/main..*?.chunk.js',
         }
 
-        self.assertEqual(found_uris, expected_uris)
+        self._multi_regex_match(expected_url_regexes, found_uris)
 
         expected_messages = '''
         Dispatching "click" on CSS selector ".sc-hSdWYo div:nth-of-type(2)"
