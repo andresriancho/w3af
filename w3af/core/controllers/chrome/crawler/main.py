@@ -401,6 +401,10 @@ class ChromeCrawler(object):
         for crawl_strategy_name in self.RO_CRAWL_STRATEGIES:
             crawl_strategy = self._get_crawl_strategy_instance(crawl_strategy_name, debugging_id)
 
+            args = (crawl_strategy.get_name(), url, debugging_id)
+            msg = 'Spent {seconds} seconds in crawl strategy %s for %s (did: %s)' % args
+            took_line = TookLine(msg)
+
             try:
                 crawl_strategy.crawl(chrome, url)
             except (ChromeInterfaceException, ChromeInterfaceTimeout, ChromeCrawlerException) as ce:
@@ -412,7 +416,9 @@ class ChromeCrawler(object):
 
                 # These are soft exceptions, just skip this crawl strategy
                 # and continue with the next one
-                return
+                continue
+
+            took_line.send()
 
     def _cleanup(self,
                  url,
