@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import six
+import time
 import socket
 
 from websocket import (WebSocket,
@@ -49,7 +51,9 @@ class CustomWebSocket(WebSocket):
                                               #
                                               skip_utf8_validation=True)
 
-        self.frame_buffer = CustomFrameBuffer(self._recv, skip_utf8_validation)
+        self.frame_buffer = CustomFrameBuffer(self._recv,
+                                              self,
+                                              skip_utf8_validation)
 
     def set_mask_key(self, *args):
         # Do not let anyone override this
@@ -67,6 +71,10 @@ class CustomWebSocket(WebSocket):
 
 
 class CustomFrameBuffer(frame_buffer):
+    def __init__(self, recv_fn, websocket, skip_utf8_validation):
+        super(CustomFrameBuffer, self).__init__(recv_fn, skip_utf8_validation)
+        self._websocket = websocket
+
     def recv_strict(self, bufsize):
         """
         Overriding to fix the issue with timeout handling which is explained
@@ -77,9 +85,32 @@ class CustomFrameBuffer(frame_buffer):
         :param bufsize: The size of the buffer to read
         :return: The bytes read from the wire
         """
-        # This is an undercover call to CustomWebSocket._recv() which then
-        # calls custom_recv() defined below
-        return self.recv(bufsize)
+        timeout_secs = self._websocket.gettimeout()
+        timeout_timestamp = time.time() + timeout_secs
+
+        shortage = bufsize - sum(len(x) for x in self.recv_buffer)
+        while shortage > 0 and time.time() < timeout_timestamp:
+            # Limit buffer size that we pass to socket.recv() to avoid
+            # fragmenting the heap -- the number of bytes recv() actually
+            # reads is limited by socket buffer and is relatively small,
+            # yet passing large numbers repeatedly causes lots of large
+            # buffers allocated and then shrunk, which results in
+            # fragmentation.
+            #
+            # This is an undercover call to CustomWebSocket._recv() which then
+            # calls custom_recv() defined below
+            bytes_ = self.recv(min(16384, shortage))
+            self.recv_buffer.append(bytes_)
+            shortage -= len(bytes_)
+
+        unified = six.b('').join(self.recv_buffer)
+
+        if shortage == 0:
+            self.recv_buffer = []
+            return unified
+        else:
+            self.recv_buffer = [unified[bufsize:]]
+            return unified[:bufsize]
 
 
 def get_mask_key_zero(key_length):
@@ -97,9 +128,6 @@ def custom_recv(sock, bufsize):
 
     if not data:
         raise WebSocketConnectionClosedException('Connection is already closed')
-
-    if len(data) != bufsize:
-        raise WebSocketConnectionClosedException('Connection was closed by peer')
 
     return data
 
