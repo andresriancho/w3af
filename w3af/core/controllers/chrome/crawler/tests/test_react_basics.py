@@ -37,14 +37,13 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         expected_messages = '''
         Dispatching "click" on CSS selector "!document"
         Dispatching "click" on CSS selector ".AddGreeter button"
-        The JS crawler noticed a big change in the DOM.
         Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(2) button:nth-child(2)"
         Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(2) button:nth-child(2) [role]"
         Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(2) button:nth-child(3)"
         Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(2) button:nth-child(3) [role]"
         Dispatching "click" on CSS selector ".HelloWorldList .HelloWorld:nth-of-type(2) button:nth-child(5)"
         The JS crawler noticed a big change in the DOM.
-        Processing event 10 out of (unknown)
+        Already processed 9 events
         '''
 
         found, not_found = self._log_contains(expected_messages)
@@ -93,9 +92,8 @@ class ReactBasicTest(BaseChromeCrawlerTest):
 
         expected_messages = '''
         Dispatching "click" on CSS selector ".sc-hSdWYo div:nth-of-type(2)"
-        Processing event 32 out of (unknown) for https://react-icons-kit.now.sh/.
+        Already processed 79 events with types
         Event dispatch error count is 0.
-        Already processed 35 events with types: {u'click': 35}
         Ignoring "click" event on selector
         '''
 

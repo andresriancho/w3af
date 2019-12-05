@@ -127,6 +127,14 @@ class EventListener(object):
             return False
 
         for key, value in self._event_as_dict.iteritems():
+            #
+            # The event_source (where this event was found) is not important
+            # when comparing events. Events are equal if they are of the same
+            # type, are sent to the same selector and have the same URI
+            #
+            if key == 'event_source':
+                continue
+
             other_value = other.get(key)
 
             if value != other_value:
