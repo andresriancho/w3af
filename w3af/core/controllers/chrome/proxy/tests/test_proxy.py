@@ -96,11 +96,16 @@ class TestProxy(unittest.TestCase):
             pool.close()
             pool.join()
 
+            time.sleep(1)
+
             cmd = 'lsof -n -P -p %s 2>&1' % os.getpid()
             lsof = subprocess.check_output(cmd, shell=True)
 
             close_wait_in_lsof = 'CLOSE_WAIT' in lsof
             result_queue.put(close_wait_in_lsof)
+
+            if close_wait_in_lsof:
+                print(close_wait_in_lsof)
 
         result_queue = MultiprocessingQueue()
         process = Process(target=run_test, args=(result_queue,))
