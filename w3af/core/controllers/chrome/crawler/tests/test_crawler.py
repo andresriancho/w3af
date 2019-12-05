@@ -137,7 +137,7 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
             time.sleep(0.5)
 
         # The crawler sends a few requests to the target URL
-        self.assertGreaterEqual(self.web_spider._chrome_identified_http_requests, 1)
+        self.assertEqual(self.web_spider._chrome_identified_http_requests, 2)
 
         # But the links to the dynamically generated <a> tags should be in
         # the web_spider output queue

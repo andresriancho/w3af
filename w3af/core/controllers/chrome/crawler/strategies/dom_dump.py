@@ -123,6 +123,7 @@ class ChromeCrawlerDOMDump(object):
         first_http_request = chrome.get_first_request()
 
         dom_http_response = first_http_response.copy()
+        dom_http_response.force_parsing = True
         dom_http_response.set_body(dom)
 
         queue_data = (first_http_request,
