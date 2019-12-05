@@ -1,65 +1,118 @@
 import re
+import json
 
 from utils.output import ListOutput, ListOutputItem
 from utils.dotdict import dotdict
 
 
-HTTP_REQUESTS_IN_PROXY = re.compile('Extracted (.*?) new HTTP requests from (.*?) using .*?')
-CRAWL_TIME_BY_STRATEGY = re.compile('Spent (.*?) seconds in crawl strategy (.*?) for (.*?)')
-CHROME_POOL_WAIT_TIME = re.compile('Spent (.*?) seconds getting a chrome instance')
-INITIAL_CHROME_PAGE_LOAD = re.compile('Spent (.*?) seconds loading URL (.*?) in chrome')
-PAGE_LOAD_FAIL = re.compile('Chrome did not successfully load (.*?) in (.*?) seconds')
-EVENT_DISPATCH = re.compile('Dispatching "(.*?)" on CSS selector "(.*?)" at page (.*?)')
+CRAWL_TIME_BY_STRATEGY = re.compile('Spent (.*?) seconds in crawl strategy (.*?) for (.*?) \(did:')
 
-REQUIRED_START_WITH = [
-    'Extracted',
+EVENT_IGNORE = re.compile('Ignoring "(.*?)" event on selector "(.*?)" and URL "(.*?)"')
+EVENT_DISPATCH_STATS = re.compile(r'Event dispatch error count is (.*?). Already processed (.*?) events with types: (.*?)\. \(did:')
+
+EXTRACTED_HTTP_REQUESTS = re.compile(r'Extracted (.*?) new HTTP requests from (.*?)')
+TOTAL_CHROME_PROXY_REQUESTS = re.compile(r'A total of (.*?) HTTP requests have been read by the web_spider')
+
+SECONDS_LOADING_URL = re.compile(r'Spent (.*?) seconds loading URL (.*?)')
+WAIT_FOR_LOAD_TIMEOUTS = re.compile(r'wait_for_load\(timeout=(.*?)\) timed out')
+
+CHROME_POOL_PERF = re.compile(r'ChromePool.get\(\) took (.*?) seconds to create an instance')
+WEBSOCKET_MESSAGE_WAIT_TIME = re.compile(r'Waited (.*?) seconds for message with ID')
+CHROME_CRAWLER_STATUS = re.compile(r'ChromeCrawler status ((.*?) running tasks, (.*?) workers, (.*?) tasks in queue)')
+
+REGEX_NAMES = {
+    'CRAWL_TIME_BY_STRATEGY',
+    'EVENT_IGNORE',
+    'EVENT_DISPATCH_STATS',
+    'EXTRACTED_HTTP_REQUESTS',
+    #'SECONDS_LOADING_URL',
+    #'CHROME_POOL_PERF',
+    #'TOTAL_CHROME_PROXY_REQUESTS',
+    #'WEBSOCKET_MESSAGE_WAIT_TIME',
+    #'WAIT_FOR_LOAD_TIMEOUTS',
+    #'CHROME_CRAWLER_STATUS'
+}
+
+REQUIRED_TEXT = [
     'Spent',
-    'Chrome',
-    'Dispatching'
+    'Ignoring',
+    'dispatch',
+    'Extracted',
+    'ChromePool',
+    'A total of',
+    'for message with ID',
+    'wait_for_load',
+    'ChromeCrawler',
 ]
 
 
-HANDLERS = {
-    HTTP_REQUESTS_IN_PROXY: 'http_requests_in_proxy_handler',
-    CRAWL_TIME_BY_STRATEGY: 'crawl_time_by_strategy_handler',
-    CHROME_POOL_WAIT_TIME: 'chrome_pool_wait_time_handler',
-    INITIAL_CHROME_PAGE_LOAD: 'initial_chrome_page_load_handler',
-    PAGE_LOAD_FAIL: 'page_load_fail_handler',
-    EVENT_DISPATCH: 'event_dispatch_handler',
-}
+HANDLERS = dict()
 
 
 def get_js_crawling_stats(scan_log_filename, scan):
+    """
+    Main entry point for this analyzer
+
+    :param scan_log_filename: The name of the scan log file
+    :param scan: The file descriptor for the scan log
+    :return: The output
+    """
+    populate_handlers()
+
     output = ListOutput('js_crawl_stats')
 
+    context = read_data(scan)
+    post_process_context(context, output)
+
+    return output
+
+
+def should_grep(line):
+    for required_text in REQUIRED_TEXT:
+        if required_text in line:
+            return True
+
+    return False
+
+
+def get_handler_name(regex_name):
+    return '%s_handler' % regex_name.lower()
+
+
+def populate_handlers():
+    for regex_name in REGEX_NAMES:
+        HANDLERS[globals()[regex_name]] = globals()[get_handler_name(regex_name)]
+
+
+def sort_by_first(a, b):
+    return cmp(a[0], b[0])
+
+
+def sort_by_second(a, b):
+    return cmp(a[1], b[1])
+
+
+def read_data(scan):
     scan.seek(0)
 
     context = dotdict()
 
-    context.http_requests_in_proxy = dict()
     context.js_crawl_strategy_times = list()
     context.dom_dump_crawl_strategy_times = list()
+    context.event_ignore = list()
+    context.event_dispatch_stats = list()
+    context.extracted_http_requests = list()
+
+    context.http_requests_in_proxy = dict()
     context.chrome_pool_wait_times = list()
     context.chrome_page_load_times = list()
     context.page_load_fails = list()
-    context.event_dispatch = list()
-
-    # Get the function pointers
-    for regex, handler_name in HANDLERS.iteritems():
-        HANDLERS[regex] = globals()[handler_name]
 
     # Process all the lines
     for line in scan:
 
         # Performance improvement
-        should_grep = False
-
-        for required_start_with in REQUIRED_START_WITH:
-            if line.startswith(required_start_with):
-                should_grep = True
-                break
-
-        if not should_grep:
+        if not should_grep(line):
             continue
 
         # Actual information extraction
@@ -72,10 +125,52 @@ def get_js_crawling_stats(scan_log_filename, scan):
             handler_func(context, mo)
             break
 
-    #
-    # Now we do some post-processing with the captured data
-    #
+    return context
 
+
+def post_process_context(context, output):
+    """
+    Do some post-processing with the captured data
+    """
+    post_process_crawl_time_by_strategy(context, output)
+    post_process_event_dispatch_stats(context, output)
+    post_process_extracted_http_requests(context, output)
+
+    post_process_http_requests_in_proxy(context, output)
+    post_process_pool_wait_times(context, output)
+    post_process_page_load_fail(context, output)
+
+
+def post_process_extracted_http_requests(context, output):
+    max_extracted_http_requests = max(context.extracted_http_requests)
+    min_extracted_http_requests = min(context.extracted_http_requests)
+
+    avg_extracted_http_requests = 0
+
+    if len(context.extracted_http_requests):
+        avg_extracted_http_requests = sum(context.extracted_http_requests) / len(context.extracted_http_requests)
+
+    data = {'max_extracted_http_requests': max_extracted_http_requests,
+            'min_extracted_http_requests': min_extracted_http_requests,
+            'avg_extracted_http_requests': avg_extracted_http_requests}
+
+    output.append(ListOutputItem('Extracted HTTP requests', data))
+
+
+def post_process_event_dispatch_stats(context, output):
+    ignored = len(context.event_ignore)
+
+    dispatch_error_count, processed, by_type = context.event_dispatch_stats[-1]
+
+    data = {'total_dispatch_errors': dispatch_error_count,
+            'total_processed_events': processed,
+            'events_by_type': json.dumps(by_type),
+            'total_ignored': ignored}
+
+    output.append(ListOutputItem('Dispatch stats', data))
+
+
+def post_process_http_requests_in_proxy(context, output):
     #
     # Total number of HTTP requests sent via proxy
     #
@@ -83,10 +178,6 @@ def get_js_crawling_stats(scan_log_filename, scan):
 
     for url, request_count in context.http_requests_in_proxy.iteritems():
         total_http_requests_proxy += request_count
-
-    # URL with more HTTP requests
-    def sort_by_second(a, b):
-        return cmp(a[1], b[1])
 
     url_count_items = context.http_requests_in_proxy.items()
     url_count_items.sort(sort_by_second)
@@ -96,9 +187,11 @@ def get_js_crawling_stats(scan_log_filename, scan):
     output.append(ListOutputItem('Proxied HTTP requests', {'scan total': total_http_requests_proxy,
                                                            'max by URL': url_count_items}))
 
-    #
-    # Crawl times by strategy
-    #
+
+def post_process_crawl_time_by_strategy(context, output):
+    """
+    Crawl times by strategy
+    """
     crawl_time_js_total = 0
     crawl_time_dom_total = 0
 
@@ -108,11 +201,9 @@ def get_js_crawling_stats(scan_log_filename, scan):
     for spent, url in context.dom_dump_crawl_strategy_times:
         crawl_time_dom_total += spent
 
-    def sort_by_first(a, b):
-        return cmp(a[0], b[0])
-
     js_max_by_url = context.js_crawl_strategy_times[:]
     js_max_by_url.sort(sort_by_first)
+    js_max_by_url.reverse()
     js_max_by_url = js_max_by_url[:10]
 
     dom_dump_max_by_url = context.js_crawl_strategy_times[:]
@@ -130,6 +221,8 @@ def get_js_crawling_stats(scan_log_filename, scan):
             'Average': 'n/a' if not len(context.dom_dump_crawl_strategy_times) else crawl_time_dom_total / len(context.dom_dump_crawl_strategy_times)}
     output.append(ListOutputItem('DOM dump crawl times (seconds)', data))
 
+
+def post_process_pool_wait_times(context, output):
     #
     # Pool wait times
     #
@@ -157,6 +250,8 @@ def get_js_crawling_stats(scan_log_filename, scan):
             'Average': 'n/a' if not len(context.chrome_page_load_times) else initial_page_load_total / len(context.chrome_page_load_times)}
     output.append(ListOutputItem('Initial page load', data))
 
+
+def post_process_page_load_fail(context, output):
     #
     # Page load fail
     #
@@ -165,6 +260,8 @@ def get_js_crawling_stats(scan_log_filename, scan):
     data = {'Total': total_page_load_fail}
     output.append(ListOutputItem('Page load fail', data))
 
+
+def post_process_dispatched_events(context, output):
     #
     # Dispatched events
     #
@@ -207,8 +304,6 @@ def get_js_crawling_stats(scan_log_filename, scan):
     output.append(ListOutputItem('Pages with most events', pages_with_most_events))
     output.append(ListOutputItem('Most common events', most_common_events))
 
-    return output
-
 
 def http_requests_in_proxy_handler(context, match_object):
     count = match_object.group(1)
@@ -232,8 +327,10 @@ def crawl_time_by_strategy_handler(context, match_object):
 
     if strategy == 'JS events':
         context.js_crawl_strategy_times.append((seconds, url))
-    else:
+    elif strategy == 'DOM dump':
         context.dom_dump_crawl_strategy_times.append((seconds, url))
+    else:
+        raise RuntimeError('Unknown strategy: "%s"' % strategy)
 
 
 def chrome_pool_wait_time_handler(context, match_object):
@@ -261,9 +358,31 @@ def page_load_fail_handler(context, match_object):
     context.page_load_fails.append((url, seconds))
 
 
-def event_dispatch_handler(context, match_object):
-    event = match_object.group(1)
+def event_dispatch_stats_handler(context, match_object):
+    dispatch_error_count = match_object.group(1)
+    processed = match_object.group(2)
+    by_type = match_object.group(3)
+
+    dispatch_error_count = int(dispatch_error_count)
+    processed = int(processed)
+
+    by_type = by_type.replace("u'", "'")
+    by_type = by_type.replace("'", '"')
+    by_type = json.loads(by_type)
+
+    context.event_dispatch_stats.append((dispatch_error_count, processed, by_type))
+
+
+def event_ignore_handler(context, match_object):
+    event_type = match_object.group(1)
     selector = match_object.group(2)
     url = match_object.group(3)
 
-    context.event_dispatch.append((event, selector, url))
+    context.event_ignore.append((event_type, selector, url))
+
+
+def extracted_http_requests_handler(context, match_object):
+    extracted_count = match_object.group(1)
+    extracted_count = int(extracted_count)
+
+    context.extracted_http_requests.append(extracted_count)
