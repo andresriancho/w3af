@@ -26,6 +26,8 @@ import urllib2
 import unittest
 import subprocess
 
+from multiprocessing import Process
+from multiprocessing import Queue as MultiprocessingQueue
 from multiprocessing.pool import ThreadPool
 
 from w3af.core.controllers.chrome.proxy.main import LoggingProxy
@@ -74,26 +76,36 @@ class TestProxy(unittest.TestCase):
         self.assertLess(spent_via_proxy, spent_no_proxy * 1.05)
 
     def test_no_connections_in_close_wait(self):
-        processes = 100
-        http_requests = processes * 4
+        def run_test(result_queue):
+            threads = 100
+            http_requests = threads * 4
 
-        # Setup the opener
-        proxy = urllib2.ProxyHandler({'http': '127.0.0.1:%s' % self.proxy.get_bind_port()})
-        opener = urllib2.build_opener(proxy)
+            # Setup the opener
+            proxy = urllib2.ProxyHandler({'http': '127.0.0.1:%s' % self.proxy.get_bind_port()})
+            opener = urllib2.build_opener(proxy)
 
-        pool = ThreadPool(processes=processes)
+            pool = ThreadPool(processes=threads)
 
-        def open_read(url):
-            response = opener.open(url)
-            response.read()
+            def open_read(url):
+                response = opener.open(url)
+                response.read()
 
-        args = ['https://en.wikipedia.org/wiki/Cross-site_scripting'] * http_requests
-        pool.map(open_read, args)
+            args = ['https://en.wikipedia.org/wiki/Cross-site_scripting'] * http_requests
+            pool.map(open_read, args)
 
-        pool.close()
-        pool.join()
+            pool.close()
+            pool.join()
 
-        cmd = 'lsof -n -p %s 2>&1' % os.getpid()
-        lsof = subprocess.check_output(cmd, shell=True)
+            cmd = 'lsof -n -P -p %s 2>&1' % os.getpid()
+            lsof = subprocess.check_output(cmd, shell=True)
 
-        self.assertNotIn('CLOSE_WAIT', lsof)
+            close_wait_in_lsof = 'CLOSE_WAIT' in lsof
+            result_queue.put(close_wait_in_lsof)
+
+        result_queue = MultiprocessingQueue()
+        process = Process(target=run_test, args=(result_queue,))
+        process.start()
+        process.join()
+
+        has_close_wait_connections = result_queue.get()
+        self.assertFalse(has_close_wait_connections)
