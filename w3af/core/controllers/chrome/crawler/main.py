@@ -54,6 +54,20 @@ class ChromeCrawler(object):
     MIN_WORKER_THREADS = 1
     MIN_CHROME_POOL_INSTANCES = BaseConsumer.THREAD_POOL_SIZE
 
+    #
+    # There are two different types of crawl strategies: read-only (RO) and
+    # read-write (RW). When adding a new crawl strategy please make sure that
+    # you add them to the right class attribute
+    #
+    # Read-only crawl strategies receive a chrome instance with a loaded DOM
+    # and extract information from it *without changing anything*. These strategies
+    # never browse to a different page, never modify the DOM, never click on
+    # tags.
+    #
+    # Read-write crawl strategies receive a chrome instance with a loaded DOM
+    # and extract information by changing the DOM, clicking, hitting the browser
+    # back button, filling forms, etc.
+    #
     RO_CRAWL_STRATEGIES = {ChromeCrawlerDOMDump.get_name(): ChromeCrawlerDOMDump}
     RW_CRAWL_STRATEGIES = {ChromeCrawlerJS.get_name(): ChromeCrawlerJS}
 
