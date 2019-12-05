@@ -583,30 +583,38 @@ class ChromeCrawlerJS(object):
                 continue
 
             if event_dispatch_log_unit.event == event and event_dispatch_log_unit.uri == self._url:
-                break
+                msg = ('Ignoring "%s" event on selector "%s" and URL "%s" because'
+                       ' the same event was already dispatched (did: %s)')
+                args = (current_event_type,
+                        event['selector'],
+                        self._url,
+                        self._debugging_id)
+                om.out.debug(msg % args)
+
+                self._ignore_event(event)
+                return False
 
             if event_dispatch_log_unit.event.fuzzy_matches(event):
                 similar_successfully_dispatched += 1
 
             if similar_successfully_dispatched >= self.MAX_SIMILAR_EVENT_DISPATCH:
-                break
-        else:
-            # Was able to complete the whole for loop without hitting the "break"
-            # clause, this means that there are no similar events in the log and
-            # the current event should be dispatched
-            return True
+                msg = ('Ignoring "%s" event on selector "%s" and URL "%s" because'
+                       ' a very similar event was dispatched more than'
+                       ' MAX_SIMILAR_EVENT_DISPATCH (%s) times (did: %s)')
+                args = (current_event_type,
+                        event['selector'],
+                        self._url,
+                        self.MAX_SIMILAR_EVENT_DISPATCH,
+                        self._debugging_id)
+                om.out.debug(msg % args)
 
-        msg = ('Ignoring "%s" event on selector "%s" and URL "%s" because'
-               ' the same event, or a very similar one, was already'
-               ' dispatched (did: %s)')
-        args = (current_event_type,
-                event['selector'],
-                self._url,
-                self._debugging_id)
-        om.out.debug(msg % args)
+                self._ignore_event(event)
+                return False
 
-        self._ignore_event(event)
-        return False
+        # Was able to complete the whole for loop without hitting the "return"
+        # statements, this means that there are no similar events in the log and
+        # the current event should be dispatched
+        return True
 
 
 class MaxPageReload(Exception):
