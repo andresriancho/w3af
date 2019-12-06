@@ -13,24 +13,28 @@ EVENT_DISPATCH_STATS = re.compile(r'Event dispatch error count is (.*?). Already
 EXTRACTED_HTTP_REQUESTS = re.compile(r'Extracted (.*?) new HTTP requests from (.*?)')
 TOTAL_CHROME_PROXY_REQUESTS = re.compile(r'A total of (.*?) HTTP requests have been read by the web_spider')
 
-SECONDS_LOADING_URL = re.compile(r'Spent (.*?) seconds loading URL (.*?)')
+SECONDS_LOADING_URL = re.compile(r'Spent (.*?) seconds loading URL (.*?) in chrome')
 WAIT_FOR_LOAD_TIMEOUTS = re.compile(r'wait_for_load\(timeout=(.*?)\) timed out')
 
 CHROME_POOL_PERF = re.compile(r'ChromePool.get\(\) took (.*?) seconds to create an instance')
 WEBSOCKET_MESSAGE_WAIT_TIME = re.compile(r'Waited (.*?) seconds for message with ID')
-CHROME_CRAWLER_STATUS = re.compile(r'ChromeCrawler status ((.*?) running tasks, (.*?) workers, (.*?) tasks in queue)')
+CHROME_CRAWLER_STATUS = re.compile(r'ChromeCrawler status \((.*?) running tasks, (.*?) workers, (.*?) tasks in queue\)')
 
 REGEX_NAMES = {
     'CRAWL_TIME_BY_STRATEGY',
+
     'EVENT_IGNORE',
     'EVENT_DISPATCH_STATS',
+
     'EXTRACTED_HTTP_REQUESTS',
-    #'SECONDS_LOADING_URL',
-    #'CHROME_POOL_PERF',
-    #'TOTAL_CHROME_PROXY_REQUESTS',
-    #'WEBSOCKET_MESSAGE_WAIT_TIME',
-    #'WAIT_FOR_LOAD_TIMEOUTS',
-    #'CHROME_CRAWLER_STATUS'
+    'TOTAL_CHROME_PROXY_REQUESTS',
+
+    'SECONDS_LOADING_URL',
+    'WAIT_FOR_LOAD_TIMEOUTS',
+
+    'CHROME_POOL_PERF',
+    'WEBSOCKET_MESSAGE_WAIT_TIME',
+    'CHROME_CRAWLER_STATUS'
 }
 
 REQUIRED_TEXT = [
@@ -99,14 +103,19 @@ def read_data(scan):
 
     context.js_crawl_strategy_times = list()
     context.dom_dump_crawl_strategy_times = list()
+
     context.event_ignore = list()
     context.event_dispatch_stats = list()
-    context.extracted_http_requests = list()
 
-    context.http_requests_in_proxy = dict()
-    context.chrome_pool_wait_times = list()
-    context.chrome_page_load_times = list()
-    context.page_load_fails = list()
+    context.extracted_http_requests = list()
+    context.total_chrome_proxy_requests = list()
+
+    context.seconds_loading_url = list()
+    context.wait_for_load_timeouts = list()
+
+    context.chrome_pool_perf = list()
+    context.websocket_message_wait_time = list()
+    context.chrome_crawler_status = list()
 
     # Process all the lines
     for line in scan:
@@ -135,10 +144,112 @@ def post_process_context(context, output):
     post_process_crawl_time_by_strategy(context, output)
     post_process_event_dispatch_stats(context, output)
     post_process_extracted_http_requests(context, output)
+    post_process_seconds_loading_url(context, output)
+    post_process_total_chrome_proxy_requests(context, output)
+    post_process_wait_for_load_timeouts(context, output)
+    post_process_chrome_pool_perf(context, output)
+    post_process_websocket_message_wait_time(context, output)
+    post_process_chrome_crawler_status(context, output)
 
-    post_process_http_requests_in_proxy(context, output)
-    post_process_pool_wait_times(context, output)
-    post_process_page_load_fail(context, output)
+
+def post_process_chrome_crawler_status(context, output):
+    all_running_tasks = []
+    all_pool_workers = []
+    all_queued_tasks = []
+
+    for running_tasks, pool_workers, queued_tasks in context.chrome_crawler_status:
+        all_running_tasks.append(running_tasks)
+        all_pool_workers.append(pool_workers)
+        all_queued_tasks.append(queued_tasks)
+
+    average_running_tasks = 'n/a'
+
+    if len(all_running_tasks):
+        average_running_tasks = round(sum(all_running_tasks) / len(all_running_tasks), 2)
+
+    average_queued_tasks = 'n/a'
+
+    if len(all_queued_tasks):
+        average_queued_tasks = round(sum(all_queued_tasks) / len(all_queued_tasks), 2)
+
+    data = {'Pool worker sizes during scan': ', '.join(str(i) for i in set(all_pool_workers)),
+            'Max running tasks': max(all_running_tasks),
+            'Avg running tasks': average_running_tasks,
+            'Max queued tasks': max(all_queued_tasks),
+            'Avg queued tasks': average_queued_tasks}
+    output.append(ListOutputItem('Chrome crawler status', data))
+
+
+def post_process_websocket_message_wait_time(context, output):
+    total_seconds_waiting_for_message = sum(context.websocket_message_wait_time)
+
+    max_seconds_waiting = context.websocket_message_wait_time[:]
+    max_seconds_waiting.sort()
+    max_seconds_waiting.reverse()
+    max_seconds_waiting = max_seconds_waiting[:10]
+
+    average = 'n/a'
+
+    if len(context.chrome_pool_perf):
+        average = round(total_seconds_waiting_for_message / len(context.websocket_message_wait_time), 2)
+
+    data = {'Total waited time': total_seconds_waiting_for_message,
+            'Top 10 larger wait times': max_seconds_waiting,
+            'Average wait time': average,
+            'Number of messages': len(context.websocket_message_wait_time)}
+    output.append(ListOutputItem('Time waiting for chrome websocket messages (seconds)', data))
+
+
+def post_process_chrome_pool_perf(context, output):
+    total_seconds_waiting_for_chrome_inst = sum(context.chrome_pool_perf)
+
+    max_seconds_waiting = context.chrome_pool_perf[:]
+    max_seconds_waiting.sort()
+    max_seconds_waiting.reverse()
+    max_seconds_waiting = max_seconds_waiting[:10]
+
+    average = 'n/a'
+
+    if len(context.chrome_pool_perf):
+        average = round(total_seconds_waiting_for_chrome_inst / len(context.chrome_pool_perf), 2)
+
+    data = {'Total waited time': total_seconds_waiting_for_chrome_inst,
+            'Top 10 larger wait times': max_seconds_waiting,
+            'Average wait time': average,
+            'Number of chrome instances': len(context.chrome_pool_perf)}
+    output.append(ListOutputItem('Time waiting for chrome instance from pool (seconds)', data))
+
+
+def post_process_total_chrome_proxy_requests(context, output):
+    total_chrome_requests = context.total_chrome_proxy_requests[-1]
+
+    data = {'Total': total_chrome_requests}
+    output.append(ListOutputItem('HTTP requests sent by chrome', data))
+
+
+def post_process_seconds_loading_url(context, output):
+    total_seconds_loading_url = 0
+
+    for spent, url in context.seconds_loading_url:
+        total_seconds_loading_url += spent
+
+    total_seconds_loading_url = round(total_seconds_loading_url, 2)
+
+    max_by_url = context.seconds_loading_url[:]
+    max_by_url.sort(sort_by_first)
+    max_by_url.reverse()
+    max_by_url = max_by_url[:10]
+
+    average = 'n/a'
+
+    if len(context.seconds_loading_url):
+        average = round(total_seconds_loading_url / len(context.seconds_loading_url), 2)
+
+    data = {'Total': total_seconds_loading_url,
+            'Top 10 most time consuming by URL': max_by_url,
+            'Average': average,
+            'Number of loaded URLs': len(context.seconds_loading_url)}
+    output.append(ListOutputItem('Time loading URL (seconds)', data))
 
 
 def post_process_extracted_http_requests(context, output):
@@ -150,11 +261,11 @@ def post_process_extracted_http_requests(context, output):
     if len(context.extracted_http_requests):
         avg_extracted_http_requests = sum(context.extracted_http_requests) / len(context.extracted_http_requests)
 
-    data = {'max_extracted_http_requests': max_extracted_http_requests,
-            'min_extracted_http_requests': min_extracted_http_requests,
-            'avg_extracted_http_requests': avg_extracted_http_requests}
+    data = {'max': max_extracted_http_requests,
+            'min': min_extracted_http_requests,
+            'avg': avg_extracted_http_requests}
 
-    output.append(ListOutputItem('Extracted HTTP requests', data))
+    output.append(ListOutputItem('Extracted HTTP requests per page', data))
 
 
 def post_process_event_dispatch_stats(context, output):
@@ -211,54 +322,35 @@ def post_process_crawl_time_by_strategy(context, output):
     dom_dump_max_by_url.reverse()
     dom_dump_max_by_url = dom_dump_max_by_url[:10]
 
+    average = 'n/a'
+
+    if len(context.js_crawl_strategy_times):
+        average = round(crawl_time_js_total / len(context.js_crawl_strategy_times), 2)
+
     data = {'Total': crawl_time_js_total,
             'Top 10 most time consuming by URL': js_max_by_url,
-            'Average': 'n/a' if not len(context.js_crawl_strategy_times) else crawl_time_js_total / len(context.js_crawl_strategy_times)}
+            'Average': average,
+            'Number of calls to strategy': len(context.js_crawl_strategy_times)}
     output.append(ListOutputItem('JS crawl times (seconds)', data))
+
+    average = 'n/a'
+
+    if len(context.dom_dump_crawl_strategy_times):
+        average = round(crawl_time_dom_total / len(context.dom_dump_crawl_strategy_times), 2)
 
     data = {'Total': crawl_time_dom_total,
             'Top 10 most time consuming by URL': dom_dump_max_by_url,
-            'Average': 'n/a' if not len(context.dom_dump_crawl_strategy_times) else crawl_time_dom_total / len(context.dom_dump_crawl_strategy_times)}
+            'Average': average,
+            'Number of calls to strategy': len(context.dom_dump_crawl_strategy_times)}
     output.append(ListOutputItem('DOM dump crawl times (seconds)', data))
 
 
-def post_process_pool_wait_times(context, output):
-    #
-    # Pool wait times
-    #
-    pool_wait_time_total = sum(context.chrome_pool_wait_times)
+def post_process_wait_for_load_timeouts(context, output):
+    total_page_load_fail = len(context.wait_for_load_timeouts)
 
-    data = {'Total': pool_wait_time_total,
-            'Average': 'n/a' if not len(context.chrome_pool_wait_times) else pool_wait_time_total / len(context.chrome_pool_wait_times)}
-    output.append(ListOutputItem('Initial page load', data))
-
-    #
-    # Initial page load times
-    #
-    initial_page_load_total = 0
-
-    for spent, url in context.chrome_page_load_times:
-        initial_page_load_total += spent
-
-    page_load_max_by_url = context.chrome_page_load_times[:]
-    page_load_max_by_url.sort(sort_by_first)
-    page_load_max_by_url.reverse()
-    page_load_max_by_url = page_load_max_by_url[:10]
-
-    data = {'Total': initial_page_load_total,
-            'Top 10 most time consuming by URL': page_load_max_by_url,
-            'Average': 'n/a' if not len(context.chrome_page_load_times) else initial_page_load_total / len(context.chrome_page_load_times)}
-    output.append(ListOutputItem('Initial page load', data))
-
-
-def post_process_page_load_fail(context, output):
-    #
-    # Page load fail
-    #
-    total_page_load_fail = len(context.page_load_fails)
-
-    data = {'Total': total_page_load_fail}
-    output.append(ListOutputItem('Page load fail', data))
+    data = {'Total': total_page_load_fail,
+            'Timeout setting (seconds)': 'n/a' if not context.wait_for_load_timeouts else context.wait_for_load_timeouts[0]}
+    output.append(ListOutputItem('Page load timeout reached', data))
 
 
 def post_process_dispatched_events(context, output):
@@ -349,13 +441,11 @@ def initial_chrome_page_load_handler(context, match_object):
     context.chrome_page_load_times.append((seconds, url))
 
 
-def page_load_fail_handler(context, match_object):
-    url = match_object.group(1)
-
-    seconds = match_object.group(2)
+def wait_for_load_timeouts_handler(context, match_object):
+    seconds = match_object.group(1)
     seconds = float(seconds)
 
-    context.page_load_fails.append((url, seconds))
+    context.wait_for_load_timeouts.append(seconds)
 
 
 def event_dispatch_stats_handler(context, match_object):
@@ -386,3 +476,45 @@ def extracted_http_requests_handler(context, match_object):
     extracted_count = int(extracted_count)
 
     context.extracted_http_requests.append(extracted_count)
+
+
+def seconds_loading_url_handler(context, match_object):
+    seconds = match_object.group(1)
+    seconds = float(seconds)
+
+    url = match_object.group(2)
+
+    context.seconds_loading_url.append((seconds, url))
+
+
+def total_chrome_proxy_requests_handler(context, match_object):
+    total = match_object.group(1)
+    total = int(total)
+
+    context.total_chrome_proxy_requests.append(total)
+
+
+def chrome_pool_perf_handler(context, match_object):
+    seconds = match_object.group(1)
+    seconds = float(seconds)
+
+    context.chrome_pool_perf.append(seconds)
+
+
+def websocket_message_wait_time_handler(context, match_object):
+    seconds = match_object.group(1)
+    seconds = float(seconds)
+
+    context.websocket_message_wait_time.append(seconds)
+
+
+def chrome_crawler_status_handler(context, match_object):
+    running_tasks = match_object.group(1)
+    pool_workers = match_object.group(2)
+    queued_tasks = match_object.group(3)
+
+    running_tasks = int(running_tasks)
+    pool_workers = int(pool_workers)
+    queued_tasks = int(queued_tasks)
+
+    context.chrome_crawler_status.append((running_tasks, pool_workers, queued_tasks))
