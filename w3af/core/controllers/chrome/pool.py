@@ -265,6 +265,9 @@ class ChromePool(object):
     def get_free_instances(self):
         return self._free
 
+    def get_in_use_instances(self):
+        return self._in_use
+
     def free(self, chrome):
         chrome.free_count += 1
 
