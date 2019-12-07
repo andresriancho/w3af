@@ -18,7 +18,7 @@ WAIT_FOR_LOAD_TIMEOUTS = re.compile(r'wait_for_load\(timeout=(.*?)\) timed out')
 
 CHROME_POOL_PERF = re.compile(r'ChromePool.get\(\) took (.*?) seconds to create an instance')
 WEBSOCKET_MESSAGE_WAIT_TIME = re.compile(r'Waited (.*?) seconds for message with ID')
-CHROME_CRAWLER_STATUS = re.compile(r'ChromeCrawler status \((.*?) running tasks, (.*?) workers, (.*?) tasks in queue\)')
+CHROME_CRAWLER_STATUS = re.compile(r'ChromeCrawler status \((.*?) running tasks, (.*?) workers, (.*?) tasks in queue, (.*?) used chrome processes\)')
 
 REGEX_NAMES = {
     'CRAWL_TIME_BY_STRATEGY',

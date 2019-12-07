@@ -125,7 +125,8 @@ class ChromeCrawler(object):
             om.out.debug('ChromeCrawler is in terminate() phase. Ignoring call to crawl()')
             return False
 
-        # Don't run crawling strategies for something that will be rejected anyways
+        om.out.debug('Called ChromeCrawler.crawl() for %s' % fuzzable_request.get_uri())
+
         if not self._should_crawl_with_chrome(fuzzable_request, http_response):
             return False
 
@@ -139,28 +140,56 @@ class ChromeCrawler(object):
              http_traffic_queue,
              debugging_id=debugging_id)
 
+        self._log_pending_tasks()
+
         return True
 
     def _should_crawl_with_chrome(self, fuzzable_request, http_response):
         """
+        Asserts that crawling is:
+          - run once per URI
+          - run on HTML responses
+          - run on endpoints which use GET
+
         :param fuzzable_request: The HTTP request to use as starting point
         :param http_response: The HTTP response for fuzzable_request
         :return: True if we should crawl this fuzzable request with Chrome
         """
+        # Only crawl fuzzable requests which use GET
         # TODO: Add support for fuzzable requests with POST
         if fuzzable_request.get_method() != 'GET':
+            msg = 'ChromeCrawler.crawl() will not crawl %s because method is %s'
+            args = (fuzzable_request.get_uri(), fuzzable_request.get_method())
+            om.out.debug(msg % args)
+
+            return False
+
+        # Do not crawl 30x responses. The redirect target will be sent to
+        # the JS crawler later on
+        if http_response.get_code() in range(300, 310):
+            msg = 'ChromeCrawler.crawl() will not crawl %s because 30x'
+            args = (fuzzable_request.get_uri(),)
+            om.out.debug(msg % args)
+
             return False
 
         # Only crawl responses that will be rendered
         if 'html' not in http_response.content_type.lower():
+            msg = 'ChromeCrawler.crawl() will not crawl %s because content type is %s'
+            args = (fuzzable_request.get_uri(), http_response.content_type)
+            om.out.debug(msg % args)
+
             return False
 
         # Only crawl URIs once
-        uri = http_response.get_uri()
-        if uri in self._crawled_with_chrome:
+        if http_response.get_uri() in self._crawled_with_chrome:
+            msg = 'ChromeCrawler.crawl() will not crawl %s because it was crawled before'
+            args = (fuzzable_request.get_uri(),)
+            om.out.debug(msg % args)
+
             return False
 
-        self._crawled_with_chrome.add(uri)
+        self._crawled_with_chrome.add(http_response.get_uri())
         return True
 
     def has_pending_work(self):
@@ -173,11 +202,16 @@ class ChromeCrawler(object):
         while self.has_pending_work():
             time.sleep(0.1)
 
-    def log_pending_tasks(self):
-        msg = 'ChromeCrawler status (%s running tasks, %s workers, %s tasks in queue)'
+    def _log_pending_tasks(self):
+        msg = ('ChromeCrawler status'
+               ' (%s running tasks,'
+               ' %s workers,'
+               ' %s tasks in queue,'
+               ' %s used chrome processes)')
         args = (self.get_pending_tasks() - self._worker_pool.get_inqueue().qsize(),
                 self._worker_pool.get_worker_count(),
-                self._worker_pool.get_inqueue().qsize())
+                self._worker_pool.get_inqueue().qsize(),
+                len(self._chrome_pool.get_in_use_instances()))
         om.out.debug(msg % args)
 
     def _crawl_async(self, fuzzable_request, http_traffic_queue, debugging_id=None):

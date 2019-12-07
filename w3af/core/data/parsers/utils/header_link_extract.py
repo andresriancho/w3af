@@ -131,7 +131,7 @@ URL_HEADERS = {extract_link_from_header_simple: {'location',
                extract_link_from_set_cookie_header: {'set-cookie'}}
 
 
-def headers_url_generator(resp, fuzzable_req):
+def headers_url_generator(fuzzable_request, http_response):
     """
     Yields tuples containing:
         * Newly found URL
@@ -142,10 +142,10 @@ def headers_url_generator(resp, fuzzable_req):
     The newly found URLs are extracted from the http response headers such
     as "Location".
 
-    :param resp: HTTP response object
-    :param fuzzable_req: The HTTP request that generated the response
+    :param fuzzable_request: The HTTP request that generated the response
+    :param http_response: HTTP response object
     """
-    resp_headers = resp.get_headers()
+    resp_headers = http_response.get_headers()
 
     for parser, header_names in URL_HEADERS.iteritems():
         for header_name in header_names:
@@ -154,7 +154,7 @@ def headers_url_generator(resp, fuzzable_req):
             if header_value is not None:
 
                 header_value = smart_unicode(header_value,
-                                             encoding=resp.charset)
+                                             encoding=http_response.charset)
 
-                for ref in parser(resp, header_name, header_value):
-                    yield ref, fuzzable_req, resp, False
+                for ref in parser(http_response, header_name, header_value):
+                    yield ref, fuzzable_request, http_response, False
