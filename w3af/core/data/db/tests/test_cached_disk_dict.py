@@ -66,10 +66,21 @@ class TestCachedDiskDict(unittest.TestCase):
 
         self.assertEqual(self.cdd._in_memory.keys(), [1, 2, 3])
         self.assertEqual(self.cdd._disk_dict.keys(), [4])
+        self.assertEqual(self.cdd._access_count,
+                         {1: 2,
+                          2: 2,
+                          3: 2,
+                          4: 1})
 
         self.cdd[4]
         self.cdd[4]
         self.cdd[4]
+
+        self.assertEqual(self.cdd._access_count,
+                         {1: 2,
+                          2: 2,
+                          3: 2,
+                          4: 4})
 
         self.assertEqual(self.cdd._in_memory.keys(), [1, 2, 4])
         self.assertEqual(self.cdd._disk_dict.keys(), [3])
