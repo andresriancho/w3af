@@ -75,6 +75,9 @@ def fuzzy_equal_for_diff(diff_x, diff_y, is_equal_ratio):
     :return: True if the two results of applying the diff() function are
              fuzzy equal (applying split_by_sep technique)
     """
+    if diff_x == diff_y:
+        return True
+    
     split_x = split_by_sep(diff_x)
     split_y = split_by_sep(diff_y)
 
