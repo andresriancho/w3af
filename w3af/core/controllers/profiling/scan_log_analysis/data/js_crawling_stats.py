@@ -172,7 +172,7 @@ def post_process_chrome_crawler_status(context, output):
     if len(all_queued_tasks):
         average_queued_tasks = round(sum(all_queued_tasks) / len(all_queued_tasks), 2)
 
-    data = {'Pool worker sizes during scan': ', '.join(str(i) for i in set(all_pool_workers)),
+    data = {'Pool worker size variation during scan': ', '.join(str(i) for i in set(all_pool_workers)),
             'Max running tasks': max(all_running_tasks),
             'Avg running tasks': average_running_tasks,
             'Max queued tasks': max(all_queued_tasks),
