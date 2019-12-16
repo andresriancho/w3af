@@ -77,7 +77,7 @@ def fuzzy_equal_for_diff(diff_x, diff_y, is_equal_ratio):
     """
     if diff_x == diff_y:
         return True
-    
+
     split_x = split_by_sep(diff_x)
     split_y = split_by_sep(diff_y)
 
