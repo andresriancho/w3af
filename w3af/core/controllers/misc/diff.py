@@ -108,6 +108,7 @@ def diff_difflib(a, b):
 
     return a, b
 
+
 def chunked_diff(a, b):
     """
     This is a performance hack around diff() which was required due to the large
