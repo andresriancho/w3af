@@ -28,7 +28,7 @@ from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.url.helpers import is_no_content_response
 from w3af.core.data.db.cached_disk_dict import CachedDiskDict
 
-from w3af.core.controllers.diff.diff import chunked_diff
+from w3af.core.controllers.diff.diff import chunked_diff, MAX_DIFF_TIME
 from w3af.core.controllers.diff.sequence_matcher import SequenceMatcherTimeoutException
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal, MAX_FUZZY_LENGTH
 from w3af.core.controllers.core_helpers.not_found.response import FourOhFourResponse
@@ -242,7 +242,28 @@ class Fingerprint404(object):
             om.out.debug(msg % args)
             return True
 
-        is_fuzzy_equal = fuzzy_equal(known_404.body, query.body, IS_EQUAL_RATIO)
+        try:
+            is_fuzzy_equal = fuzzy_equal(known_404.body,
+                                         query.body,
+                                         IS_EQUAL_RATIO,
+                                         timeout=MAX_DIFF_TIME)
+        except SequenceMatcherTimeoutException:
+            msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is a 404'
+                   ' [fuzzy_equal timed out comparing with %s]')
+            args = (http_response.get_url(),
+                    http_response.id,
+                    http_response.get_code(),
+                    len(http_response.get_body()),
+                    debugging_id,
+                    known_404.id)
+            om.out.debug(msg % args)
+
+            #
+            # We're not really sure here, because the fuzzy_equal() raised a
+            # timeout exception and there is no result, but I believe it is better
+            # to just ignore the link
+            #
+            return True
 
         if not is_fuzzy_equal:
             msg = ('"%s" (id:%s, code:%s, len:%s, did:%s) is NOT a 404'
