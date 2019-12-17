@@ -127,9 +127,9 @@ class web_spider(CrawlPlugin):
         if is_404(http_response):
             return
 
+        self._crawl_with_chrome(fuzzable_request, http_response, debugging_id)
         self._extract_html_forms(fuzzable_request, http_response, debugging_id)
         self._extract_links_and_verify(fuzzable_request, http_response, debugging_id)
-        self._crawl_with_chrome(fuzzable_request, http_response, debugging_id)
 
     def _extract_html_forms(self, fuzzable_req, http_response, debugging_id):
         """
