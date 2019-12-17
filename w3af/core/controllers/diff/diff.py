@@ -210,5 +210,6 @@ def split_by_sep(seq):
     #
     # [0] https://github.com/andresriancho/w3af/blob/2ded693c959c91dc3e4daca276460d6c64ada479/w3af/core/controllers/misc/diff.py#L173
     #
+    seq = smart_str_ignore(seq)
     translated_seq = string.translate(seq, TRANSLATION_TABLE)
     return translated_seq.split('\0')
