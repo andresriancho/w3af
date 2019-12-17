@@ -34,6 +34,7 @@ from graphs.should_grep_stats import draw_should_grep, get_should_grep_data
 from graphs.not_found_requests import get_not_found_requests_over_time_data, draw_not_found_requests_over_time
 from graphs.not_found_cache_rate import get_not_found_cache_rate_data, draw_not_found_cache_rate_over_time
 from graphs.progress_delta import show_progress_delta
+from graphs.not_found_timeouts import draw_not_found_timeouts, get_not_found_timeouts_summary
 from graphs.crawl_queue_size import draw_queue_size_crawl, get_queue_size_crawl_data
 from graphs.grep_queue_size import draw_queue_size_grep, get_queue_size_grep_data
 from graphs.audit_queue_size import draw_queue_size_audit, get_queue_size_audit_data
@@ -61,6 +62,7 @@ def get_console_functions():
         get_not_found_requests,
         draw_not_found_requests_over_time,
         draw_not_found_cache_rate_over_time,
+        draw_not_found_timeouts,
         get_time_waited_by_workers,
         draw_connection_pool_wait,
         draw_http_requests_over_time,
@@ -107,6 +109,7 @@ def get_json_functions():
         get_not_found_requests,
         get_not_found_requests_over_time_data,
         get_not_found_cache_rate_data,
+        get_not_found_timeouts_summary,
         get_connection_pool_wait_data,
         get_time_waited_by_workers,
         get_http_requests_over_time_data,
