@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import difflib
 
-from w3af.core.controllers.misc.diff import split_by_sep
+from w3af.core.controllers.diff.diff import split_by_sep
 
 #
 # Some sites have really large headers and footers which they

@@ -20,10 +20,13 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import re
 import unittest
 
-from w3af.core.controllers.misc.diff import chunked_diff, diff_dmp, split_by_sep
+from w3af import ROOT_PATH
+from w3af.core.controllers.diff.diff import chunked_diff, diff_dmp, split_by_sep
+from w3af.core.controllers.diff.sequence_matcher import SequenceMatcherTimeoutException
 
 
 class TestChunkedDiff(unittest.TestCase):
@@ -74,6 +77,17 @@ class TestChunkedDiff(unittest.TestCase):
         a = 'X\tB\nC'
         b = 'A<B\nC'
         self.assertEqual(chunked_diff(a, b), ('X', 'A'))
+
+    def test_timeout_not_reached(self):
+        self.assertEqual(chunked_diff('123456', '123456', timeout=10), ('', ''))
+
+    def test_timeout_reached(self):
+        data = os.path.join(ROOT_PATH, 'core', 'controllers', 'misc', 'tests', 'data')
+
+        a = file(os.path.join(data, 'source.xml')).read()
+        b = file(os.path.join(data, 'target.xml')).read()
+
+        self.assertRaises(SequenceMatcherTimeoutException, chunked_diff, a, b, timeout=0.01)
 
 
 class TestDiffDMP(unittest.TestCase):

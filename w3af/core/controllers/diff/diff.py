@@ -20,14 +20,20 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import string
-import difflib
+
 import diff_match_patch as dmp_module
 
 from w3af.core.data.misc.encoding import smart_str_ignore
+from w3af.core.controllers.diff.sequence_matcher import TimeoutSequenceMatcher
 
-# 20 seconds it the max time we'll wait for a diff, the good thing
-# about the `diff_match_patch` library is that even when the timeout
-# is reached, a (partial) result is returned
+#
+# 20 seconds it the max time we'll wait for a diff
+#
+# The good thing about the `diff_match_patch` library is that even when the
+# timeout is reached, a (partial) result is returned
+#
+# The TimeoutSequenceMatcher will just raise an exception
+#
 MAX_DIFF_TIME = 20
 
 #
@@ -41,10 +47,12 @@ TRANSLATION_TABLE = string.maketrans('\n\t\r"\'<',
                                      '\0\0\0\0\0\0')
 
 
-def diff_dmp(a, b):
+def diff_dmp(a, b, timeout=MAX_DIFF_TIME):
     """
     :param a: A string
     :param b: A string (similar to a)
+    :param timeout: The max amount of seconds to run the diff function
+
     :return: Two strings (a_mod, b_mod) which are basically:
 
                 a_mod = a - (a intersection b)
@@ -57,7 +65,7 @@ def diff_dmp(a, b):
     b = smart_str_ignore(b)
 
     dmp = dmp_module.diff_match_patch()
-    dmp.Diff_Timeout = MAX_DIFF_TIME
+    dmp.Diff_Timeout = timeout
 
     changes = dmp.diff_main(a,
                             b,
@@ -81,7 +89,7 @@ def diff_dmp(a, b):
     return a_changes, b_changes
 
 
-def diff_difflib(a, b):
+def diff_difflib(a, b, timeout=MAX_DIFF_TIME):
     """
     WARNING! WARNING! WARNING! WARNING!
 
@@ -93,6 +101,8 @@ def diff_difflib(a, b):
 
     :param a: A string
     :param b: A string (similar to a)
+    :param timeout: The max amount of seconds to run the diff function
+
     :return: Two strings (a_mod, b_mod) which are basically:
 
                 a_mod = a - (a intersection b)
@@ -106,7 +116,8 @@ def diff_difflib(a, b):
     if a == b:
         return '', ''
 
-    matching_blocks = difflib.SequenceMatcher(None, a, b).get_matching_blocks()
+    seq_matcher = TimeoutSequenceMatcher(None, a, b, timeout=timeout)
+    matching_blocks = seq_matcher.get_matching_blocks()
     removed_a = 0
     removed_b = 0
 
@@ -120,16 +131,19 @@ def diff_difflib(a, b):
     return a, b
 
 
-def chunked_diff(a, b):
+def chunked_diff(a, b, timeout=MAX_DIFF_TIME):
     """
     This is a performance hack around diff() which was required due to the large
     amount of time diff() took to process some HTTP responses.
+
     This method does the same as diff() but it will cut the string in chunks and
     process the list of chunks instead of the strings. This makes the whole process
     faster and more inaccurate.
 
     :param a: A string
     :param b: A string (similar to a)
+    :param timeout: The max amount of seconds to run the diff function
+
     :return: See diff_difflib()
     """
     # Performance enhancement: if the two strings are equal, don't even bother
@@ -140,7 +154,7 @@ def chunked_diff(a, b):
     a_split = split_by_sep(a)
     b_split = split_by_sep(b)
 
-    a_chunks, b_chunks = diff_difflib(a_split, b_split)
+    a_chunks, b_chunks = diff_difflib(a_split, b_split, timeout=timeout)
     return ''.join(a_chunks), ''.join(b_chunks)
 
 
