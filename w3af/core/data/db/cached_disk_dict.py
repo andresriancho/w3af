@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from collections import Counter
+
 from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.fuzzer.utils import rand_alpha
 
@@ -43,7 +45,7 @@ class CachedDiskDict(object):
         self._max_in_memory = max_in_memory
         self._disk_dict = DiskDict(table_prefix=table_prefix)
         self._in_memory = dict()
-        self._access_count = dict()
+        self._access_count = Counter()
 
     def cleanup(self):
         self._disk_dict.cleanup()
@@ -89,22 +91,10 @@ class CachedDiskDict(object):
 
                 Then the method will generate [1, 2].
         """
-        items = self._access_count.items()
-        items.sort(sort_by_value)
-
-        iterator = min(self._max_in_memory, len(items))
-
-        result = []
-
-        for i in xrange(iterator):
-            result.append(items[i][0])
-
-        return result
+        return [k for k, v in self._access_count.most_common(self._max_in_memory)]
 
     def _increase_access_count(self, key):
-        access_count = self._access_count.get(key, 0)
-        access_count += 1
-        self._access_count[key] = access_count
+        self._access_count.update([key])
 
         keys_for_memory = self._get_keys_for_memory()
 
