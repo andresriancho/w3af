@@ -40,8 +40,8 @@ class TimeoutSequenceMatcher(SequenceMatcher):
     CHECK_EVERY = 1000
 
     def __init__(self, isjunk=None, a='', b='', autojunk=True, timeout=None):
-        self.timeout_timestamp = timeout + time.time() if timeout is not None else timeout
         self.timeout = timeout
+        self.timeout_timestamp = None if timeout is None else timeout + time.time()
 
         SequenceMatcher.__init__(self,
                                  isjunk=isjunk,
@@ -85,13 +85,14 @@ class TimeoutSequenceMatcher(SequenceMatcher):
                 #
                 # This is the added code!
                 #
-                call_count += 1
+                if self.timeout is not None:
+                    call_count += 1
 
-                if call_count % self.CHECK_EVERY == 0:
-                    if time.time() > self.timeout_timestamp:
-                        msg = 'TimeoutSequenceMatcher raised timeout after %.2f seconds'
-                        args = (self.timeout,)
-                        raise SequenceMatcherTimeoutException(msg % args)
+                    if call_count % self.CHECK_EVERY == 0:
+                        if time.time() > self.timeout_timestamp:
+                            msg = 'TimeoutSequenceMatcher raised timeout after %.2f seconds'
+                            args = (self.timeout,)
+                            raise SequenceMatcherTimeoutException(msg % args)
 
                 #
                 # /end This is the added code!
