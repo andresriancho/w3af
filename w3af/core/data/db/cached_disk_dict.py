@@ -133,6 +133,11 @@ class CachedDiskDict(object):
         :return: The name of the key that was moved to memory, or None if
                  all the keys are still on disk.
         """
+        # The key is already in memory, nothing to do here
+        if key in self._in_memory:
+            return
+
+        # The key must not be in memory, nothing to do here
         if key not in keys_for_memory:
             return
 
@@ -145,8 +150,12 @@ class CachedDiskDict(object):
             return key
 
     def __setitem__(self, key, value):
-        if len(self._in_memory) < self._max_in_memory:
+        if key in self._in_memory:
             self._in_memory[key] = value
+
+        elif len(self._in_memory) < self._max_in_memory:
+            self._in_memory[key] = value
+
         else:
             self._disk_dict[key] = value
 
@@ -191,6 +200,9 @@ class CachedDiskDict(object):
         for key in self._disk_dict:
             yield key
 
+    def iteritems(self):
+        for key, value in self._in_memory.iteritems():
+            yield key, value
 
-def sort_by_value(a, b):
-    return cmp(b[1], a[1])
+        for key, value in self._disk_dict.iteritems():
+            yield key, value
