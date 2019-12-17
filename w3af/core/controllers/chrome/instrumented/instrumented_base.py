@@ -143,9 +143,9 @@ class InstrumentedChromeBase(object):
                                                timeout=30,
                                                debugging_id=self.debugging_id,
                                                chrome_id=chrome_id)
-        except ConnectionError:
-            msg = 'Failed to connect to Chrome on port %s'
-            raise InstrumentedChromeException(msg % port)
+        except ConnectionError as ce:
+            msg = 'Failed to connect to Chrome on port %s: "%s"'
+            raise InstrumentedChromeException(msg % (port, ce))
 
         chrome_conn.name = 'DebugChromeInterface'
         chrome_conn.start()
