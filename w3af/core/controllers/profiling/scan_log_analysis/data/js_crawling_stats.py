@@ -327,9 +327,9 @@ def post_process_crawl_time_by_strategy(context, output):
     if len(context.js_crawl_strategy_times):
         average = round(crawl_time_js_total / len(context.js_crawl_strategy_times), 2)
 
-    data = {'Total': crawl_time_js_total,
+    data = {'Total time spent in strategy': crawl_time_js_total,
             'Top 10 most time consuming by URL': js_max_by_url,
-            'Average': average,
+            'Average time per call': average,
             'Number of calls to strategy': len(context.js_crawl_strategy_times)}
     output.append(ListOutputItem('JS crawl times (seconds)', data))
 
@@ -338,9 +338,9 @@ def post_process_crawl_time_by_strategy(context, output):
     if len(context.dom_dump_crawl_strategy_times):
         average = round(crawl_time_dom_total / len(context.dom_dump_crawl_strategy_times), 2)
 
-    data = {'Total': crawl_time_dom_total,
+    data = {'Total time spent in strategy': crawl_time_dom_total,
             'Top 10 most time consuming by URL': dom_dump_max_by_url,
-            'Average': average,
+            'Average time per call': average,
             'Number of calls to strategy': len(context.dom_dump_crawl_strategy_times)}
     output.append(ListOutputItem('DOM dump crawl times (seconds)', data))
 
