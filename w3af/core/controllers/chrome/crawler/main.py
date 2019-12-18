@@ -129,7 +129,9 @@ class ChromeCrawler(object):
         args = (fuzzable_request.get_uri().url_string, debugging_id)
         om.out.debug(msg % args)
 
-        if not self._should_crawl_with_chrome(fuzzable_request, http_response):
+        if not self._should_crawl_with_chrome(fuzzable_request,
+                                              http_response,
+                                              debugging_id):
             return False
 
         debugging_id = debugging_id or rand_alnum(8)
@@ -146,7 +148,7 @@ class ChromeCrawler(object):
 
         return True
 
-    def _should_crawl_with_chrome(self, fuzzable_request, http_response):
+    def _should_crawl_with_chrome(self, fuzzable_request, http_response, debugging_id):
         """
         Asserts that crawling is:
           - run once per URI
@@ -155,6 +157,7 @@ class ChromeCrawler(object):
 
         :param fuzzable_request: The HTTP request to use as starting point
         :param http_response: The HTTP response for fuzzable_request
+        :param debugging_id: A unique identifier for this call
         :return: True if we should crawl this fuzzable request with Chrome
         """
         uri = fuzzable_request.get_uri().url_string
@@ -162,8 +165,8 @@ class ChromeCrawler(object):
         # Only crawl fuzzable requests which use GET
         # TODO: Add support for fuzzable requests with POST
         if fuzzable_request.get_method() != 'GET':
-            msg = 'ChromeCrawler.crawl() will not crawl %s because method is %s'
-            args = (uri, fuzzable_request.get_method())
+            msg = 'ChromeCrawler.crawl() will not crawl %s because method is %s (did: %s)'
+            args = (uri, fuzzable_request.get_method(), debugging_id)
             om.out.debug(msg % args)
 
             return False
@@ -171,24 +174,24 @@ class ChromeCrawler(object):
         # Do not crawl 30x responses. The redirect target will be sent to
         # the JS crawler later on
         if http_response.get_code() in range(300, 310):
-            msg = 'ChromeCrawler.crawl() will not crawl %s because 30x'
-            args = (uri,)
+            msg = 'ChromeCrawler.crawl() will not crawl %s because 30x (did: %s)'
+            args = (uri, debugging_id)
             om.out.debug(msg % args)
 
             return False
 
         # Only crawl responses that will be rendered
         if 'html' not in http_response.content_type.lower():
-            msg = 'ChromeCrawler.crawl() will not crawl %s because content type is %s'
-            args = (uri, http_response.content_type)
+            msg = 'ChromeCrawler.crawl() will not crawl %s because content type is %s (did: %s)'
+            args = (uri, http_response.content_type, debugging_id)
             om.out.debug(msg % args)
 
             return False
 
         # Only crawl URIs once
         if http_response.get_uri() in self._crawled_with_chrome:
-            msg = 'ChromeCrawler.crawl() will not crawl %s because it was crawled before'
-            args = (uri,)
+            msg = 'ChromeCrawler.crawl() will not crawl %s because it was crawled before (did: %s)'
+            args = (uri, debugging_id)
             om.out.debug(msg % args)
 
             return False
