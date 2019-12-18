@@ -99,6 +99,9 @@ class web_spider(CrawlPlugin):
         """
         self._handle_first_run()
 
+        if not self._should_crawl_fuzzable_request():
+            return
+
         http_response = self._get_http_response(fuzzable_request, debugging_id)
 
         if not self._should_crawl_http_response(http_response):
@@ -117,6 +120,15 @@ class web_spider(CrawlPlugin):
         # the other tasks were performed for the current fuzzable_request, which
         # is most likely not related with the exception
         self._raise_chrome_crawler_exception()
+
+    def _should_crawl_fuzzable_request(self, fuzzable_request):
+        data_container = fuzzable_request.get_raw_data()
+        if isinstance(data_container, Form):
+
+            if fuzzable_request.get_url() in self._already_filled_form:
+                return False
+
+        return True
 
     def _should_crawl_http_response(self, http_response):
         # Nothing to do here...
@@ -140,9 +152,6 @@ class web_spider(CrawlPlugin):
         #
         data_container = fuzzable_request.get_raw_data()
         if isinstance(data_container, Form):
-
-            if fuzzable_request.get_url() in self._already_filled_form:
-                return
 
             self._already_filled_form.add(fuzzable_request.get_url())
             data_container.smart_fill()
