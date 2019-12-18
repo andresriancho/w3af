@@ -101,16 +101,7 @@ class web_spider(CrawlPlugin):
 
         http_response = self._get_http_response(fuzzable_request, debugging_id)
 
-        # Nothing to do here...
-        if http_response.get_code() == http_constants.UNAUTHORIZED:
-            return
-
-        # Nothing to do here...
-        if http_response.is_image():
-            return
-
-        # And we don't trust what comes from the core, check if 404
-        if is_404(http_response):
+        if not self._should_crawl_http_response(http_response):
             return
 
         self._crawl_with_chrome(fuzzable_request, http_response, debugging_id)
@@ -119,6 +110,28 @@ class web_spider(CrawlPlugin):
 
         self._extract_html_forms(doc_parser, fuzzable_request, debugging_id)
         self._extract_links_and_verify(doc_parser, fuzzable_request, http_response, debugging_id)
+
+        # raise exceptions in the main thread for better handling
+        #
+        # raise the exceptions at the end of the method to make sure that all
+        # the other tasks were performed for the current fuzzable_request, which
+        # is most likely not related with the exception
+        self._raise_chrome_crawler_exception()
+
+    def _should_crawl_http_response(self, http_response):
+        # Nothing to do here...
+        if http_response.get_code() == http_constants.UNAUTHORIZED:
+            return False
+
+        # Nothing to do here...
+        if http_response.is_image():
+            return False
+
+        # And we don't trust what comes from the core, check if 404
+        if is_404(http_response):
+            return False
+
+        return True
 
     def _get_http_response(self, fuzzable_request, debugging_id):
         #
@@ -392,11 +405,16 @@ class web_spider(CrawlPlugin):
         :param fuzzable_req: The HTTP request that generated the response
         :param debugging_id: A unique identifier for this call to discover()
         """
+        url_to_verify_generator = self._urls_to_verify_generator(doc_parser,
+                                                                 fuzzable_req,
+                                                                 http_response,
+                                                                 debugging_id)
+
         self.worker_pool.map_multi_args(
             self._verify_reference,
-            self._urls_to_verify_generator(doc_parser, fuzzable_req, http_response, debugging_id)
+            url_to_verify_generator
         )
-
+    
     @property
     def _chrome_crawler(self):
         if self._chrome_crawler_inst is None:
@@ -432,9 +450,6 @@ class web_spider(CrawlPlugin):
 
         # process _http_traffic_queue data
         self._start_queue_handler_thread()
-
-        # raise exceptions in the main thread for better handling
-        self._raise_chrome_crawler_exception()
 
     def has_pending_work(self):
         """
