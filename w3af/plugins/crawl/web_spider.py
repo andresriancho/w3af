@@ -57,7 +57,8 @@ class web_spider(CrawlPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    UNAUTH_FORBID = {http_constants.UNAUTHORIZED, http_constants.FORBIDDEN}
+    UNAUTH_FORBID = {http_constants.UNAUTHORIZED,
+                     http_constants.FORBIDDEN}
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -79,7 +80,7 @@ class web_spider(CrawlPlugin):
         self._ignore_extensions = []
         self._compile_re()
         self._enable_js_crawler = True
-        self._chrome_processes = ChromePool.MAX_INSTANCES
+        self._chrome_processes = ChromePool.MIN_INSTANCES
 
         # Chrome crawler
         self._chrome_crawler_inst = None
@@ -98,22 +99,7 @@ class web_spider(CrawlPlugin):
         """
         self._handle_first_run()
 
-        #
-        # If it is a form, then smart_fill the parameters to send something that
-        # makes sense and will allow us to cover more code.
-        #
-        data_container = fuzzable_request.get_raw_data()
-        if isinstance(data_container, Form):
-
-            if fuzzable_request.get_url() in self._already_filled_form:
-                return
-
-            self._already_filled_form.add(fuzzable_request.get_url())
-            data_container.smart_fill()
-
-        # Send the HTTP request
-        http_response = self._uri_opener.send_mutant(fuzzable_request,
-                                                     debugging_id=debugging_id)
+        http_response = self._get_http_response(fuzzable_request, debugging_id)
 
         # Nothing to do here...
         if http_response.get_code() == http_constants.UNAUTHORIZED:
@@ -134,6 +120,26 @@ class web_spider(CrawlPlugin):
         self._extract_html_forms(doc_parser, fuzzable_request, debugging_id)
         self._extract_links_and_verify(doc_parser, fuzzable_request, http_response, debugging_id)
 
+    def _get_http_response(self, fuzzable_request, debugging_id):
+        #
+        # If it is a form, then smart_fill the parameters to send something that
+        # makes sense and will allow us to cover more code.
+        #
+        data_container = fuzzable_request.get_raw_data()
+        if isinstance(data_container, Form):
+
+            if fuzzable_request.get_url() in self._already_filled_form:
+                return
+
+            self._already_filled_form.add(fuzzable_request.get_url())
+            data_container.smart_fill()
+
+        # Send the HTTP request
+        http_response = self._uri_opener.send_mutant(fuzzable_request,
+                                                     debugging_id=debugging_id)
+
+        return http_response
+
     def _get_document_parser(self, http_response, debugging_id):
         try:
             return parser_cache.dpc.get_document_parser_for(http_response)
@@ -151,7 +157,6 @@ class web_spider(CrawlPlugin):
 
         :param doc_parser: The document parser for the http_response
         :param fuzzable_req: The HTTP request that generated the response
-        :param http_response: The HTTP response
         """
         if doc_parser is None:
             return
@@ -504,7 +509,9 @@ class web_spider(CrawlPlugin):
         om.out.debug(msg % self._chrome_identified_http_requests)
 
         # ignore useless responses
-        if response.get_code() in (404, 403, 401):
+        if response.get_code() in (http_constants.UNAUTHORIZED,
+                                   http_constants.FORBIDDEN,
+                                   http_constants.NOT_FOUND):
             return
 
         #
@@ -749,7 +756,7 @@ class web_spider(CrawlPlugin):
         d = 'Control the number of concurrent Chrome (or Chromium) processes'
         h = ('More Chrome processes will increase the crawling speed, but will'
              ' also consume more resources (mainly memory).')
-        opt = {'max': ChromePool.MAX_INSTANCES * 3,
+        opt = {'max': ChromePool.MAX_INSTANCES,
                'min': ChromePool.MIN_INSTANCES}
         o = opt_factory('chrome_processes', self._chrome_processes, d, INT, help=h, options=opt)
         ol.add(o)
