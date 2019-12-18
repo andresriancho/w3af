@@ -40,8 +40,8 @@ class ChromePool(object):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    # Max number of InstrumentedChrome instances
-    MAX_INSTANCES = 20
+    # Default max number of InstrumentedChrome instances
+    MAX_INSTANCES = BaseConsumer.THREAD_POOL_SIZE * 3
 
     #
     # Min number of InstrumentedChrome instances
