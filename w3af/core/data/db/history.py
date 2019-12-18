@@ -526,11 +526,10 @@ class HistoryItem(object):
         return True
 
     def _get_pending_compression_job(self):
-        with HistoryItem.compression_lock:
-            try:
-                return self._pending_compression_jobs.pop(0)
-            except IndexError:
-                return None
+        try:
+            return self._pending_compression_jobs.pop(0)
+        except IndexError:
+            return None
 
     def _queue_compression_requests(self, response_id):
         """
