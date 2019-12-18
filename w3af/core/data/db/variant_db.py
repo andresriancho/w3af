@@ -110,9 +110,9 @@ class VariantDB(object):
     MAX_IN_MEMORY = 50
 
     def __init__(self):
+        self._variants_eq = ScalableBloomFilter()
         self._variants = CachedDiskDict(max_in_memory=self.MAX_IN_MEMORY,
                                         table_prefix='variant_db')
-        self._variants_eq = ScalableBloomFilter()
         self._variants_form = CachedDiskDict(max_in_memory=self.MAX_IN_MEMORY,
                                              table_prefix='variant_db_form')
 
