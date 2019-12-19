@@ -193,8 +193,8 @@ class Fingerprint404(object):
         server.
 
         :param http_response: The HTTP response
-        :param query: The HTTP response in FourOhFourResponse form (normalized
-                      URL, clean body, etc.)
+        :param query: The HTTP response in FourOhFourResponse format
+                      (normalized URL, clean body, etc.)
         :return: True if the HTTP response is a 404
         """
         response_did = http_response.get_debugging_id()
