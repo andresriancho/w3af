@@ -650,7 +650,12 @@ class CoreStrategy(object):
                                ' targets.\n'
                                '\n'
                                '%s'
-                               '\n' % urls)
+                               '\n'
+                               'In some scenarios it might be possible to fix'
+                               ' this issue adding one or more target URLs to the'
+                               ' `never_ssl` configuration parameter in `http-settings.'
+                               ' This will make sure that specific URLs are never'
+                               ' seen as non-existing (404).\n' % urls)
 
     def _setup_crawl_infrastructure(self):
         """
