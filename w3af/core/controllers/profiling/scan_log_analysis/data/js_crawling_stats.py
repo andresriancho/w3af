@@ -270,8 +270,12 @@ def post_process_extracted_http_requests(context, output):
 
 def post_process_event_dispatch_stats(context, output):
     ignored = len(context.event_ignore)
+    dispatch_error_count = 0
+    processed = 0
+    by_type = {}
 
-    dispatch_error_count, processed, by_type = context.event_dispatch_stats[-1]
+    if context.event_dispatch_stats:
+        dispatch_error_count, processed, by_type = context.event_dispatch_stats[-1]
 
     data = {'total_dispatch_errors': dispatch_error_count,
             'total_processed_events': processed,
