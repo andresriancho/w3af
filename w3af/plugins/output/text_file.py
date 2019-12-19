@@ -28,6 +28,7 @@ import w3af.core.controllers.output_manager as om
 
 from w3af.core.controllers.plugins.output_plugin import OutputPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import OUTPUT_FILE
 from w3af.core.data.options.output_file_option import DEV_NULL
@@ -255,7 +256,7 @@ class text_file(OutputPlugin):
                                                  options_dict[plugin_type])
 
         # And now the target information
-        str_targets = ', '.join([u.url_string for u in cf.cf.get('targets')])
+        str_targets = ', '.join(smart_str_ignore(u.url_string) for u in cf.cf.get('targets'))
         to_print += 'target\n'
         to_print += '    set target ' + str_targets + '\n'
         to_print += '    back'
