@@ -649,7 +649,8 @@ class CoreStrategy(object):
                                ' and, consider running a new scan with different'
                                ' targets.\n'
                                '\n'
-                               ' - %s\n' % urls)
+                               '%s'
+                               '\n' % urls)
 
     def _setup_crawl_infrastructure(self):
         """
