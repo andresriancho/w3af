@@ -341,7 +341,9 @@ class DebugChromeInterface(ChromeInterface, threading.Thread):
             raise ChromeInterfaceException(msg % e)
 
         data_without_text_content = self._remove_text_content(data)
-        self.debug('Received (raw) message from Chrome: %s' % data_without_text_content)
+        args = (len(data), data_without_text_content)
+
+        self.debug('Received %s bytes from Chrome: %s' % args)
 
         return data
 
