@@ -109,11 +109,25 @@ class web_spider(CrawlPlugin):
             return
 
         # And we don't trust what comes from the core, check if 404
+        # the only exception is for fuzzable requests which were set by the
+        # user in the configuration
+        #
+        # There are some rare cases where the application will answer with
+        # the same HTTP response body for `/` and `/foobar`. This triggers an
+        # issue in is_404() where `/` is marked as a 404...
         if is_404(resp):
-            return
+            if not self._is_target(fuzzable_request):
+                return
 
         self._extract_html_forms(resp, fuzzable_request)
         self._extract_links_and_verify(resp, fuzzable_request)
+
+    def _is_target(self, fuzzable_request):
+        """
+        :param fuzzable_request: The fuzzable_request to query if is in the target
+        :return: True if the URI for the fuzzable_request was set by the user as target
+        """
+        return fuzzable_request.get_uri() in cf.cf.get('targets')
 
     def _extract_html_forms(self, resp, fuzzable_req):
         """
@@ -153,17 +167,18 @@ class web_spider(CrawlPlugin):
         if not self._first_run:
             return
 
+        self._first_run = False
+
         # I have to set some variables, in order to be able to code
         # the "only_forward" feature
-        self._first_run = False
         self._target_urls = [i.uri2url() for i in cf.cf.get('targets')]
 
         # The following line triggered lots of bugs when the "stop" button
         # was pressed and the core did this: "cf.cf.save('targets', [])"
         #
-        #self._target_domain = cf.cf.get('targets')[0].get_domain()
+        #     self._target_domain = cf.cf.get('targets')[0].get_domain()
         #
-        #    Changing it to something awful but bug-free.
+        # Changing it to something awful but bug-free.
         targets = cf.cf.get('targets')
         if not targets:
             return
