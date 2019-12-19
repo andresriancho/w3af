@@ -99,12 +99,12 @@ class web_spider(CrawlPlugin):
         """
         self._handle_first_run()
 
-        if not self._should_crawl_fuzzable_request():
+        if not self._should_crawl_fuzzable_request(fuzzable_request):
             return
 
         http_response = self._get_http_response(fuzzable_request, debugging_id)
 
-        if not self._should_crawl_http_response(http_response):
+        if not self._should_crawl_http_response(fuzzable_request, http_response):
             return
 
         self._crawl_with_chrome(fuzzable_request, http_response, debugging_id)
@@ -130,7 +130,7 @@ class web_spider(CrawlPlugin):
 
         return True
 
-    def _should_crawl_http_response(self, http_response):
+    def _should_crawl_http_response(self, fuzzable_request, http_response):
         # Nothing to do here...
         if http_response.get_code() == http_constants.UNAUTHORIZED:
             return False
@@ -140,10 +140,24 @@ class web_spider(CrawlPlugin):
             return False
 
         # And we don't trust what comes from the core, check if 404
+        # the only exception is for fuzzable requests which were set by the
+        # user in the configuration
+        #
+        # There are some rare cases where the application will answer with
+        # the same HTTP response body for `/` and `/foobar`. This triggers an
+        # issue in is_404() where `/` is marked as a 404...
         if is_404(http_response):
-            return False
+            if not self._is_target(fuzzable_request):
+                return False
 
         return True
+
+    def _is_target(self, fuzzable_request):
+        """
+        :param fuzzable_request: The fuzzable_request to query if is in the target
+        :return: True if the URI for the fuzzable_request was set by the user as target
+        """
+        return fuzzable_request.get_uri() in cf.cf.get('targets')
 
     def _get_http_response(self, fuzzable_request, debugging_id):
         #
