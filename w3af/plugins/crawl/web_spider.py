@@ -298,7 +298,7 @@ class web_spider(CrawlPlugin):
         dirs = http_response.get_url().get_directories()
 
         for ref in unique_justseen(dirs):
-            yield ref, fuzzable_request, http_response, False
+            yield ref, fuzzable_request, http_response, True
 
     def _body_url_generator(self, doc_parser, fuzzable_request, http_response):
         """
