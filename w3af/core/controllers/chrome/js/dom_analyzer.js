@@ -749,6 +749,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             let tag_name = event_listener["tag_name"];
             let event_type = event_listener["event_type"];
 
+            // Check if other elements should inherit this event
+            if (document_or_window.includes(tag_name)) inherit_from_document_or_window = true;
+
             // Filter events by tag name (a, div, etc.)
             if( tag_name_filter.length > 0 && !tag_name_filter.includes(tag_name) ) continue;
 
@@ -756,9 +759,6 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             if( event_filter.length > 0 && !event_filter.includes(event_type) ) continue;
 
             filtered_event_listeners.push(event_listener);
-
-            // Check if other elements should inherit this event
-            if (document_or_window.includes(tag_name)) inherit_from_document_or_window = true;
 
             // If there are enough event listeners in the list we can stop
             if ( filtered_event_listeners.length > (start + count)) break;
