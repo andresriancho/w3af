@@ -22,7 +22,6 @@ from mock import patch, PropertyMock
 
 from w3af.core.controllers.chrome.crawler.tests.base import BaseChromeCrawlerTest
 from w3af.core.controllers.chrome.crawler.tests.test_crawler_js import MultipleXmlHttpRequestHandler
-from w3af.core.data.parsers.doc.url import URL
 
 
 class TestCrawlMaxDispatchEvents(BaseChromeCrawlerTest):
