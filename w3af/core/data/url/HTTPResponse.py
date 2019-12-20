@@ -373,6 +373,24 @@ class HTTPResponse(DiskItem):
         """
         return self._raw_body
 
+    def get_body_length(self):
+        """
+        :return: The length (in bytes) of the HTTP response body.
+
+                 Complicating the implementation a little bit here to reduce
+                 unnecessary calls to get_body() that will decode the body and
+                 might need to guess the charset (which consumes some CPU).
+
+        """
+        if self._raw_body is not None:
+            return len(self._raw_body)
+
+        value, stored_header_name = self._headers.iget('content-length')
+        if value is not None:
+            return value
+
+        return len(self.get_body())
+
     def get_clear_text_body(self):
         """
         Just a shortcut to get the clear text body
