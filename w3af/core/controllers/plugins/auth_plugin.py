@@ -68,7 +68,7 @@ class AuthPlugin(Plugin):
         self._log_messages = []
         self._attempt_login = True
 
-        self._login_result_log = deque(maxlen=500)
+        self._login_result_log = deque(maxlen=1000)
 
     def login(self, debugging_id=None):
         """

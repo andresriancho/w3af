@@ -1162,25 +1162,34 @@ class ExtendedUrllib(object):
         
         :return: An HTTPResponse object.
         """
+        #
         # Everything went well!
+        #
+
         rdata = req.get_data()
+
         if not rdata:
-            msg = ('%s %s returned HTTP code "%s"' %
-                   (req.get_method(),
+            args = (req.get_method(),
                     urllib.unquote_plus(original_url),
-                    res.code))
+                    res.code)
+
+            msg = '%s %s returned HTTP code "%s"'
+            msg %= args
+
         else:
             printable_data = urllib.unquote_plus(rdata)
             if len(rdata) > 75:
                 printable_data = '%s...' % printable_data[:75]
                 printable_data = printable_data.replace('\n', ' ')
                 printable_data = printable_data.replace('\r', ' ')
-                
-            msg = ('%s %s with data: "%s" returned HTTP code "%s"'
-                   % (req.get_method(),
-                      original_url,
-                      printable_data,
-                      res.code))
+
+            args = (req.get_method(),
+                    original_url,
+                    printable_data,
+                    res.code)
+
+            msg = '%s %s with data: "%s" returned HTTP code "%s"'
+            msg %= args
 
         from_cache = hasattr(res, 'from_cache') and res.from_cache
 
@@ -1191,8 +1200,14 @@ class ExtendedUrllib(object):
         http_resp.set_from_cache(from_cache)
         http_resp.set_debugging_id(req.debugging_id)
 
-        args = (res.id, from_cache, grep, http_resp.get_wait_time(), req.debugging_id)
-        flags = ' (id=%s,from_cache=%i,grep=%i,rtt=%.2f,did=%s)' % args
+        args = (res.id,
+                from_cache,
+                grep,
+                http_resp.get_wait_time(),
+                http_resp.get_body_length(),
+                req.debugging_id)
+        flags = ' (id:%s, from_cache:%i, grep:%i, rtt:%.2f, body:%s, did:%s)'
+        flags %= args
 
         msg += flags
         om.out.debug(msg)
