@@ -94,6 +94,9 @@ class InstrumentedChrome(InstrumentedChromeBase):
         self.frame_manager.set_debugging_id(debugging_id)
         self.page_state.set_debugging_id(debugging_id)
 
+    def get_debugging_id(self):
+        return self.debugging_id
+
     def navigation_started(self, timeout=None):
         """
         When an event is dispatched to the browser it is impossible to know
