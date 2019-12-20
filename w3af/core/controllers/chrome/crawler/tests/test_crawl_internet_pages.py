@@ -30,6 +30,10 @@ from nose.plugins.attrib import attr
 from w3af.core.controllers.chrome.crawler.main import ChromeCrawler
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 from w3af.core.controllers.chrome.tests.helpers import set_debugging_in_output_manager
+from w3af.core.data.url.HTTPResponse import HTTPResponse
+from w3af.core.data.parsers.doc.url import URL
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
+from w3af.core.data.dc.headers import Headers
 
 
 @attr('internet')
@@ -78,13 +82,19 @@ class TestChromeCrawlerInternetPages(unittest.TestCase):
     ('https://web.whatsapp.com/', 100),
     """
 
-    def _get_crawler(self):
+    def _get_crawler(self, url):
         uri_opener = ExtendedUrllib()
         http_traffic_queue = Queue.Queue()
 
+        url = URL(url)
+
+        headers = Headers([('content-type', 'text/html')])
+        http_response = HTTPResponse(200, '', headers, url, url, _id=1)
+        fuzzable_request = FuzzableRequest(url)
+
         crawler = ChromeCrawler(uri_opener)
 
-        return crawler, http_traffic_queue
+        return crawler, fuzzable_request, http_response, http_traffic_queue
 
     def _cleanup(self, crawler):
         crawler.terminate()
@@ -93,15 +103,20 @@ class TestChromeCrawlerInternetPages(unittest.TestCase):
         uris = set()
 
         while not http_traffic_queue.empty():
-            request, response = http_traffic_queue.get_nowait()
+            request, response, debugging_id = http_traffic_queue.get_nowait()
             uris.add(request.get_uri())
 
         return uris
 
     def _crawl(self, url, min_event_count):
-        crawler, http_traffic_queue = self._get_crawler()
+        (crawler,
+         fuzzable_request,
+         http_response,
+         http_traffic_queue) = self._get_crawler(url)
 
-        crawler.crawl(url, http_traffic_queue)
+        crawler.crawl(fuzzable_request,
+                      http_response,
+                      http_traffic_queue)
 
         found_uris = self._get_found_urls(http_traffic_queue)
 
