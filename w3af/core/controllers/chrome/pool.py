@@ -271,33 +271,39 @@ class ChromePool(object):
     def free(self, chrome):
         chrome.free_count += 1
 
+        debugging_id = chrome.get_debugging_id()
+        chrome.set_debugging_id(None)
+
         if chrome.free_count > self.MAX_TASKS:
-            self.remove(chrome, 'MAX_TASKS exceeded')
+            self.remove(chrome, 'MAX_TASKS exceeded', debugging_id=debugging_id)
             return
 
         if chrome in self._in_use.copy():
             msg = ('Chrome instance %s with free_count %s will be marked as'
-                   ' free in ChromePool')
-            args = (chrome, chrome.free_count)
+                   ' free in ChromePool (did: %s)')
+            args = (chrome, chrome.free_count, debugging_id)
             om.out.debug(msg % args)
 
             self._in_use.discard(chrome)
             self._free.add(chrome)
             chrome.current_task_start = None
         else:
-            om.out.debug('Chrome pool bug! Called free() on an instance that'
-                         ' is not marked as in-use by the pool internals.')
+            msg = ('Chrome pool bug! Called free() on an instance that'
+                   ' is not marked as in-use by the pool internals (did: %s)')
+            om.out.debug(msg % debugging_id)
 
-    def remove(self, chrome, reason):
+    def remove(self, chrome, reason, debugging_id=None):
         self._in_use.discard(chrome)
         self._free.discard(chrome)
         chrome.terminate()
 
-        args = (chrome, reason)
-        om.out.debug('Removed %s from pool, reason: %s' % args)
+        args = (chrome, reason, debugging_id)
+        om.out.debug('Removed %s from pool, reason: %s (did: %s)' % args)
 
     def terminate(self):
-        om.out.debug('Calling terminate on all chrome instances')
+        total = len(self._free) + len(self._in_use)
+
+        om.out.debug('Calling terminate on all chrome instances (total: %i)' % total)
 
         while len(self._free) or len(self._in_use):
             for chrome in self._free.copy():
@@ -306,7 +312,7 @@ class ChromePool(object):
             for chrome in self._in_use.copy():
                 self.remove(chrome, 'terminate')
 
-        om.out.debug('All chrome instances have been terminated')
+        om.out.debug('All %i chrome instances have been terminated' % total)
 
 
 class PoolInstrumentedChrome(InstrumentedChrome):
