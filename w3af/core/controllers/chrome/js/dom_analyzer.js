@@ -190,18 +190,29 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      */
     override_addEventListener: function () {
         // Override window.addEventListener
+
         let original_window_addEventListener = window.addEventListener;
 
-        window.addEventListener = function (type, listener, useCapture) {
-            _DOMAnalyzer.storeEventListenerData(window, type, listener, useCapture);
+        window.addEventListener = function () {
+            let type = arguments[0];
+            let listener = arguments[1];
+            let use_capture = arguments[2];
+
+            _DOMAnalyzer.storeEventListenerData(document, type, listener, use_capture);
+
             original_window_addEventListener.apply(window, Array.prototype.slice.call(arguments));
         };
 
         // Override document.addEventListener
         let original_document_addEventListener = document.addEventListener;
 
-        document.addEventListener = function (type, listener, useCapture) {
-            _DOMAnalyzer.storeEventListenerData(document, type, listener, useCapture);
+        document.addEventListener = function () {
+            let type = arguments[0];
+            let listener = arguments[1];
+            let use_capture = arguments[2];
+
+            _DOMAnalyzer.storeEventListenerData(document, type, listener, use_capture);
+
             original_document_addEventListener.apply(document, Array.prototype.slice.call(arguments));
         };
 
@@ -213,12 +224,19 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         // var el = document.getElementById("outside");
         // el.addEventListener("click", modifyText, false);
         //
+
         let original_node_addEventListener = Node.prototype.addEventListener;
 
-        Node.prototype.addEventListener = function (type, listener, useCapture) {
-            _DOMAnalyzer.storeEventListenerData(this, type, listener, useCapture);
+        Node.prototype.addEventListener = function () {
+            let type = arguments[0];
+            let listener = arguments[1];
+            let use_capture = arguments[2];
+
+            _DOMAnalyzer.storeEventListenerData(this, type, listener, use_capture);
+
             original_node_addEventListener.apply(this, Array.prototype.slice.call(arguments));
         };
+
 
     },
 
@@ -364,7 +382,6 @@ var _DOMAnalyzer = _DOMAnalyzer || {
      * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent
      */
     dispatchCustomEvent: function (selector, event_type) {
-
         let element = _DOMAnalyzer.getObjectFromSelectorPlus(selector);
 
         // The element might not exist anymore or be hidden from the user's view
