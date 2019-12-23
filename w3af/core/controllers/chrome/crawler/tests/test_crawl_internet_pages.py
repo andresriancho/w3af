@@ -52,7 +52,10 @@ class TestChromeCrawlerInternetPages(unittest.TestCase):
     """
 
     TESTS = OrderedDict([
+        ('http://34.244.139.163:3000/', 100)
+        #('http://demo.owasp-juice.shop/', 100)
     ])
+
 
     """
     ('https://www.google.com/', 100),
