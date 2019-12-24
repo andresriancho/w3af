@@ -20,6 +20,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Levenshtein
+import hashlib
 
 from w3af.core.data.misc.encoding import smart_str_ignore
 
@@ -49,6 +50,12 @@ class EventListener(object):
     def get_type_selector(self):
         return (self._event_as_dict['event_type'],
                 self._event_as_dict['selector'],)
+
+    def get_id(self):
+        data = repr(self._event_as_dict)
+        m = hashlib.md5()
+        m.update(data)
+        return m.hexdigest()[:6]
 
     def fuzzy_matches(self, other):
         """

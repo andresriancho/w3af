@@ -222,14 +222,14 @@ class ChromeCrawlerJS(object):
                 continue
 
             # Dispatch the event
-            self._dispatch_event(event)
+            event_dispatch_result = self._dispatch_event_with_reload(event)
 
             # Logging
             self._print_stats(event_i)
 
             # Handle any side-effects (such as browsing to a different page or
             # big DOM changes that will break the next event dispatch calls)
-            result = self._handle_event_dispatch_side_effects()
+            result = self._handle_event_dispatch_side_effects(event, event_dispatch_result)
 
             if result == CONTINUE_WITH_NEXT_EVENTS:
                 continue
@@ -273,7 +273,7 @@ class ChromeCrawlerJS(object):
 
         return True
 
-    def _conditional_wait_for_load(self):
+    def _conditional_wait_for_load(self, url=None):
         """
         This method handles the following case:
 
@@ -290,9 +290,13 @@ class ChromeCrawlerJS(object):
             * Don't wait for the page to load, we already gathered this
               information before
 
+        :param url: The URL that started loaded and we might want to wait for full load
         :return: None
         """
-        potentially_new_url = self._chrome.get_url()
+        if url is None:
+            potentially_new_url = self._chrome.get_url()
+        else:
+            potentially_new_url = url
 
         if potentially_new_url is None:
             return
@@ -310,14 +314,14 @@ class ChromeCrawlerJS(object):
         self._visited_urls.add(potentially_new_url)
         self._chrome.wait_for_load(timeout=self.WAIT_FOR_LOAD_TIMEOUT)
 
-    def _handle_event_dispatch_side_effects(self):
+    def _handle_event_dispatch_side_effects(self, event, event_dispatch_result):
         """
         The algorithm was designed to dispatch a lot of events without performing
         a strict check on how that affects the DOM, or if the browser navigates
         to a different URL.
 
         Algorithms that performed strict checks after dispatching events all
-        ended up in slow beasts.
+        ended up being slow beasts.
 
         The key word here is *strict*. This algorithm DOES perform checks to
         verify if the DOM has changed / the page navigated to a different URL,
@@ -341,6 +345,10 @@ class ChromeCrawlerJS(object):
             # process and more crawling points) and then go back to the initial
             # URL
             #
+            msg = 'Found ChromeInterfaceException while running JS crawling on %s (event_id: %s, did: %s)'
+            args = (self._url, event.get_id(), self._debugging_id)
+            om.out.debug(msg % args)
+
             self._conditional_wait_for_load()
             self._reload_base_url()
             current_dom = self._chrome.get_dom()
@@ -359,27 +367,34 @@ class ChromeCrawlerJS(object):
             potentially_new_url = self._chrome.get_url()
 
             if potentially_new_url is not None and potentially_new_url != self._url:
+                msg = 'Dispatched event triggered navigation to URL %s (event_id: %s, did: %s)'
+                args = (potentially_new_url, event.get_id(), self._debugging_id)
+                om.out.debug(msg % args)
+
                 #
                 # Let this new page load for 1 second so that new information
                 # reaches w3af's core, and after that render the initial URL
                 # again
                 #
-                self._conditional_wait_for_load()
+                self._conditional_wait_for_load(potentially_new_url)
                 self._reload_base_url()
                 current_dom = self._chrome.get_dom()
 
         current_bones_xml = self._cached_get_xml_bones(current_dom)
 
         #
-        # The DOM did change! Something bad happen!
+        # Check if the DOM for the first time we loaded the URL and now has
+        # significantly changed. Big changes usually mean that a new state has
+        # been found.
         #
         if not self._bones_xml_are_equal(self._initial_bones_xml, current_bones_xml):
             msg = ('The JS crawler noticed a big change in the DOM.'
                    ' This usually happens when the application changes state or'
                    ' when the dispatched events heavily modify the DOM.'
                    ' This happen while crawling %s, the algorithm will'
-                   ' load a new DOM and continue from there (did: %s)')
-            args = (self._url, self._debugging_id)
+                   ' load the original URL and continue from there'
+                   ' (event_id: %s, did: %s)')
+            args = (self._url, event.get_id(), self._debugging_id)
             om.out.debug(msg % args)
 
             #
@@ -408,6 +423,7 @@ class ChromeCrawlerJS(object):
         last_dispatch_results = [el.state for el in last_dispatch_results]
 
         all_failed = True
+
         for state in last_dispatch_results:
             if state != EventDispatchLogUnit.FAILED:
                 all_failed = False
@@ -455,12 +471,37 @@ class ChromeCrawlerJS(object):
     def _get_total_dispatch_count(self):
         return len([i for i in self._local_crawler_state if i.state != EventDispatchLogUnit.IGNORED])
 
+    def _dispatch_event_with_reload(self, event):
+
+        event_dispatch_success = self._dispatch_event(event)
+
+        if not event_dispatch_success:
+            #
+            # The event dispatch result is False when the selector where we send
+            # the event to does not exist in the DOM anymore.
+            #
+            # Reload the initial page where the event and selector were found
+            # and retry
+            #
+            selector = event['selector']
+            event_type = event['event_type']
+
+            msg = ('Reloading initial URL and retrying dispatch of "%s" on'
+                   ' CSS selector "%s" at page %s (event_id: %s, did: %s)')
+            args = (event_type, selector, self._url, event.get_id(), self._debugging_id)
+            om.out.debug(msg % args)
+
+            self._reload_base_url()
+            return self._dispatch_event(event)
+
+        return True
+
     def _dispatch_event(self, event):
         selector = event['selector']
         event_type = event['event_type']
 
-        msg = 'Dispatching "%s" on CSS selector "%s" at page %s (did: %s)'
-        args = (event_type, selector, self._url, self._debugging_id)
+        msg = 'Dispatching "%s" on CSS selector "%s" at page %s (event_id: %s, did: %s)'
+        args = (event_type, selector, self._url, event.get_id(), self._debugging_id)
         om.out.debug(msg % args)
 
         try:
@@ -468,8 +509,8 @@ class ChromeCrawlerJS(object):
         except EventException:
             msg = ('The "%s" event on CSS selector "%s" at page %s failed'
                    ' to run because the element does not exist anymore'
-                   ' (did: %s)')
-            args = (event_type, selector, self._url, self._debugging_id)
+                   ' (event_id: %s, did: %s)')
+            args = (event_type, selector, self._url, event.get_id(), self._debugging_id)
             om.out.debug(msg % args)
 
             self._append_event_to_logs(event, EventDispatchLogUnit.FAILED)
@@ -478,8 +519,8 @@ class ChromeCrawlerJS(object):
 
         except EventTimeout:
             msg = ('The "%s" event on CSS selector "%s" at page %s failed'
-                   ' to run in the given time (did: %s)')
-            args = (event_type, selector, self._url, self._debugging_id)
+                   ' to run in the given time (event_id: %s, did: %s)')
+            args = (event_type, selector, self._url, event.get_id(), self._debugging_id)
             om.out.debug(msg % args)
 
             self._append_event_to_logs(event, EventDispatchLogUnit.FAILED)
@@ -584,10 +625,11 @@ class ChromeCrawlerJS(object):
 
             if event_dispatch_log_unit.event == event and event_dispatch_log_unit.uri == self._url:
                 msg = ('Ignoring "%s" event on selector "%s" and URL "%s" because'
-                       ' the same event was already dispatched (did: %s)')
+                       ' the same event was already dispatched (event_id: %s, did: %s)')
                 args = (current_event_type,
                         event['selector'],
                         self._url,
+                        event.get_id(),
                         self._debugging_id)
                 om.out.debug(msg % args)
 
@@ -600,11 +642,12 @@ class ChromeCrawlerJS(object):
             if similar_successfully_dispatched >= self.MAX_SIMILAR_EVENT_DISPATCH:
                 msg = ('Ignoring "%s" event on selector "%s" and URL "%s" because'
                        ' a very similar event was dispatched more than'
-                       ' MAX_SIMILAR_EVENT_DISPATCH (%s) times (did: %s)')
+                       ' MAX_SIMILAR_EVENT_DISPATCH (%s) times (event_id: %s, did: %s)')
                 args = (current_event_type,
                         event['selector'],
                         self._url,
                         self.MAX_SIMILAR_EVENT_DISPATCH,
+                        event.get_id(),
                         self._debugging_id)
                 om.out.debug(msg % args)
 
@@ -614,6 +657,13 @@ class ChromeCrawlerJS(object):
         # Was able to complete the whole for loop without hitting the "return"
         # statements, this means that there are no similar events in the log and
         # the current event should be dispatched
+        args = (event['event_type'],
+                event['selector'],
+                event.get_id(),
+                self._debugging_id)
+        msg = 'Will dispatch %s event on selector %s (event_id: %s, did: %s)'
+        om.out.debug(msg % args)
+
         return True
 
 
