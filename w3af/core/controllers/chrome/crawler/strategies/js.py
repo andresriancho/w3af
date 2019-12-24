@@ -165,6 +165,11 @@ class ChromeCrawlerJS(object):
         initial_state_counter = 0
 
         while not successfully_completed and initial_state_counter < self.MAX_INITIAL_STATES:
+
+            msg = 'JS crawler is starting crawl with initial state %s (did: %s)'
+            args = (initial_state_counter, self._debugging_id)
+            om.out.debug(msg % args)
+
             try:
                 successfully_completed = self._crawl_one_state()
             except MaxPageReload:
@@ -222,7 +227,7 @@ class ChromeCrawlerJS(object):
                 continue
 
             # Dispatch the event
-            event_dispatch_result = self._dispatch_event_with_reload(event)
+            event_dispatch_result = self._dispatch_event(event)
 
             # Logging
             self._print_stats(event_i)
@@ -316,9 +321,12 @@ class ChromeCrawlerJS(object):
 
     def _handle_event_dispatch_side_effects(self, event, event_dispatch_result):
         """
-        The algorithm was designed to dispatch a lot of events without performing
-        a strict check on how that affects the DOM, or if the browser navigates
-        to a different URL.
+        This method will detect changes in the DOM or document.location and if
+        necessary reload the initial URL in the browser.
+
+        The crawling algorithm was designed to dispatch a lot of events without
+        performing a strict check on how that affects the DOM, or if the browser
+        navigates to a different URL.
 
         Algorithms that performed strict checks after dispatching events all
         ended up being slow beasts.
@@ -330,11 +338,90 @@ class ChromeCrawlerJS(object):
             Never wait for any specific lifeCycle event that the browser might
             or might not send!
 
+        :param event: The event that was dispatched and the one we're handling
+                      side effects for
+
+        :param event_dispatch_result: True if the event was successfully
+                                      dispatched
+
+                                      False indicates that the selector does not
+                                      exist in the DOM anymore and that the event
+                                      did not "click" on anything
+
         :return: One of the following:
                     - NEW_STATE_FOUND
                     - TOO_MANY_PAGE_RELOAD
                     - CONTINUE_WITH_NEXT_EVENTS
         """
+        if not event_dispatch_result:
+            last_dispatch_results = self._local_crawler_state[:self.MAX_CONSECUTIVE_EVENT_DISPATCH_ERRORS]
+            last_dispatch_results = [el.state for el in last_dispatch_results]
+
+            all_failed = True
+
+            for state in last_dispatch_results:
+                if state != EventDispatchLogUnit.FAILED:
+                    all_failed = False
+                    break
+
+            if all_failed and len(last_dispatch_results) == self.MAX_CONSECUTIVE_EVENT_DISPATCH_ERRORS:
+                msg = ('%s consecutive event dispatch errors were found while'
+                       ' crawling %s, a new DOM state has been found (did: %s)')
+                args = (self.MAX_CONSECUTIVE_EVENT_DISPATCH_ERRORS,
+                        self._url,
+                        self._debugging_id)
+                om.out.debug(msg % args)
+
+                #
+                # Note that we can find new states by running diff on DOMs or by
+                # dispatching many events which are all failing
+                #
+                return NEW_STATE_FOUND
+
+            # The event that was dispatched did not "click" on anything because the
+            # selector doesn't point to an element anymore, so there can't be any
+            # changes in the DOM (at least none that were triggered by this specific
+            # event).
+            #
+            # There is no need to analyze the DOM for changes
+            return CONTINUE_WITH_NEXT_EVENTS
+
+        # Check that might break the for loop in _crawl_one_state()
+        if self._reloaded_base_url_count > self.MAX_PAGE_RELOAD:
+            msg = ('The JS crawler had to perform more than %s page reloads'
+                   ' while crawling %s, the process will stop (did: %s)')
+            args = (self._url, self.MAX_PAGE_RELOAD, self._debugging_id)
+            om.out.debug(msg % args)
+            return TOO_MANY_PAGE_RELOAD
+
+        #
+        # We get here in two cases
+        #
+        #   a) The browser navigated to a different URL
+        #
+        #   b) The browser is still in the initial URL and the DOM we're
+        #      seeing is the one associated with that URL
+        #
+        # If we're in a), we want to reload the initial URL
+        #
+        potentially_new_url = self._chrome.get_url()
+
+        if potentially_new_url is not None and potentially_new_url != self._url:
+            msg = 'Dispatched event triggered navigation to URL %s (event_id: %s, did: %s)'
+            args = (potentially_new_url, event.get_id(), self._debugging_id)
+            om.out.debug(msg % args)
+
+            #
+            # Let this new page load for 1 second so that new information
+            # reaches w3af's core, and after that render the initial URL
+            # again
+            #
+            self._conditional_wait_for_load(potentially_new_url)
+            self._reload_base_url()
+
+            # We do not return CONTINUE_WITH_NEXT_EVENTS here because the idea
+            # is to check if there is a new state in the DOM
+
         try:
             current_dom = self._chrome.get_dom()
         except ChromeInterfaceException:
@@ -345,98 +432,46 @@ class ChromeCrawlerJS(object):
             # process and more crawling points) and then go back to the initial
             # URL
             #
-            msg = 'Found ChromeInterfaceException while running JS crawling on %s (event_id: %s, did: %s)'
+            msg = ('Found ChromeInterfaceException while running JS crawling on %s'
+                   ' (event_id: %s, did: %s)')
             args = (self._url, event.get_id(), self._debugging_id)
             om.out.debug(msg % args)
 
             self._conditional_wait_for_load()
             self._reload_base_url()
             current_dom = self._chrome.get_dom()
-        else:
-            #
-            # We get here in two cases
-            #
-            #   a) The browser navigated to a different URL *really quickly*
-            #      and was able to create a DOM for us in that new URL
-            #
-            #   b) The browser is still in the initial URL and the DOM we're
-            #      seeing is the one associated with that URL
-            #
-            # If we're in a), we want to reload the initial URL
-            #
-            potentially_new_url = self._chrome.get_url()
 
-            if potentially_new_url is not None and potentially_new_url != self._url:
-                msg = 'Dispatched event triggered navigation to URL %s (event_id: %s, did: %s)'
-                args = (potentially_new_url, event.get_id(), self._debugging_id)
-                om.out.debug(msg % args)
-
-                #
-                # Let this new page load for 1 second so that new information
-                # reaches w3af's core, and after that render the initial URL
-                # again
-                #
-                self._conditional_wait_for_load(potentially_new_url)
-                self._reload_base_url()
-                current_dom = self._chrome.get_dom()
-
+        #
+        # Check if the DOM for the first load (self._initial_bones_xml) is equal
+        # to the DOM we have now after _reload_base_url().
+        #
+        # A big change in the DOM usually means that a new state has been found
+        #
         current_bones_xml = self._cached_get_xml_bones(current_dom)
 
-        #
-        # Check if the DOM for the first time we loaded the URL and now has
-        # significantly changed. Big changes usually mean that a new state has
-        # been found.
-        #
-        if not self._bones_xml_are_equal(self._initial_bones_xml, current_bones_xml):
-            msg = ('The JS crawler noticed a big change in the DOM.'
-                   ' This usually happens when the application changes state or'
-                   ' when the dispatched events heavily modify the DOM.'
-                   ' This happen while crawling %s, the algorithm will'
-                   ' load the original URL and continue from there'
-                   ' (event_id: %s, did: %s)')
-            args = (self._url, event.get_id(), self._debugging_id)
-            om.out.debug(msg % args)
+        if self._bones_xml_are_equal(self._initial_bones_xml, current_bones_xml):
+            return CONTINUE_WITH_NEXT_EVENTS
 
-            #
-            # Before returning NEW_STATE_FOUND we'll load the base URL in order
-            # to "set the new state" in the chrome browser so that the next
-            # call to _crawl_one_state() has a good start.
-            #
-            # Having this responsibility here is bad, but found no better way
-            # to do it without adding complexity
-            #
-            self._reload_base_url()
-
-            return NEW_STATE_FOUND
+        msg = ('The JS crawler noticed a big change in the DOM.'
+               ' This usually happens when the application changes state or'
+               ' when the dispatched events heavily modify the DOM.'
+               ' This happen while crawling %s, the algorithm will'
+               ' load the original URL and continue from there'
+               ' (event_id: %s, did: %s)')
+        args = (self._url, event.get_id(), self._debugging_id)
+        om.out.debug(msg % args)
 
         #
-        # Checks that might break the for loop
+        # Before returning NEW_STATE_FOUND we'll load the base URL in order
+        # to "set the new state" in the chrome browser so that the next
+        # call to _crawl_one_state() has a good start.
         #
-        if self._reloaded_base_url_count > self.MAX_PAGE_RELOAD:
-            msg = ('The JS crawler had to perform more than %s page reloads'
-                   ' while crawling %s, the process will stop (did: %s)')
-            args = (self._url, self.MAX_PAGE_RELOAD, self._debugging_id)
-            om.out.debug(msg % args)
-            return TOO_MANY_PAGE_RELOAD
+        # Having this responsibility here is bad, but found no better way
+        # to do it without adding complexity
+        #
+        self._reload_base_url()
 
-        last_dispatch_results = self._local_crawler_state[:self.MAX_CONSECUTIVE_EVENT_DISPATCH_ERRORS]
-        last_dispatch_results = [el.state for el in last_dispatch_results]
-
-        all_failed = True
-
-        for state in last_dispatch_results:
-            if state != EventDispatchLogUnit.FAILED:
-                all_failed = False
-                break
-
-        if all_failed:
-            msg = ('Too many consecutive event dispatch errors were found while'
-                   ' crawling %s, the process will stop (did: %s)')
-            args = (self._url, self._debugging_id)
-            om.out.debug(msg % args)
-            return NEW_STATE_FOUND
-
-        return CONTINUE_WITH_NEXT_EVENTS
+        return NEW_STATE_FOUND
 
     def _bones_xml_are_equal(self, bones_xml_a, bones_xml_b):
         return fuzzy_equal(bones_xml_a,
@@ -470,31 +505,6 @@ class ChromeCrawlerJS(object):
 
     def _get_total_dispatch_count(self):
         return len([i for i in self._local_crawler_state if i.state != EventDispatchLogUnit.IGNORED])
-
-    def _dispatch_event_with_reload(self, event):
-
-        event_dispatch_success = self._dispatch_event(event)
-
-        if not event_dispatch_success:
-            #
-            # The event dispatch result is False when the selector where we send
-            # the event to does not exist in the DOM anymore.
-            #
-            # Reload the initial page where the event and selector were found
-            # and retry
-            #
-            selector = event['selector']
-            event_type = event['event_type']
-
-            msg = ('Reloading initial URL and retrying dispatch of "%s" on'
-                   ' CSS selector "%s" at page %s (event_id: %s, did: %s)')
-            args = (event_type, selector, self._url, event.get_id(), self._debugging_id)
-            om.out.debug(msg % args)
-
-            self._reload_base_url()
-            return self._dispatch_event(event)
-
-        return True
 
     def _dispatch_event(self, event):
         selector = event['selector']
