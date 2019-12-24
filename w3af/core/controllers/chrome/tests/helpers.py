@@ -51,6 +51,7 @@ def set_debugging_in_output_manager():
 
     if int(os.getenv('CHROME_DEBUG', 0)) == 1:
         latest_output = os.path.join(tempfile.gettempdir(), 'latest-w3af-output.txt')
+
         if os.path.exists(latest_output):
             os.remove(latest_output)
 
