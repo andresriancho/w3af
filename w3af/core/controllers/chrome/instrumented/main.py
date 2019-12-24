@@ -329,7 +329,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
               the action we're performing (eg. navigate_to_history_index)
               was going to trigger a load. This is performed in this method
 
-            * Set the page state to PAGE_STATE_MIGHT_LOAD when the action
+            * Set the page state to MIGHT_NAVIGATE when the action
               we took (eg. dispatching an event) might or might not trigger a
               page load.
 
