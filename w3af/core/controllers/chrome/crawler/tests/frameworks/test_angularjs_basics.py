@@ -68,6 +68,21 @@ class AngularBasicTest(BaseChromeCrawlerTest):
         found, not_found = self._log_contains(expected_messages)
         self.assertEqual(not_found, [])
 
+    def test_angular_example_conduit(self):
+        url = 'https://angularjs.realworld.io/'
+
+        self._crawl(url)
+
+        expected_messages = '''
+        GET https://conduit.productionready.io/api/articles?limit=10&offset=0
+        GET https://conduit.productionready.io/api/profiles/
+        GET https://conduit.productionready.io/api/tags
+        GET https://conduit.productionready.io/api/articles?author=       
+        '''
+
+        found, not_found = self._log_contains(expected_messages)
+        self.assertEqual(not_found, [])
+
 
 class AngularButtonClickRequestHandler(ExtendedHttpRequestHandler):
     # Live at http://embed.plnkr.co/F7TcI8/preview
