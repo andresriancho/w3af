@@ -284,7 +284,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
         args = (selector, event_type)
 
         self._force_might_navigate_state()
-        result = self._js_runtime_evaluate(cmd % args)
+        result = self.js_runtime_evaluate(cmd % args)
 
         if result is None:
             raise EventTimeout('The event execution timed out')
@@ -310,13 +310,24 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         :param text: The string to type
         :param selector: The CSS selector pointing to the HTML tag
-        :return: None
+        :return: True if the text was sent to the tag
         """
-        self.focus(selector)
+        focused_on_selector = self.focus(selector)
+
+        if not focused_on_selector:
+            msg = 'Failed to focus on CSS selector "%s" (did: %s)'
+            args = (selector, self.debugging_id)
+            om.out.debug(msg % args)
+            return False
 
         for key in text:
-            self.key_down(key)
-            self.key_up(key)
+            if not self.key_down(key):
+                return False
+
+            if not self.key_up():
+                return False
+
+        return True
 
     def get_dom_document_node_id(self):
         result = self.chrome_conn.DOM.getDocument()
@@ -358,11 +369,17 @@ class InstrumentedChrome(InstrumentedChromeBase):
         node_ids = result.get('result', {}).get('nodeIds', None)
 
         if node_ids is None:
-            om.out.debug('The call to chrome.focus() failed. Selector returned no nodes.')
+            msg = ('The call to chrome.focus() failed.'
+                   ' CSS selector "%s" returned no nodes (did: %s)')
+            args = (selector, self.debugging_id)
+            om.out.debug(msg % args)
             return False
 
         if len(node_ids) > 1:
-            om.out.debug('The call to chrome.focus() failed. Selector returned more than one node.')
+            msg = ('The call to chrome.focus() failed.'
+                   ' CSS selector "%s" returned more than one node (did: %s)')
+            args = (selector, self.debugging_id)
+            om.out.debug(msg % args)
             return False
 
         node_id = node_ids[0]
@@ -384,9 +401,15 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         :return: None
         """
-        raise NotImplementedError
+        result = self.chrome_conn.Input.dispatchKeyEvent(type='keyDown',
+                                                         text=key)
 
-    def key_up(self, key):
+        if result is None:
+            return False
+
+        return True
+
+    def key_up(self):
         """
         Uses Input [0] to send key up event. Inspired on [1]
 
@@ -395,7 +418,12 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         :return: None
         """
-        raise NotImplementedError
+        result = self.chrome_conn.Input.dispatchKeyEvent(type='keyUp')
+
+        if result is None:
+            return False
+
+        return True
 
     def _force_page_loading_state(self):
         """
@@ -448,7 +476,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
         """
         self.page_state.force(PageState.MIGHT_NAVIGATE)
 
-    def _js_runtime_evaluate(self, expression, timeout=5):
+    def js_runtime_evaluate(self, expression, timeout=5):
         """
         A wrapper around Runtime.evaluate that provides error handling and
         timeouts.
@@ -493,7 +521,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         :return: The variable value as a python object
         """
-        return self._js_runtime_evaluate(variable_name)
+        return self.js_runtime_evaluate(variable_name)
 
     def get_js_errors(self):
         """

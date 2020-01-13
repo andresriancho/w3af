@@ -18,19 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
-import os
-
-from urlparse import urlparse
-
-from websocket import WebSocketConnectionClosedException
-
-from w3af import ROOT_PATH
-from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
-from w3af.core.controllers.chrome.instrumented.exceptions import InstrumentedChromeException
-from w3af.core.controllers.chrome.devtools import ChromeInterfaceException
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.chrome.tests.base import BaseInstrumentedUnittest
-from w3af.core.data.url.tests.helpers.ssl_daemon import SSLServer
 
 
 class TestFocusElement(BaseInstrumentedUnittest):
