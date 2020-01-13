@@ -296,6 +296,107 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         return True
 
+    def type_text(self, text, selector):
+        """
+        Types `text` on HTML input specified by `selector`.
+
+        This method is generic enough to send any combination of keys to any
+        tag in the DOM, but in 99% of the cases we're using it to type some
+        text into a form <input>.
+
+        Implementation is inspired by puppeteer [0].
+
+        [0] https://github.com/puppeteer/puppeteer/blob/3773229ac276a84a4de113e74290abc3bbf60499/lib/Input.js#L158-L182
+
+        :param text: The string to type
+        :param selector: The CSS selector pointing to the HTML tag
+        :return: None
+        """
+        self.focus(selector)
+
+        for key in text:
+            self.key_down(key)
+            self.key_up(key)
+
+    def get_dom_document_node_id(self):
+        result = self.chrome_conn.DOM.getDocument()
+
+        # This is a rare case where the API call failed
+        if result is None:
+            return None
+
+        node_id = result.get('result', {}).get('root', {}).get('nodeId', None)
+
+        if node_id is None:
+            return None
+
+        return node_id
+
+    def focus(self, selector):
+        """
+        Sets focus to the given selector, when using the browser with a UI this
+        is achieved by clicking on the <input> or <textarea> tag.
+
+        https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-querySelectorAll
+        https://chromedevtools.github.io/devtools-protocol/tot/DOM#method-focus
+
+        :param selector: The CSS selector pointing to the HTML tag to focus on
+        :return: True if chrome was able to focus on the selector
+        """
+        node_id = self.get_dom_document_node_id()
+
+        if node_id is None:
+            return False
+
+        result = self.chrome_conn.DOM.querySelectorAll(nodeId=node_id,
+                                                       selector=selector)
+
+        # This is a rare case where the API call failed
+        if result is None:
+            return None
+
+        node_ids = result.get('result', {}).get('nodeIds', None)
+
+        if node_ids is None:
+            om.out.debug('The call to chrome.focus() failed. Selector returned no nodes.')
+            return False
+
+        if len(node_ids) > 1:
+            om.out.debug('The call to chrome.focus() failed. Selector returned more than one node.')
+            return False
+
+        node_id = node_ids[0]
+
+        result = self.chrome_conn.DOM.focus(nodeId=node_id)
+
+        # This is a rare case where the API call failed
+        if result is None:
+            return False
+
+        return True
+
+    def key_down(self, key):
+        """
+        Uses Input [0] to send key down event. Inspired on [1]
+
+        [0] https://chromedevtools.github.io/devtools-protocol/tot/Input
+        [1] https://github.com/puppeteer/puppeteer/blob/3773229ac276a84a4de113e74290abc3bbf60499/lib/Input.js#L43
+
+        :return: None
+        """
+        raise NotImplementedError
+
+    def key_up(self, key):
+        """
+        Uses Input [0] to send key up event. Inspired on [1]
+
+        [0] https://chromedevtools.github.io/devtools-protocol/tot/Input
+        [1] https://github.com/puppeteer/puppeteer/blob/3773229ac276a84a4de113e74290abc3bbf60499/lib/Input.js#L132
+
+        :return: None
+        """
+        raise NotImplementedError
+
     def _force_page_loading_state(self):
         """
         During testing it was possible to identify cases where the code was
