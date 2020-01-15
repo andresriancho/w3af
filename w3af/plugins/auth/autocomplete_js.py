@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import Queue
 
-from w3af.core.controllers.plugins.auth_session_plugin import AuthSessionPlugin
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
 from w3af.core.controllers.chrome.login.find_form.main import FormFinder
@@ -35,37 +34,10 @@ class autocomplete_js(autocomplete):
     """
 
     def __init__(self):
-        AuthSessionPlugin.__init__(self)
+        autocomplete.__init__(self)
 
         self._login_form = None
         self._http_traffic_queue = None
-
-    def _handle_authentication_success(self):
-        #
-        # Logging
-        #
-        args = (self.username,
-                self._login_form.get_username_css_selector(),
-                self._login_form.get_password_css_selector(),
-                self._login_form.get_submit_css_selector())
-
-        msg = 'Login success for username %s with selectors: (username: %s, password: %s, submit: %s)'
-        self._log_debug(msg % args)
-
-        #
-        # Save the URLs used during the login process to the blacklist in
-        # order to prevent audit plugins from sending raw HTTP requests to
-        # the login URL and breaking the session
-        #
-        login_urls = set()
-
-        while not self._http_traffic_queue.empty():
-            request, _, _ = self._http_traffic_queue.get_nowait()
-
-            if isinstance(request, FuzzableRequest):
-                login_urls.add(request.get_url())
-
-        self._configure_audit_blacklist(*login_urls)
 
     def login(self, debugging_id=None):
         """
@@ -107,6 +79,33 @@ class autocomplete_js(autocomplete):
 
         self._handle_authentication_success()
         return True
+
+    def _handle_authentication_success(self):
+        #
+        # Logging
+        #
+        args = (self.username,
+                self._login_form.get_username_css_selector(),
+                self._login_form.get_password_css_selector(),
+                self._login_form.get_submit_css_selector())
+
+        msg = 'Login success for username %s with selectors: (username: %s, password: %s, submit: %s)'
+        self._log_debug(msg % args)
+
+        #
+        # Save the URLs used during the login process to the blacklist in
+        # order to prevent audit plugins from sending raw HTTP requests to
+        # the login URL and breaking the session
+        #
+        login_urls = set()
+
+        while not self._http_traffic_queue.empty():
+            request, _, _ = self._http_traffic_queue.get_nowait()
+
+            if isinstance(request, FuzzableRequest):
+                login_urls.add(request.get_url())
+
+        self._configure_audit_blacklist(*login_urls)
 
     def _do_login(self, chrome):
         """
@@ -194,7 +193,10 @@ class autocomplete_js(autocomplete):
         loaded = chrome.wait_for_load()
 
         if not loaded:
-            self._log_debug('Failed to load %s in chrome for autocomplete_js')
+            msg = 'Failed to load %s in chrome for autocomplete_js'
+            args = (self.login_form_url,)
+            self._log_debug(msg % args)
+
             return loaded
 
         return loaded
@@ -207,6 +209,11 @@ class autocomplete_js(autocomplete):
         form_finder = FormFinder(chrome, self._debugging_id)
 
         for form in form_finder.find_forms():
+
+            msg = 'Found potential login form: %s'
+            args = (form,)
+            self._log_debug(msg % args)
+
             yield form
 
     def _find_form_submit_strategy(self, chrome, form):

@@ -865,6 +865,67 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         return false;
     },
 
+    /**
+    * Return the CSS selector for the login forms which exist in the DOM.
+    *
+    * For this method login forms are defined as:
+    *
+    *   - <form> that contains
+    *       - <input type=text>, and
+    *       - <input type=password>
+    *
+    */
+    getLoginForms: function () {
+        let login_forms = [];
+
+        // First we identify the forms with a password field using a descendant Selector
+        // https://learn.shayhowe.com/advanced-html-css/complex-selectors/
+        let password_fields = document.querySelectorAll("form input[type='password']")
+
+        // But these forms might not have a username field, so we get the <form>
+        // parents for each input element and then confirm that there is an input
+        // of type=text in that form
+        for( let passwd_it = 0; passwd_it < password_fields.length; passwd_it++ ){
+
+            let password_field_elem = password_fields[passwd_it];
+
+            let forms = _DOMAnalyzer.getAncestors(password_field_elem, "form");
+
+            if ( forms.length === 0) continue;
+
+            // We could have nested form tags, but that is really unusual and
+            // most likely not supported by browsers anyways
+            let form = forms[0];
+
+            // Finally we confirm that the form has a type=text input
+            let text_fields = document.querySelectorAll("input[type='text']", form)
+
+            // Zero text fields is most likely a password-only login form
+            // Two text fields or more is most likely a registration from
+            // One text field is 99% of login forms
+            if (text_fields.length !== 1) continue;
+
+            // And if there is a submit button I want that selector too
+            let submit_fields = document.querySelectorAll("input[type='submit']", form)
+            let submit_selector = null;
+
+            if (submit_fields.length !== 0) {
+                submit_selector = OptimalSelect.getSingleSelector(submit_fields[0])
+            }
+
+            let data = {
+                "form": OptimalSelect.getSingleSelector(form),
+                "username": OptimalSelect.getSingleSelector(text_fields[0]),
+                "password": OptimalSelect.getSingleSelector(password_field_elem),
+                "submit": submit_selector
+            };
+
+            login_forms.push(data);
+        }
+
+        return JSON.stringify(login_forms);
+    },
+
     sliceAndSerialize: function (filtered_event_listeners, start, count) {
         return JSON.stringify(filtered_event_listeners.slice(start, start + count));
     },

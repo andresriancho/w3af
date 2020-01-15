@@ -54,7 +54,8 @@ def _get_inst(ip, port):
 
 class HTTPServer(BaseHTTPServer.HTTPServer):
     def __init__(self, server_address, webroot, RequestHandlerClass):
-        BaseHTTPServer.HTTPServer.__init__(self, server_address,
+        BaseHTTPServer.HTTPServer.__init__(self,
+                                           server_address,
                                            RequestHandlerClass)
         self.webroot = webroot
         self.__is_shut_down = threading.Event()

@@ -23,12 +23,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 class LoginForm(object):
     def __init__(self):
+        self.form_css_selector = None
         self.username_css_selector = None
         self.password_css_selector = None
         self.submit_css_selector = None
+        self.form_submit_strategy = None
+
+    def set_form_css_selector(self, css_selector):
+        self.form_css_selector = css_selector
+
+    def get_form_css_selector(self):
+        return self.form_css_selector
 
     def set_submit_strategy(self, form_submit_strategy):
         self.form_submit_strategy = form_submit_strategy
+
+    def get_submit_strategy(self):
+        return self.form_submit_strategy
 
     def get_username_css_selector(self):
         return self.username_css_selector
@@ -49,10 +60,11 @@ class LoginForm(object):
         self.submit_css_selector = css_selector
 
     def __str__(self):
-        msg = '<LoginForm %s / %s / %s>'
+        msg = '<LoginForm %s / %s / %s / %s>'
         args = (self.username_css_selector,
                 self.password_css_selector,
-                self.submit_css_selector)
+                self.submit_css_selector,
+                self.form_submit_strategy.get_name() if self.form_submit_strategy else None)
         return msg % args
 
     def __repr__(self):

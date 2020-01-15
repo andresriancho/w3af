@@ -81,6 +81,19 @@ class ExtendedHttpRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         """
         return 200, self.RESPONSE_BODY
 
+    def get_default_headers(self, body):
+        return {
+            'Content-Type': 'text/html',
+            'Content-Length': len(body),
+            'Content-Encoding': 'identity',
+            # Enable this header if you want Chrome to cache the response
+            # 'Cache-Control': 'public, max-age=86400'
+        }
+
+    def quick_response(self, body, code=200):
+        headers = self.get_default_headers(body)
+        self.send_response_to_client(code, body, headers)
+
     def do_GET(self):
         """
         Handles HTTP GET requests to the server.
@@ -91,15 +104,9 @@ class ExtendedHttpRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         :return: None
         """
         request_path = urlparse(self.path).path
-        code, body = self.get_code_body(request_path)
 
-        headers = {
-            'Content-Type': 'text/html',
-            'Content-Length': len(body),
-            'Content-Encoding': 'identity',
-            # Enable this header if you want Chrome to cache the response
-            # 'Cache-Control': 'public, max-age=86400'
-        }
+        code, body = self.get_code_body(request_path)
+        headers = self.get_default_headers(body)
 
         self.send_response_to_client(code, body, headers)
 

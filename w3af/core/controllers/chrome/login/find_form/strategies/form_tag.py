@@ -30,7 +30,16 @@ class FormTagStrategy(object):
         """
         :return: Yield forms which are identified by the strategy algorithm
         """
-        raise NotImplementedError
+        for login_form in self._simple_form_with_username_password_submit():
+            yield login_form
 
-    def get_name(self):
+    def _simple_form_with_username_password_submit(self):
+        """
+        :return: Yield forms that have username, password and submit inputs
+        """
+        for login_form in self.chrome.get_login_forms():
+            yield login_form
+
+    @staticmethod
+    def get_name():
         return 'FormTag'

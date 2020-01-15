@@ -27,8 +27,10 @@ from w3af.core.controllers.chrome.login.find_form.strategies.password_and_parent
 
 class FormFinder(object):
 
-    STRATEGIES = [FormTagStrategy,
-                  PasswordAndParentStrategy]
+    STRATEGIES = [
+        FormTagStrategy,
+        PasswordAndParentStrategy
+    ]
 
     def __init__(self, chrome, debugging_id):
         self.chrome = chrome

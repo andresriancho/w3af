@@ -27,6 +27,7 @@ import w3af.core.controllers.output_manager as om
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.chrome.instrumented.instrumented_base import InstrumentedChromeBase
 from w3af.core.controllers.chrome.instrumented.event_listener import EventListener
+from w3af.core.controllers.chrome.login.login_form import LoginForm
 from w3af.core.controllers.chrome.instrumented.page_state import PageState
 from w3af.core.controllers.chrome.instrumented.paginate import paginate, PAGINATION_PAGE_COUNT
 from w3af.core.controllers.chrome.instrumented.utils import escape_js_string, is_valid_event_type
@@ -295,6 +296,25 @@ class InstrumentedChrome(InstrumentedChromeBase):
             raise EventException('The event was not run')
 
         return True
+
+    def get_login_forms(self):
+        """
+        :return: Yield LoginForm instances
+        """
+        result = self.js_runtime_evaluate('window._DOMAnalyzer.getLoginForms()')
+
+        if result is None:
+            raise EventTimeout('The event execution timed out')
+
+        for form in json.loads(result):
+            login_form = LoginForm()
+
+            login_form.set_password_css_selector(form['password'])
+            login_form.set_username_css_selector(form['username'])
+            login_form.set_form_css_selector(form['form'])
+            login_form.set_submit_css_selector(form['submit'])
+
+            yield login_form
 
     def type_text(self, text, selector):
         """
