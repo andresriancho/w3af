@@ -311,7 +311,26 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
             login_form.set_password_css_selector(form['password'])
             login_form.set_username_css_selector(form['username'])
-            login_form.set_form_css_selector(form['form'])
+            login_form.set_parent_css_selector(form['parent'])
+            login_form.set_submit_css_selector(form['submit'])
+
+            yield login_form
+
+    def get_login_forms_without_form_tags(self):
+        """
+        :return: Yield LoginForm instances
+        """
+        result = self.js_runtime_evaluate('window._DOMAnalyzer.getLoginFormsWithoutFormTags()')
+
+        if result is None:
+            raise EventTimeout('The event execution timed out')
+
+        for form in json.loads(result):
+            login_form = LoginForm()
+
+            login_form.set_password_css_selector(form['password'])
+            login_form.set_username_css_selector(form['username'])
+            login_form.set_parent_css_selector(form['parent'])
             login_form.set_submit_css_selector(form['submit'])
 
             yield login_form

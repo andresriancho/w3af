@@ -29,18 +29,25 @@ from w3af.core.controllers.daemons.webserver import start_webserver_any_free_por
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.data.parsers.doc.url import URL
 
-VANILLA_JS_LOGIN = os.path.join(ROOT_PATH, 'plugins/tests/auth/autocomplete_js/vanilla_javascript_1/index.html')
-VANILLA_JS_LOGIN = file(VANILLA_JS_LOGIN).read()
+VANILLA_JS_LOGIN_1 = os.path.join(ROOT_PATH, 'plugins/tests/auth/autocomplete_js/vanilla_javascript_1/index.html')
+VANILLA_JS_LOGIN_1 = file(VANILLA_JS_LOGIN_1).read()
+
+VANILLA_JS_LOGIN_2 = os.path.join(ROOT_PATH, 'plugins/tests/auth/autocomplete_js/vanilla_javascript_2/index.html')
+VANILLA_JS_LOGIN_2 = file(VANILLA_JS_LOGIN_2).read()
 
 USER = 'user@mail.com'
 PASS = 'passw0rd'
 
 
 class BasicLoginRequestHandler(ExtendedHttpRequestHandler):
-    LOGIN_FORM = VANILLA_JS_LOGIN
+    LOGIN_FORM = VANILLA_JS_LOGIN_1
     ADMIN_HOME = u'Hello admin!'
 
     EVENTS = []
+
+    @classmethod
+    def clear_events(cls):
+        cls.EVENTS = []
 
     def do_GET(self):
         #
@@ -131,9 +138,9 @@ class TestVanillaJavaScript1(PluginTest):
         if self.server_thread is not None:
             self.server_thread.join()
 
-        BasicLoginRequestHandler.EVENTS = []
+        BasicLoginRequestHandler.clear_events()
 
-    def test_find_form_submit_login_check(self):
+    def test_js_auth(self):
         target_url = self.start_webserver(BasicLoginRequestHandler)
 
         login_form_url = URL(target_url + 'login_form.py')
@@ -156,3 +163,34 @@ class TestVanillaJavaScript1(PluginTest):
         self.assertIn('/login_post.py', BasicLoginRequestHandler.EVENTS)
         self.assertIn('/admin', BasicLoginRequestHandler.EVENTS)
         self.assertIn('ADMIN_REQUEST_SUCCESS', BasicLoginRequestHandler.EVENTS)
+
+
+class FakeFormLoginRequestHandler(BasicLoginRequestHandler):
+    LOGIN_FORM = VANILLA_JS_LOGIN_2
+
+
+class TestVanillaJavaScript2(TestVanillaJavaScript1):
+
+    def test_js_auth(self):
+        target_url = self.start_webserver(FakeFormLoginRequestHandler)
+
+        login_form_url = URL(target_url + 'login_form.py')
+        check_url = URL(target_url + 'admin')
+        check_string = FakeFormLoginRequestHandler.ADMIN_HOME
+
+        plugins = {
+            'audit': (PluginConfig('xss'),),
+            'auth': (PluginConfig('autocomplete_js',
+                                  ('username', USER, PluginConfig.STR),
+                                  ('password', PASS, PluginConfig.STR),
+                                  ('login_form_url', login_form_url, PluginConfig.URL),
+                                  ('check_url', check_url, PluginConfig.URL),
+                                  ('check_string', check_string, PluginConfig.STR)),),
+        }
+
+        self._scan(target_url.url_string, plugins)
+
+        self.assertIn('/login_form.py', FakeFormLoginRequestHandler.EVENTS)
+        self.assertIn('/login_post.py', FakeFormLoginRequestHandler.EVENTS)
+        self.assertIn('/admin', FakeFormLoginRequestHandler.EVENTS)
+        self.assertIn('ADMIN_REQUEST_SUCCESS', FakeFormLoginRequestHandler.EVENTS)

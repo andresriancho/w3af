@@ -28,9 +28,12 @@ class PasswordAndParentStrategy(object):
 
     def find_forms(self):
         """
+        The algorithm is implemented in dom_analyzer.js
+
         :return: Yield forms which are identified by the strategy algorithm
         """
-        raise NotImplementedError
+        for login_form in self.chrome.get_login_forms_without_form_tags():
+            yield login_form
 
     def get_name(self):
         return 'PasswordAndParent'

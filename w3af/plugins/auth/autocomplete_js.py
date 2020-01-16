@@ -179,8 +179,8 @@ class autocomplete_js(autocomplete):
     def _get_chrome_instance(self, load_url=False):
         self._http_traffic_queue = Queue.Queue()
 
-        chrome = InstrumentedChrome(self._uri_opener,
-                                    self._http_traffic_queue)
+        chrome = InstrumentedChrome(self._uri_opener, self._http_traffic_queue)
+        chrome.set_debugging_id(self._debugging_id)
 
         if load_url:
             self._load_login_form_url(chrome)

@@ -23,17 +23,29 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 class LoginForm(object):
     def __init__(self):
-        self.form_css_selector = None
+        self.parent_css_selector = None
         self.username_css_selector = None
         self.password_css_selector = None
         self.submit_css_selector = None
         self.form_submit_strategy = None
 
-    def set_form_css_selector(self, css_selector):
-        self.form_css_selector = css_selector
+    def get_parent_css_selector(self):
+        """
+        The `parent` is the DOM node which contains the:
+            - input type=text
+            - input type=password
+            - (optional) input type=submit
 
-    def get_form_css_selector(self):
-        return self.form_css_selector
+        In some cases the `parent` CSS selector will point to a `form` tag,
+        but in others (most likely coming from getLoginFormsWithoutFormTags)
+        the selector might point to any DOM node.
+
+        :return: The CSS selector to the parent
+        """
+        return self.parent_css_selector
+
+    def set_parent_css_selector(self, css_selector):
+        self.parent_css_selector = css_selector
 
     def set_submit_strategy(self, form_submit_strategy):
         self.form_submit_strategy = form_submit_strategy

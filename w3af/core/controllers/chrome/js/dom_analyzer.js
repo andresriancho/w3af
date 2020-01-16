@@ -882,7 +882,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         // https://learn.shayhowe.com/advanced-html-css/complex-selectors/
         let password_fields = document.querySelectorAll("form input[type='password']")
 
-        // But these forms might not have a username field, so we get the <form>
+        // But these forms might not have an username field, so we get the <form>
         // parents for each input element and then confirm that there is an input
         // of type=text in that form
         for( let passwd_it = 0; passwd_it < password_fields.length; passwd_it++ ){
@@ -914,13 +914,86 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             }
 
             let data = {
-                "form": OptimalSelect.getSingleSelector(form),
+                "parent": OptimalSelect.getSingleSelector(form),
                 "username": OptimalSelect.getSingleSelector(text_fields[0]),
                 "password": OptimalSelect.getSingleSelector(password_field_elem),
                 "submit": submit_selector
             };
 
             login_forms.push(data);
+        }
+
+        return JSON.stringify(login_forms);
+    },
+
+
+    /**
+    * Return the CSS selector for the login forms which exist in the DOM.
+    *
+    * For this method login forms are defined as:
+    *
+    *   - Any tag that contains
+    *       - <input type=text>, and
+    *       - <input type=password>
+    *
+    */
+    getLoginFormsWithoutFormTags: function () {
+        let login_forms = [];
+
+        // First we identify the password fields
+        let password_fields = document.querySelectorAll("input[type='password']")
+
+        // But these forms might not have an username field (type=text), so we
+        // get five levels up in the DOM child-parent structure for each password
+        // input element and then confirm that there is an input of type=text in
+        // that DOM sub-structure
+        for( let passwd_it = 0; passwd_it < password_fields.length; passwd_it++ ){
+
+            let password_field_elem = password_fields[passwd_it];
+            let parent = password_field_elem.parentNode;
+
+            // Go up in the DOM structure to the parent seven times
+            for( let parent_it = 0; parent_it < 7; parent_it++ ){
+                if ( parent.parentNode === document) break;
+
+                // Check if this parent has all the data we're looking for, the
+                // idea is to prevent going up in the DOM structure in an
+                // unnecessary way: go up one level, check, if nothing is found
+                // go up one more level, and so one.
+                //
+                // Find if this parent has a type=text input
+                let text_fields = document.querySelectorAll("input[type='text']", parent)
+
+                // Zero text fields is most likely a password-only login form
+                // Two text fields or more is most likely a registration from
+                // One text field is 99% of login forms
+                if (text_fields.length !== 1) {
+                    // Prepare for the next loop
+                    parent = parent.parentNode;
+                    continue;
+                }
+
+                // And if there is a submit button I want that selector too
+                let submit_fields = document.querySelectorAll("input[type='submit']", parent)
+                let submit_selector = null;
+
+                if (submit_fields.length !== 0) {
+                    submit_selector = OptimalSelect.getSingleSelector(submit_fields[0])
+                }
+
+                let data = {
+                    "parent": OptimalSelect.getSingleSelector(parent),
+                    "username": OptimalSelect.getSingleSelector(text_fields[0]),
+                    "password": OptimalSelect.getSingleSelector(password_field_elem),
+                    "submit": submit_selector
+                };
+
+                login_forms.push(data);
+
+                // There is no need to go up in the DOM structure, we already
+                // identified the tags we needed at this level
+                break;
+            }
         }
 
         return JSON.stringify(login_forms);
