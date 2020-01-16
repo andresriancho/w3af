@@ -33,5 +33,8 @@ class BaseStrategy(object):
         """
         Fills the form by instrumenting typing on the inputs
         """
-        raise NotImplementedError
+        self.chrome.type_text(self.username,
+                              self.form.get_username_css_selector())
 
+        self.chrome.type_text(self.password,
+                              self.form.get_password_css_selector())

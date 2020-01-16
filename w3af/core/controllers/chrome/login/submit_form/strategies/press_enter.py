@@ -30,7 +30,19 @@ class PressEnterStrategy(BaseStrategy):
         """
         Submit a form by pressing the `Enter` key in chrome
         """
-        raise NotImplementedError
+        self.fill_form()
+
+        # If the previous steps were able to identify the submit button then
+        # focus on that and send Enter
+        if self.form.get_submit_css_selector():
+            self.chrome.focus(self.form.get_submit_css_selector())
+        else:
+            self.chrome.focus(self.form.get_password_css_selector())
+
+        #
+        # And now send the Enter key to (hopefully) submit the form
+        #
+        self.chrome.press_enter_key()
 
     def get_name(self):
         return 'PressEnter'

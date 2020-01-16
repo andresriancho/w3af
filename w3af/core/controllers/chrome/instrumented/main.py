@@ -412,6 +412,24 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         return True
 
+    def press_enter_key(self):
+        """
+        Press the enter key in Chrome. This method is commonly used together
+        with the focus(), first focus on the element where you want to send
+        the key and then send it.
+
+        :return: None
+        """
+        result = self.chrome_conn.Input.dispatchKeyEvent(type='char',
+                                                         key='Enter',
+                                                         unmodifiedText='\r',
+                                                         text='\r')
+
+        if result is None:
+            return False
+
+        return True
+
     def key_down(self, key):
         """
         Uses Input [0] to send key down event. Inspired on [1]

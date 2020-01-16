@@ -238,7 +238,10 @@ class autocomplete_js(autocomplete):
                                        self._debugging_id)
 
         for form_submit_strategy in form_submitter.submit_form():
+
             if not self.has_active_session(debugging_id=self._debugging_id):
+                # No need to set the state of the chrome browser back to the
+                # login page, that is performed inside the FormSubmitter
                 continue
 
             msg = '%s is a valid form submit strategy for %s'

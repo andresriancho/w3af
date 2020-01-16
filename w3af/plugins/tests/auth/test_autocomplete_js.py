@@ -21,9 +21,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 
 from urlparse import urlparse
+from urlparse import parse_qs
 
 from w3af import ROOT_PATH
-from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
+from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.data.parsers.doc.url import URL
@@ -83,11 +84,16 @@ class BasicLoginRequestHandler(ExtendedHttpRequestHandler):
         #
         # Check username and password
         #
-        print(self.path)
-        if http_request.parsed_body.get('user')[0] != USER:
+        query_string = urlparse(self.path).query
+        query_string = parse_qs(query_string)
+
+        request_user = query_string.get('username')[0]
+        request_pass = query_string.get('password')[0]
+
+        if request_user != USER:
             return self.quick_response('Invalid user', 403)
 
-        if http_request.parsed_body.get('password')[0] != PASS:
+        if request_pass != PASS:
             return self.quick_response('Invalid password', 403)
 
         #
