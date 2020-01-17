@@ -448,7 +448,16 @@ class InstrumentedChrome(InstrumentedChromeBase):
         if result is None:
             return False
 
+        # Let the rest of the world know that the browser might navigate
+        # away from the current page because of the enter key that we
+        # just pressed
         self._force_might_navigate_state()
+
+        result = self.chrome_conn.Input.dispatchKeyEvent(type='keyUp')
+
+        if result is None:
+            return False
+
         return True
 
     def press_tab_key(self):
@@ -466,6 +475,11 @@ class InstrumentedChrome(InstrumentedChromeBase):
                                                          key='Tab',
                                                          unmodifiedText='\t',
                                                          text='\t')
+
+        if result is None:
+            return False
+
+        result = self.chrome_conn.Input.dispatchKeyEvent(type='keyUp')
 
         if result is None:
             return False
