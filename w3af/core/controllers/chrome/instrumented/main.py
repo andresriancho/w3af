@@ -335,7 +335,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
             yield login_form
 
-    def type_text(self, text, selector):
+    def type_text(self, text, selector=None):
         """
         Types `text` on HTML input specified by `selector`.
 
@@ -351,13 +351,14 @@ class InstrumentedChrome(InstrumentedChromeBase):
         :param selector: The CSS selector pointing to the HTML tag
         :return: True if the text was sent to the tag
         """
-        focused_on_selector = self.focus(selector)
+        if selector is not None:
+            focused_on_selector = self.focus(selector)
 
-        if not focused_on_selector:
-            msg = 'Failed to focus on CSS selector "%s" (did: %s)'
-            args = (selector, self.debugging_id)
-            om.out.debug(msg % args)
-            return False
+            if not focused_on_selector:
+                msg = 'Failed to focus on CSS selector "%s" (did: %s)'
+                args = (selector, self.debugging_id)
+                om.out.debug(msg % args)
+                return False
 
         for key in text:
             if not self.key_down(key):
@@ -443,6 +444,28 @@ class InstrumentedChrome(InstrumentedChromeBase):
                                                          key='Enter',
                                                          unmodifiedText='\r',
                                                          text='\r')
+
+        if result is None:
+            return False
+
+        self._force_might_navigate_state()
+        return True
+
+    def press_tab_key(self):
+        """
+        Press the tab key in Chrome. This method is commonly used together
+        with the focus(), first focus on the element where you want to send
+        the key and then send it.
+
+        :return: None
+        """
+        result = self.chrome_conn.Input.dispatchKeyEvent(type='rawKeyDown',
+                                                         modifiers=0,
+                                                         windowsVirtualKeyCode=13,
+                                                         code='Tab',
+                                                         key='Tab',
+                                                         unmodifiedText='\t',
+                                                         text='\t')
 
         if result is None:
             return False
