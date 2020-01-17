@@ -250,8 +250,27 @@ class autocomplete_js(autocomplete):
 
             return form_submit_strategy
 
-        # No form submit strategy was found to generate a valid session
+        msg = 'No form submit strategy was found to generate a valid session for form %s'
+        args = (form,)
+        self._log_debug(msg % args)
+
         return None
+
+    def has_active_session(self, debugging_id=None):
+        """
+        Check user session with chrome
+        """
+        has_active_session = False
+        self._set_debugging_id(debugging_id)
+        chrome = self._get_chrome_instance(load_url=False)
+
+        try:
+            chrome.load_url(self.check_url)
+            chrome.wait_for_load()
+            has_active_session = self.check_string in chrome.get_dom()
+        finally:
+            chrome.terminate()
+            return has_active_session
 
     def get_long_desc(self):
         """
