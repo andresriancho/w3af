@@ -461,7 +461,7 @@ class InstrumentedChrome(InstrumentedChromeBase):
         """
         result = self.chrome_conn.Input.dispatchKeyEvent(type='rawKeyDown',
                                                          modifiers=0,
-                                                         windowsVirtualKeyCode=13,
+                                                         windowsVirtualKeyCode=9,
                                                          code='Tab',
                                                          key='Tab',
                                                          unmodifiedText='\t',
