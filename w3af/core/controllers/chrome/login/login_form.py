@@ -81,3 +81,18 @@ class LoginForm(object):
 
     def __repr__(self):
         return str(self)
+
+    def __eq__(self, other):
+        if self.username_css_selector != other.username_css_selector:
+            return False
+
+        if self.password_css_selector != other.password_css_selector:
+            return False
+
+        if self.submit_css_selector != other.submit_css_selector:
+            return False
+
+        if self.parent_css_selector != other.parent_css_selector:
+            return False
+
+        return True

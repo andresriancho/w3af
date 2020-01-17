@@ -40,11 +40,17 @@ class FormFinder(object):
         """
         :return: Yield forms as they are found by each strategy
         """
+        identified_forms = []
+
         for strategy_klass in self.STRATEGIES:
             strategy = strategy_klass(self.chrome, self.debugging_id)
 
             try:
                 for form in strategy.find_forms():
+                    if form in identified_forms:
+                        continue
+
+                    identified_forms.append(form)
                     yield form
             except Exception as e:
                 msg = 'Form finder strategy %s raised exception: "%s" (did: %s)'
