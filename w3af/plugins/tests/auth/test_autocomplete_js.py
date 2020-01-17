@@ -35,6 +35,9 @@ VANILLA_JS_LOGIN_1 = file(VANILLA_JS_LOGIN_1).read()
 VANILLA_JS_LOGIN_2 = os.path.join(ROOT_PATH, 'plugins/tests/auth/autocomplete_js/vanilla_javascript_2/index.html')
 VANILLA_JS_LOGIN_2 = file(VANILLA_JS_LOGIN_2).read()
 
+VANILLA_JS_LOGIN_3 = os.path.join(ROOT_PATH, 'plugins/tests/auth/autocomplete_js/vanilla_javascript_3/index.html')
+VANILLA_JS_LOGIN_3 = file(VANILLA_JS_LOGIN_3).read()
+
 USER = 'user@mail.com'
 PASS = 'passw0rd'
 
@@ -173,6 +176,37 @@ class TestVanillaJavaScript2(TestVanillaJavaScript1):
 
     def test_js_auth(self):
         target_url = self.start_webserver(FakeFormLoginRequestHandler)
+
+        login_form_url = URL(target_url + 'login_form.py')
+        check_url = URL(target_url + 'admin')
+        check_string = FakeFormLoginRequestHandler.ADMIN_HOME
+
+        plugins = {
+            'audit': (PluginConfig('xss'),),
+            'auth': (PluginConfig('autocomplete_js',
+                                  ('username', USER, PluginConfig.STR),
+                                  ('password', PASS, PluginConfig.STR),
+                                  ('login_form_url', login_form_url, PluginConfig.URL),
+                                  ('check_url', check_url, PluginConfig.URL),
+                                  ('check_string', check_string, PluginConfig.STR)),),
+        }
+
+        self._scan(target_url.url_string, plugins)
+
+        self.assertIn('/login_form.py', FakeFormLoginRequestHandler.EVENTS)
+        self.assertIn('/login_post.py', FakeFormLoginRequestHandler.EVENTS)
+        self.assertIn('/admin', FakeFormLoginRequestHandler.EVENTS)
+        self.assertIn('ADMIN_REQUEST_SUCCESS', FakeFormLoginRequestHandler.EVENTS)
+
+
+class NoEnterInInputsLoginRequestHandler(BasicLoginRequestHandler):
+    LOGIN_FORM = VANILLA_JS_LOGIN_3
+
+
+class TestVanillaJavaScript3(TestVanillaJavaScript1):
+
+    def test_js_auth(self):
+        target_url = self.start_webserver(NoEnterInInputsLoginRequestHandler)
 
         login_form_url = URL(target_url + 'login_form.py')
         check_url = URL(target_url + 'admin')

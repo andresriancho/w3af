@@ -22,13 +22,17 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 from w3af.core.controllers import output_manager as om
 
 from w3af.core.controllers.chrome.login.submit_form.strategies.press_enter import PressEnterStrategy
+from w3af.core.controllers.chrome.login.submit_form.strategies.press_tab_enter import PressTabEnterStrategy
 from w3af.core.controllers.chrome.login.submit_form.strategies.form_input_submit import FormInputSubmitStrategy
 
 
 class FormSubmitter(object):
 
-    STRATEGIES = [PressEnterStrategy,
-                  FormInputSubmitStrategy]
+    STRATEGIES = [
+        PressEnterStrategy,
+        PressTabEnterStrategy,
+        #FormInputSubmitStrategy
+    ]
 
     def __init__(self, chrome, form, login_form_url, username, password, debugging_id):
         self.chrome = chrome
@@ -52,20 +56,38 @@ class FormSubmitter(object):
                                       self.debugging_id)
 
             try:
-                for _ in self._submit_and_restore(strategy):
-                    yield strategy
+                self._submit_and_restore(strategy)
             except Exception as e:
-                msg = 'Form submit strategy %s raised exception: "%s" (did: %s)'
-                args = (strategy.get_name(),
-                        e,
-                        self.debugging_id)
-                om.out.debug(msg % args)
+                self._handle_exception(strategy, e)
+            else:
+                yield strategy
 
     def _submit_and_restore(self, strategy):
-        for _ in strategy.submit_form():
-            yield
+        msg = 'Running form submit strategy %s on form %s (did: %s)'
+        args = (strategy.get_name(), self.form, self.debugging_id)
+        om.out.debug(msg % args)
 
-            # Restore the previous state before trying a new one
-            self.chrome.load_url(self.login_form_url)
-            self.chrome.wait_for_load()
+        #
+        # Load the page that contains the login form
+        #
+        self.chrome.load_url(self.login_form_url)
+        self.chrome.wait_for_load()
 
+        # Submit the form using the strategy
+        strategy.submit_form()
+
+        #
+        # Let the browser load any resources associated with the form
+        # submission, in some cases this might be redirecting between
+        # OAuth providers, SSO, etc. things that take time
+        #
+        # The form submission methods should set PageState.MIGHT_NAVIGATE
+        #
+        self.chrome.wait_for_load()
+
+    def _handle_exception(self, strategy, e):
+        msg = 'Form submit strategy %s raised exception: "%s" (did: %s)'
+        args = (strategy.get_name(),
+                e,
+                self.debugging_id)
+        om.out.debug(msg % args)
