@@ -27,11 +27,6 @@ RUN apt-get install -y python-pip build-essential libxslt1-dev libxml2-dev libsq
                        ca-certificates libffi-dev zlib1g-dev nodejs nodejs-dev libssl1.0-dev \
                        node-gyp npm
 
-RUN wget https://www.python.org/ftp/python/2.7.16/Python-2.7.16.tgz
-RUN tar xzvf Python-2.7.16.tgz
-RUN cd Python-2.7.16/ && ./configure && make && make install
-RUN python --version
-
 # Add the w3af user
 # TODO - actually use the w3af user instead of running everything as root
 RUN useradd w3af
@@ -46,7 +41,6 @@ RUN cat /home/w3af/.ssh/w3af-docker.pub >> /root/.ssh/authorized_keys
 
 # Get and install pip
 RUN pip install --index-url=https://pypi.python.org/simple/ --upgrade pip
-RUN python2.7 -m ensurepip --default-pip
 #
 # We install some pip packages before adding the code in order to better leverage
 # the docker cache
