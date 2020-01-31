@@ -70,6 +70,9 @@ class InfoSet(object):
     it would have been harder to refactor the whole code and the end result
     would have been difficult to read.
 
+    ITAG defines the name of the key in Info() instance. This key will be used
+    to group Info() instances together.
+
     Note that:
         * It can hold both Info and Vuln instances.
 
