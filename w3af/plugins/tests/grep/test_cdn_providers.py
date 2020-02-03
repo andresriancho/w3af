@@ -46,3 +46,11 @@ class TestCDNProviders(unittest.TestCase):
         self.plugin.grep(request, response)
 
         self.assertEqual(len(kb.get('cdn_providers', 'cdn_providers')), 2)
+
+    def test_if_cdn_provider_can_be_detected_by_url(self):
+        url = URL('https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css')
+        empty_header = Headers()
+        request = FuzzableRequest(url, method='GET')
+        response = HTTPResponse(200, '', empty_header, url, url, _id=1)
+        self.plugin.grep(request, response)
+        self.assertEqual(len(kb.get('cdn_providers', 'cdn_providers')), 1)
