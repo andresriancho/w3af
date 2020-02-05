@@ -7,8 +7,11 @@ JspWebshell
 PHPShell
 phpRemoteView
 JspSpy
+jspspy
+<title>jspx</title>
 <title>Mini Php Shell
 <title>r57Shell
+<title>r57shell
 Simple CGI backdoor by DK
 JFolder
 NIX REMOTE WEB-SHELL
@@ -31,6 +34,7 @@ MyShell
 fuckjp
 yoco
 backdoor\.jsp
+<input type="TEXT" name="cmd" id="cmd" size="80"
 <input type=text name=".CMD" size=45 value=
 <title>ZoRBaCK Connect</title>
 hkmjj
@@ -81,3 +85,47 @@ lpl38
 <FORM METHOD=GET ACTION='cmdjsp\.jsp'>
 jsp web shell
 Cod3rZ
+
+<title>WEB SHELL</title>
+<title>::Network Security Team::</title>
+<title>ASPXspy by NightRunner</title>
+<title>Web Manager</title>
+<title>��ۿƼ�ר��AspX���� By:sunue</title>
+<title>Antak Webshell</title>
+<title>Stored Procedure Execute</title>
+<title>filesystembrowser</title>
+<title>冰锋刺客</title>
+<title>WebSniff 1\.0  Powered by  C\.C\.T��linx �޸İ� </title>
+<title>ASPXspy</title>
+<title>xxooxx</title>
+<title>ASPYDrvsInfo</title>
+<title>ASPyQAnalyser</title>
+<title>r00tsС������ǽ��
+<title>WwW.SaNaLTeRoR.OrG - inDEXER And ReaDer</title>
+<title>"&nimajb&" - "&nimajbm&" </title>
+<title><%=xacj%></title>
+<title>Welcome To AK Team</title>
+<title>پرشین گیگ - Persiangig</title>
+- ����������ASPľ���2006PLUS - By Marcos</title>
+<title>08С���ڲ�����ר��  www.huc08.com</title>
+<title>WwW.SaNaLTeRoR.OrG - inDEXER And ReaDer</title>
+<title>.:: RHTOOLS 1.5 BETA(PVT) ::.</title>
+<title>zehir3 --> powered by zehir &lt;zehirhacker@hotmail.com&gt;</title>
+<title>I.N.F HACKING CENTER
+<title>Kacak FSO 1.0 | Terrorist Crew - Saldiri.Org</title>
+<title>|[NTDaddy v1.9
+<title>Remote Explorer</title>
+<title>Aventis KlasVayv 1.0</title>
+<title>Deface Keeper 0.2</title>
+<title>pang0</title>
+<title>SimAttacker - Vrsion : 1.0.0 - priv8 4 My friend </title>
+<title> nShell
+<title>SimShell - Simorgh Security MGZ</title>
+<title>Simple PHP Mysql client</title>
+<title>LOTFREE PHP Backdoor
+<title>-:[GreenwooD]:- WinX Shell</title>
+<title> Matamu Mat </title>
+<title>Command Shell \~
+<title>shell\@
+<title>iMHaBiRLiGi PhpFtp</title>
+<title>KA_uShell
