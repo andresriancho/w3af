@@ -102,7 +102,6 @@ Cod3rZ
 <title>Antak Webshell</title>
 <title>command</title>
 <title>Command</title>
-<title>Stored Procedure Execute</title>
 <title>filesystembrowser</title>
 <title>ASPXspy</title>
 <title>xxooxx</title>
@@ -127,7 +126,6 @@ Cod3rZ
 <title>"\&mmname\&" \- "\&ServerIP\&"\-\-Soft \- "\&serversoft\&"</title>
 <title>JspSpy</title>
 <title>jspspy</title>
-<title>jspx</title>
 <title>\.:: RHTOOLS 1\.5 BETA\(PVT\) ::\.</title>
 <title>zehir3 \-\-> powered by zehir \&lt;zehirhacker@hotmail\.com\&gt;</title>
 <title>Kacak FSO 1\.0 \| Terrorist Crew \- Saldiri\.Org</title>
@@ -145,7 +143,6 @@ Cod3rZ
 <title>Simple PHP Mysql client</title>
 <title>LOTFREE PHP Backdoor v1\.5</title>
 <title>\-:\[GreenwooD\]:\- WinX Shell</title>
-c99shell</title>
 <title> Matamu Mat </title>
 <title>Command Shell \~
 <title>shell@
@@ -206,13 +203,11 @@ Perl Web Shell by RST/GHC</title>
 <title>by EJDER</title>
 <title>EFSO 2\.0 For SaVSaK\.CoM </title>
 <title>Indonesian Defacer</title>
-<title>ASPX Shell</title>
 <title>RHTOOLS 1\.5 BETA\(PVT\) Edited By KingDefacer</title>
 <title>\|\[NTDaddy  v1\.9  \-  obzerve  \|  fux0r  inc\.\]</title>
 <title>\|\[NTDaddy  v1\.9  \|  anon  email\]</title>
 <title>MOHAJER22</title>
 <title>SyRiAn Sh3ll \~ V7\~ \[ B3 Cr34T!V3 Or D!3 TRy!nG \]</title>
-c99shell</title>
 <title>nsTView \- Edited By KingDefacer</title>
 <title>g00nshell
 404 Not Found Shell
@@ -220,14 +215,12 @@ c99shell</title>
 Locus7Shell \- Edited By KingDefacer</title>
 <title>"\.getcwd\(\)\."</title>
 <title>:: C37 Shell v1\.1 \- ',\$_SERVER\['SERVER_NAME'\],' ::</title>
-<title>iTSecTeam</title>
 <title>PhpShell 2\.0</title>
 <title>johnnyM@r00t \~</title>
 <title>\.::CBFTEAM SHELL::
 <title>EgY_SpIdEr ShElL</title>
 <title>EgY SpIdEr ShElL</title>
 <title>OverclockiX Shell\-Connector
-
 <title> CIH\.\[ms\] WebShell </title>
 <title>Ernealizm \- Edited By KingDefacer</title>
 <title> Exploit: error_log\(\) By \* erne   \* </title>
@@ -235,18 +228,15 @@ Locus7Shell \- Edited By KingDefacer</title>
 <title>PHPJackal
 <title>BLaSTER</title>
 <title>HackArt EngShell
-<title>SST Sheller !</title>
 <title>ex0shell Shell \& Edited By KingDefacer</title>
 <title>Mini Php Shell 27\.9 V2</title>
 <title>MulCiShell v2\.0 \- Edited By KingDefacer</title>
 <title>lostDC
 ::: Balcan Crew ::: </title>
 <title> Exploit: error_log\(\) By \* StresBypass  \* </title>
-<title>Knull Shell</title>
 <title>Ani\-Shell \| India</title>
 <title>:: www\.h4ckcity\.org :: Coded By 2MzRp \& LocalMan ::</title>
 <title>powered by => IRC\.ASCNET\.BIZ <= \& => www\.asc\.sh <= </title>
-<title>ZoRBaCK Connect</title>
 <title>www\.securedeath\.com</title>
 <title>Sosyete Safe Mode Bypass Shell \- Edited By KingDefacer</title>
 <title>Small Shell \- Edited By KingDefacer</title>
@@ -264,11 +254,10 @@ N3t</title>
 <title>\*  Hkrkoz  \* </title>
 <title> Exploit: error_log\(\) By \* TrYaG Team  \* </title>
 <title>GNY\.Shel! Encoded v1\.1  edited B\.Y \$c0rPi0n</title>
-<title>\*\*Coppermine Photo Gallery <= 1\.4\.3 remote cmmnds xctn\*\*\
+<title>\*\*Coppermine Photo Gallery <= 1\.4\.3 remote cmmnds xctn
 
 <title>r57 shell</title>
 <title>Launch commands in
-<title>JSP Shell</title>
 <title>ASPXSpy1\.0 \-> Bin:\)</title>
 <title>ASP\.NET Web BackDoor</title>
 <title>:: WebAdmin 2\.X Final ::</title>
@@ -312,7 +301,6 @@ PoisonShell</title>
 <title>Weakerthan PHP Exec Shell \- 2015 WeakNet Labs</title>
 <title>Silic Group php Webshell version 4</title>
 <title>XXOO</title>
-<title>awen asp\.net webshell</title>
 <title>JspDo Code By Xiao\.3</title>
 <title>jquery esayui</title>
 <title>Powered By SJavaWebManage</title>
