@@ -234,11 +234,6 @@ pps-v3.0.pl
 pps-v4.0.pl
 pps-v1.0.pl
 perlwebshell.cgi
-INSTALL
-ChangeLog
-AUTHORS
-README
-COPYING
 shell.js
 d00r_py3.py
 cgi-python.py
@@ -494,7 +489,6 @@ Utils.java
 config.aar
 test.war
 test.ear
-readme.MD
 devshell.php
 devshell.asp
 devshell.cfm
@@ -668,12 +662,9 @@ phpspy2010.php
 phpspy_2005_lite.php
 phpspy_2006.php
 phpkit.py
-README
 odd.php
 upload.py
-CHANGELOG
 phpkit.py
-README
 odd.php
 phpkitcli.py
 odd.php
