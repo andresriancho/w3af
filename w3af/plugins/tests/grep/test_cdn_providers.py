@@ -1,3 +1,24 @@
+"""
+cdn_providers.py
+
+Copyright 2020 Andres Riancho
+
+This file is part of w3af, http://w3af.org/ .
+
+w3af is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation version 2 of the License.
+
+w3af is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with w3af; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+"""
 import unittest
 
 from w3af.core.data.dc.headers import Headers
@@ -23,6 +44,15 @@ class TestCDNProviders(unittest.TestCase):
         request = FuzzableRequest(url, method='GET')
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.get('cdn_providers', 'cdn_providers')), 1)
+
+    def test_if_wrong_cdn_info_is_not_detected(self):
+        url = URL('https://example.com/')
+        headers = Headers([('server', 'Netlifo')])  # There's no Netlifo provider,
+        # so it shouldn't be detected
+        response = HTTPResponse(200, '', headers, url, url, _id=1)
+        request = FuzzableRequest(url, method='GET')
+        self.plugin.grep(request, response)
+        self.assertEqual(len(kb.get('cdn_providers', 'cdn_providers')), 0)
 
     def test_if_cdns_are_grouped_by_provider_name(self):
         netlify_header = Headers([('server', 'Netlify')])
