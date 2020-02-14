@@ -269,6 +269,10 @@ class ChromePool(object):
         return self._in_use
 
     def free(self, chrome):
+        if chrome.is_terminated:
+            msg = 'Chrome instance is already terminated'
+            om.out.debug(msg)
+            return
         chrome.free_count += 1
 
         debugging_id = chrome.get_debugging_id()

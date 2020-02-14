@@ -59,6 +59,7 @@ class InstrumentedChromeBase(object):
         self.http_traffic_queue = http_traffic_queue
 
         self.debugging_id = None
+        self.is_terminated = False
 
         self.proxy = self.start_proxy()
         self.chrome_process = self.start_chrome_process()
@@ -283,6 +284,7 @@ class InstrumentedChromeBase(object):
         self.proxy = None
         self.chrome_process = None
         self.chrome_conn = None
+        self.is_terminated = True
 
     def get_pid(self):
         try:
