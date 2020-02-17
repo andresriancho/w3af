@@ -269,7 +269,7 @@ class ChromePool(object):
         return self._in_use
 
     def free(self, chrome):
-        if chrome.is_terminated:
+        if not chrome.chrome_process:
             msg = 'Chrome instance is already terminated'
             om.out.debug(msg)
             return
