@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import hashlib
 import re
 import Queue
 import threading
@@ -72,6 +73,7 @@ class web_spider(CrawlPlugin):
         self._target_domain = None
         self._already_filled_form = ScalableBloomFilter()
         self._variant_db = VariantDB()
+        self._found_responses = {}
 
         # User configured variables
         self._ignore_regex = ''
@@ -432,11 +434,48 @@ class web_spider(CrawlPlugin):
                                                                  fuzzable_req,
                                                                  http_response,
                                                                  debugging_id)
+        is_response_unique = self._ensure_response_is_unique(
+            http_response.body,
+            fuzzable_req.get_uri(),
+        )
+        if not is_response_unique:
+            message = 'URL already crawled by web_spider: {}'.format(
+                fuzzable_req.get_uri()
+            )
+            om.out.debug(message)
+            return
 
         self.worker_pool.map_multi_args(
             self._verify_reference,
             url_to_verify_generator
         )
+
+    def _ensure_response_is_unique(self, response_body, url):
+        """
+        Sometimes JS crawler gets cheated by the website and crawl the same response
+        over and over again but under another url.
+
+        :param str response_body: the body of response from the URL we crawl right now
+        :param str url: the URL we crawl right now
+        :returns bool: return True if response body is brand new and unique and False if
+        we have already crawled the same response body.
+        """
+        # We want to first store only length of response as it's the fastest way
+        # to check if they're quite unique
+        body_length = len(response_body)
+
+        # Check if response with same length was already crawled
+        similar_response_hashes = self._found_responses.get(body_length)
+        if similar_response_hashes:
+            # If there was response with same length let's calculate checksum of our response
+            response_hash = hashlib.md5(response_body)
+            if response_hash not in similar_response_hashes:
+                # We store hashes of responses with same length
+                similar_response_hashes.append(response_hash)
+                return False
+            return True
+        self._found_responses[body_length] = []
+        return False
     
     @property
     def _chrome_crawler(self):
