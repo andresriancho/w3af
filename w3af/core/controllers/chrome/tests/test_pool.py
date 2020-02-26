@@ -65,6 +65,15 @@ class TestChromePool(unittest.TestCase):
         self.assertIn(chrome, self.pool._free)
         self.assertNotIn(chrome, self.pool._in_use)
 
+    def test_freeing_terminated_chrome_wont_cause_crash(self):
+        """
+        Regression test to prevent raising exception when pool.free() is called
+        on already terminated chrome instance.
+        """
+        chrome = self.pool.get(self.http_traffic_queue)
+        self.pool.remove(chrome, 'unittest')
+        self.pool.free(chrome)  # previously this raised AttributeError
+
     def test_remove(self):
         chrome = self.pool.get(self.http_traffic_queue)
         self.pool.remove(chrome, 'unittest')
