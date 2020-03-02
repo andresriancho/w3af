@@ -434,13 +434,11 @@ class web_spider(CrawlPlugin):
                                                                  fuzzable_req,
                                                                  http_response,
                                                                  debugging_id)
-        is_response_unique = self._ensure_response_is_unique(
-            http_response.body,
-            fuzzable_req.get_uri(),
-        )
+        is_response_unique = self._ensure_response_is_unique(http_response.body)
         if not is_response_unique:
-            message = 'URL already crawled by web_spider: {}'.format(
-                fuzzable_req.get_uri()
+            message = 'URL already crawled by web_spider: {} (did: {})'.format(
+                fuzzable_req.get_uri(),
+                debugging_id,
             )
             om.out.debug(message)
             return
@@ -450,13 +448,23 @@ class web_spider(CrawlPlugin):
             url_to_verify_generator
         )
 
-    def _ensure_response_is_unique(self, response_body, url):
+    def _ensure_response_is_unique(self, response_body):
         """
         Sometimes JS crawler gets cheated by the website and crawl the same response
         over and over again but under another url.
 
+        We want to store hash of response body, so if the same hash will occur again
+        we'll know the response isn't unique. Calculating hash is CPU-expensive,
+        so we store only length of response in self._found_responses dict.
+        If we find second response with same length then we calculate hash for it
+        and store it like
+        {
+            123: [],  # no hash, the resp with length 123 was found only once
+            24: ['dsf42434lkaf9j@3ls', 'd3#-dfr3'],  # two different responses with
+            # the length 24 was found, so we store their hashes
+        }
+
         :param str response_body: the body of response from the URL we crawl right now
-        :param str url: the URL we crawl right now
         :returns bool: return True if response body is brand new and unique and False if
         we have already crawled the same response body.
         """
