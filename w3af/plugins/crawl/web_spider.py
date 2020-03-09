@@ -19,7 +19,6 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
-import hashlib
 import re
 import Queue
 import threading
@@ -73,7 +72,6 @@ class web_spider(CrawlPlugin):
         self._target_domain = None
         self._already_filled_form = ScalableBloomFilter()
         self._variant_db = VariantDB()
-        self._found_responses = {}
 
         # User configured variables
         self._ignore_regex = ''
