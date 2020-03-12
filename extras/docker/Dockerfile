@@ -50,7 +50,7 @@ RUN pip install --index-url=https://pypi.python.org/simple/ --upgrade pip
 #
 #tblib==0.2.0
 #
-RUN pip install setuptools-git>=1.1 pyClamd==0.4.0 PyGithub==1.21.0 GitPython==2.1.3 \
+RUN pip install setuptools-git>=1.1 pyClamd==0.4.0 PyGithub==1.21.0 GitPython==2.1.15 \
         pybloomfiltermmap==0.3.14 esmre==0.3.1 phply==0.9.1 nltk==3.0.1 chardet==3.0.4 \
         pdfminer==20140328 futures==3.2.0 pyOpenSSL==18.0.0 scapy==2.4.0 guess-language==0.2 \
         cluster==1.1.1b3 msgpack-python==0.5.6 python-ntlm==1.0.1 halberd==0.2.4 \
