@@ -437,7 +437,7 @@ class web_spider(CrawlPlugin):
             self._verify_reference,
             url_to_verify_generator
         )
-    
+
     @property
     def _chrome_crawler(self):
         if self._chrome_crawler_inst is None:

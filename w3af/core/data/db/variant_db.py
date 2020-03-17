@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import os
 import threading
 
 import w3af.core.data.kb.config as cf
@@ -48,6 +49,8 @@ from w3af.core.data.db.clean_dc import (clean_fuzzable_request,
 # paths inside the "abc" path.
 #
 PATH_MAX_VARIANTS = 50
+
+PATH_MAX_LOOP = 4
 
 #
 # Limits the max number of variants we'll allow for URLs with the same path
@@ -118,6 +121,7 @@ class VariantDB(object):
 
         self.params_max_variants = cf.cf.get('params_max_variants')
         self.path_max_variants = cf.cf.get('path_max_variants')
+        self.path_max_loop = cf.cf.get('path_max_loop')
         self.max_equal_form_variants = cf.cf.get('max_equal_form_variants')
 
         self._db_lock = threading.RLock()
@@ -137,6 +141,10 @@ class VariantDB(object):
         with self._db_lock:
             if self._seen_exactly_the_same(fuzzable_request, request_hash):
                 self._log_return_false(fuzzable_request, 'seen_exactly_the_same')
+                return False
+
+            if self._request_is_looped(fuzzable_request):
+                self._log_return_false(fuzzable_request, 'request_is_looped')
                 return False
 
             if self._has_form(fuzzable_request):
@@ -199,6 +207,32 @@ class VariantDB(object):
         self._variants_eq.add(request_hash)
 
         self._log_return_false(fuzzable_request, 'seen_exactly_the_same')
+        return False
+
+    def _request_is_looped(self, fuzzable_request):
+        """
+        Check if the current request is the looped one.
+        If the requested URL seems like:
+        http://example.com/redirect/redirect/redirect/redirect/redirect/index.html
+        that means crawler probably fallen into infinite crawling loop due to `replace()`
+        in JavaScript history API.
+
+        :param FuzzableRequest fuzzable_request: request we're currently scanning
+        :returns Boolean: True if request is looped.
+        """
+        url = fuzzable_request.get_uri()
+        path, head = os.path.split(url.path)
+        same_path_parts = 0
+        # first iteration will almost never increment same_path_parts, because
+        # first head will be probably something like 'index.html'
+        for _ in range(self.path_max_loop + 1):
+            prev_head = head
+            path, head = os.path.split(path)
+            if head and head == prev_head:
+                same_path_parts += 1
+
+        if same_path_parts >= self.path_max_loop:
+            return True
         return False
 
     def _has_form(self, fuzzable_request):
