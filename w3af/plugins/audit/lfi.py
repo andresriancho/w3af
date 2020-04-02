@@ -179,7 +179,7 @@ class lfi(AuditPlugin):
                 
                 v = Vuln.from_mutant('Local file inclusion vulnerability',
                                      desc, severity.MEDIUM, response.id,
-                                     self.get_name(), mutant)
+                                     self.get_name(), mutant, vulndb_id=17)
 
                 v['file_pattern'] = file_pattern_match
                 
@@ -216,7 +216,7 @@ class lfi(AuditPlugin):
                 
                 v = Vuln.from_mutant('Local file inclusion vulnerability',
                                      desc, severity.MEDIUM, response.id,
-                                     self.get_name(), mutant)
+                                     self.get_name(), mutant, vulndb_id=17)
 
                 #
                 #    Set which part of the source code to match

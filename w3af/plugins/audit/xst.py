@@ -81,7 +81,7 @@ class xst(AuditPlugin):
 
             v = Vuln.from_fr('Cross site tracing vulnerability', desc,
                              severity.LOW, response.id, self.get_name(),
-                             freq)
+                             freq, vulndb_id=63)
 
             om.out.vulnerability(v.get_desc(), severity=v.get_severity())
             self.kb_append(self, 'xst', v)

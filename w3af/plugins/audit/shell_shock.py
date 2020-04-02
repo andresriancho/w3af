@@ -107,7 +107,7 @@ class shell_shock(AuditPlugin):
 
             v = Vuln.from_mutant(u'Shell shock vulnerability', desc,
                                  severity.HIGH, [response.id],
-                                 self.get_name(), mutant)
+                                 self.get_name(), mutant, vulndb_id=68)
 
             self.kb_append_uniq(self, 'shell_shock', v)
             return True
@@ -170,7 +170,7 @@ class shell_shock(AuditPlugin):
 
         v = Vuln.from_mutant(u'Shell shock vulnerability', desc,
                              severity.HIGH, [r.id for r in responses],
-                             self.get_name(), mutant)
+                             self.get_name(), mutant, vulndb_id=68)
 
         self.kb_append_uniq(self, 'shell_shock', v)
         return True

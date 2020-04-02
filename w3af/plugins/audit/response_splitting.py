@@ -80,7 +80,7 @@ class response_splitting(AuditPlugin):
         desc = 'Response splitting was found at: %s' % mutant.found_at()
         v = Vuln.from_mutant('Response splitting vulnerability', desc,
                              severity.MEDIUM, response.id,
-                             self.get_name(), mutant)
+                             self.get_name(), mutant, vulndb_id=41)
 
         self.kb_append_uniq(self, 'response_splitting', v)
 

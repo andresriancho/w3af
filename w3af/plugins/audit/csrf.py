@@ -101,7 +101,7 @@ class csrf(AuditPlugin):
         msg = 'Cross Site Request Forgery has been found at: %s' % freq.get_url()
         
         v = Vuln.from_fr('CSRF vulnerability', msg, severity.MEDIUM,
-                         orig_response.id, self.get_name(), freq)
+                         orig_response.id, self.get_name(), freq, vulndb_id=13)
         
         self.kb_append_uniq(self, 'csrf', v)
 

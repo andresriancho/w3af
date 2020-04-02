@@ -260,7 +260,7 @@ class generic(AuditPlugin):
                 
                 v = Vuln.from_mutant('Unhandled error in web application', desc,
                                      severity.LOW, id_list, self.get_name(),
-                                     mutant)
+                                     mutant, vulndb_id=73)
         
                 self.kb_append_uniq(self, 'generic', v)
         

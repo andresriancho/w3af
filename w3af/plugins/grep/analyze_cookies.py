@@ -208,7 +208,7 @@ class analyze_cookies(GrepPlugin):
             desc = desc % response.get_url()
 
             v = CookieVuln('Cookie without HttpOnly', desc, vuln_severity,
-                           response.id, self.get_name())
+                           response.id, self.get_name(), vulndb_id=22)
             v.set_url(response.get_url())
             v.set_cookie_object(cookie_obj)
 
@@ -252,7 +252,7 @@ class analyze_cookies(GrepPlugin):
 
                         v = CookieVuln('Secure cookies over insecure channel',
                                        desc, severity.HIGH, response.id,
-                                       self.get_name())
+                                       self.get_name(), vulndb_id=25)
                         v.set_url(response.get_url())
                         v.set_cookie_object(info.get_cookie_object())
 
@@ -332,7 +332,7 @@ class analyze_cookies(GrepPlugin):
             desc = desc % response.get_url()
 
             v = CookieVuln('Secure cookie over HTTP', desc, severity.HIGH,
-                           response.id, self.get_name())
+                           response.id, self.get_name(), vulndb_id=25)
             v.set_url(response.get_url())
             v.set_cookie_object(cookie_obj)
 
@@ -359,7 +359,7 @@ class analyze_cookies(GrepPlugin):
             desc = desc % response.get_url()
 
             v = CookieVuln('Secure flag missing in HTTPS cookie', desc,
-                           severity.MEDIUM, response.id, self.get_name())
+                           severity.MEDIUM, response.id, self.get_name(), 25)
             v.set_url(response.get_url())
             v.set_cookie_object(cookie_obj)
 
