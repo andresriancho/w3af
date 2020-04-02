@@ -52,7 +52,7 @@ class Vuln(Info):
         self.set_severity(severity)
 
     @classmethod
-    def from_mutant(cls, name, desc, severity, response_ids, plugin_name, mutant):
+    def from_mutant(cls, name, desc, severity, response_ids, plugin_name, mutant, vulndb_id=None):
         """
         TODO: I wanted to use super(Vuln, cls).from_mutant here but I was
         unable to make it work. Refactoring required to avoid code duplication
@@ -64,7 +64,7 @@ class Vuln(Info):
         if not isinstance(mutant, Mutant):
             raise TypeError('Mutant expected in from_mutant.')
         
-        inst = cls(name, desc, severity, response_ids, plugin_name)
+        inst = cls(name, desc, severity, response_ids, plugin_name, vulndb_id=vulndb_id)
 
         inst.set_uri(mutant.get_uri())
         inst.set_method(mutant.get_method())
@@ -73,7 +73,7 @@ class Vuln(Info):
         return inst
         
     @classmethod
-    def from_fr(cls, name, desc, severity, response_ids, plugin_name, freq):
+    def from_fr(cls, name, desc, severity, response_ids, plugin_name, freq, vulndb_id=None):
         """
         :return: A vuln instance with the proper data set based on the values
                  taken from the fuzzable request.
@@ -84,7 +84,7 @@ class Vuln(Info):
         mutant = EmptyMutant(freq)
             
         return Vuln.from_mutant(name, desc, severity, response_ids, plugin_name,
-                                mutant)
+                                mutant, vulndb_id=vulndb_id)
     
     @classmethod
     def from_vuln(cls, other_vuln):
