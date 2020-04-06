@@ -82,7 +82,7 @@ class redos(AuditPlugin):
 
         v = Vuln.from_mutant('ReDoS vulnerability', desc,
                              severity.MEDIUM, response_ids,
-                             self.get_name(), mutant)
+                             self.get_name(), mutant, 10009)
 
         self.kb_append_uniq(self, 'redos', v)
 

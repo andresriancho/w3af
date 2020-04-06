@@ -118,7 +118,14 @@ class analyze_cookies(GrepPlugin):
         desc = 'The URL: "%s" sent the cookie: "%s".'
         desc = desc % (response.get_url(), cstr)
 
-        i = CookieInfo('Cookie', desc, response.id, self.get_name())
+        i = CookieVuln(
+            'Cookie',
+            desc,
+            severity.INFORMATION,
+            response.id,
+            self.get_name(),
+            vulndb_id=10110,
+        )
         i.set_url(response.get_url())
         i.set_cookie_object(cookie_object)
 
@@ -158,7 +165,14 @@ class analyze_cookies(GrepPlugin):
                    ' incorrect format: "%s" that does NOT respect the RFC.'
             desc = desc % cookie_header_value
 
-            i = CookieInfo('Invalid cookie', desc, response.id, self.get_name())
+            i = CookieVuln(
+                'Invalid cookie',
+                desc,
+                severity.INFORMATION,
+                response.id,
+                self.get_name(),
+                vulndb_id=10111,
+            )
             i.set_url(response.get_url())
             i.set_cookie_string(cookie_header_value)
 
@@ -252,7 +266,7 @@ class analyze_cookies(GrepPlugin):
 
                         v = CookieVuln('Secure cookies over insecure channel',
                                        desc, severity.HIGH, response.id,
-                                       self.get_name(), vulndb_id=25)
+                                       self.get_name(), vulndb_id=10046)
                         v.set_url(response.get_url())
                         v.set_cookie_object(info.get_cookie_object())
 
@@ -290,8 +304,14 @@ class analyze_cookies(GrepPlugin):
                        ' The remote platform is: "%s".'
                 desc = desc % (response.get_url(), system_name)
 
-                i = CookieInfo('Identified cookie', desc, response.id,
-                               self.get_name())
+                i = CookieVuln(
+                    'Identified cookie',
+                    desc,
+                    severity.INFORMATION,
+                    response.id,
+                    self.get_name(),
+                    vulndb_id=10112,
+                )
                 i.set_cookie_object(cookie_obj)
                 i.set_url(response.get_url())
                 i['httpd'] = system_name
@@ -332,7 +352,7 @@ class analyze_cookies(GrepPlugin):
             desc = desc % response.get_url()
 
             v = CookieVuln('Secure cookie over HTTP', desc, severity.HIGH,
-                           response.id, self.get_name(), vulndb_id=25)
+                           response.id, self.get_name(), vulndb_id=10047)
             v.set_url(response.get_url())
             v.set_cookie_object(cookie_obj)
 
@@ -359,7 +379,8 @@ class analyze_cookies(GrepPlugin):
             desc = desc % response.get_url()
 
             v = CookieVuln('Secure flag missing in HTTPS cookie', desc,
-                           severity.MEDIUM, response.id, self.get_name(), 25)
+                           severity.MEDIUM, response.id, self.get_name(),
+                           vulndb_id=25)
             v.set_url(response.get_url())
             v.set_cookie_object(cookie_obj)
 

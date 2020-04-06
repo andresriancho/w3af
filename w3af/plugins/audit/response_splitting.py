@@ -96,9 +96,15 @@ class response_splitting(AuditPlugin):
                     ' testing for response splitting: "%s".')
             args = (mutant.get_token_name(), mutant.get_url(), error)
             desc %= args
-            i = Info.from_mutant('Parameter modifies response headers',
-                                 desc, response.id, self.get_name(),
-                                 mutant)
+            i = Vuln.from_mutant(
+                'Parameter modifies response headers',
+                desc,
+                severity.LOW,
+                response.id,
+                self.get_name(),
+                mutant,
+                vulndb_id=10078,
+            )
 
             self.kb_append_uniq(self, 'response_splitting', i)
             break

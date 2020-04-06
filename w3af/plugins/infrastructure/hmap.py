@@ -26,9 +26,10 @@ import w3af.plugins.infrastructure.oHmap.hmap as upstream_hmap
 from w3af.core.controllers.exceptions import RunOnce, BaseFrameworkException
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
+from w3af.core.data.constants import severity
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
-from w3af.core.data.kb.info import Info
 
 
 class hmap(InfrastructurePlugin):
@@ -87,7 +88,14 @@ class hmap(InfrastructurePlugin):
         desc = 'The most accurate fingerprint for this HTTP server is: "%s".'
         desc %= server
 
-        i = Info('Webserver fingerprint', desc, 1, self.get_name())
+        i = Vuln(
+            'Webserver fingerprint',
+            desc,
+            severity.INFORMATION,
+            1,
+            self.get_name(),
+            vulndb_id=10094,
+        )
         i['server'] = server
         om.out.information(i.get_desc())
 

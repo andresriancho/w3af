@@ -321,7 +321,8 @@ class xxe(AuditPlugin):
             desc %= mutant.found_at()
 
             v = Vuln.from_mutant('XML External Entity', desc, severity.HIGH,
-                                 response.id, self.get_name(), mutant)
+                                 response.id, self.get_name(), mutant,
+                                 vulndb_id=10064)
 
             v.add_to_highlight(pattern_match)
 

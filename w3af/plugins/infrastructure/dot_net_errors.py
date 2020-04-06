@@ -120,7 +120,8 @@ class dot_net_errors(InfrastructurePlugin):
                  desc,
                  severity.LOW,
                  response.id,
-                 self.get_name())
+                 self.get_name(),
+                 vulndb_id=10074)
 
         kb.kb.append(self, 'dot_net_errors', v)
 

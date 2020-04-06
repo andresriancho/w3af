@@ -40,7 +40,7 @@ def register_globals(response):
     if rg == 'On':
         desc = 'The phpinfo()::register_globals is on.'
         v = Vuln('PHP register_globals: On', desc,
-                 severity.MEDIUM, response.id, 'phpinfo')
+                 severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10028)
         v.set_url(response.get_url())
 
         kb.kb.append('phpinfo', 'phpinfo', v)
@@ -48,7 +48,14 @@ def register_globals(response):
     else:
         rg_name = 'PHP register_globals: Off'
         rg_desc = 'The phpinfo()::register_globals is off.'
-        i = Info(rg_name, rg_desc, response.id, 'phpinfo')
+        i = Vuln(
+            rg_name,
+            rg_desc,
+            severity.INFORMATION,
+            response.id,
+            'phpinfo',
+            vulndb_id=10085,
+        )
         i.set_url(response.get_url())
 
         kb.kb.append('phpinfo', 'phpinfo', i)
@@ -64,7 +71,7 @@ def allow_url_fopen(response):
 
     desc = 'The phpinfo()::allow_url_fopen is enabled.'
     v = Vuln('PHP allow_url_fopen: On', desc,
-             severity.MEDIUM, response.id, 'phpinfo')
+             severity.MEDIUM, response.id, 'phpinfo', 10029)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -80,7 +87,7 @@ def allow_url_include(response):
 
     desc = 'The phpinfo()::allow_url_include is enabled.'
     v = Vuln('PHP allow_url_include: On', desc,
-             severity.MEDIUM, response.id, 'phpinfo')
+             severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10030)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -96,7 +103,7 @@ def display_errors(response):
 
     desc = 'The phpinfo()::display_errors is enabled.'
     v = Vuln('PHP display_errors: On', desc,
-             severity.MEDIUM, response.id, 'phpinfo')
+             severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10031)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -112,7 +119,7 @@ def expose_php(response):
 
     desc = 'The phpinfo()::expose_php is enabled.'
     v = Vuln('PHP expose_php: On', desc,
-             severity.MEDIUM, response.id, 'phpinfo')
+             severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10032)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -143,7 +150,7 @@ def lowest_privilege_test(response):
         desc %= (lpt_uname, lpt_uid, lpt_gid)
 
         v = Vuln('PHP running with privileged user', desc,
-                 severity.MEDIUM, response.id, 'phpinfo')
+                 severity.MEDIUM, response.id, 'phpinfo', 10033)
         v.set_url(response.get_url())
 
         kb.kb.append('phpinfo', 'phpinfo', v)
@@ -181,7 +188,7 @@ def disable_functions(response):
     desc %= (', '.join(dfe),)
 
     v = Vuln('PHP disable_functions weakness', desc,
-             severity.MEDIUM, response.id, 'phpinfo')
+             severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10034)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -224,7 +231,7 @@ def curl_file_support(response):
                 ' functions to bypass safe_mode and open_basedir'
                 ' restrictions.')
         v = Vuln('PHP curl_file_support:not_fixed', desc,
-                 severity.MEDIUM, response.id, 'phpinfo')
+                 severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10035)
         v.set_url(response.get_url())
 
         kb.kb.append('phpinfo', 'phpinfo', v)
@@ -244,7 +251,7 @@ def cgi_force_redirect(response):
 
     desc = 'The phpinfo()::CGI::force_redirect is disabled.'
     v = Vuln('PHP cgi_force_redirect: Off', desc,
-             severity.MEDIUM, response.id, 'phpinfo')
+             severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10036)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -260,7 +267,7 @@ def session_cookie_httponly(response):
 
     desc = 'The phpinfo()::session.cookie_httponly is off.'
     v = Vuln('PHP session.cookie_httponly: Off', desc,
-             severity.MEDIUM, response.id, 'phpinfo')
+             severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10037)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -277,7 +284,7 @@ def session_save_path(response):
     desc = ('The phpinfo()::session.save_path may be set to a world-'
             'readable directory.')
     v = Vuln('Word readable PHP session_save_path', desc,
-             severity.LOW, response.id, 'phpinfo')
+             severity.LOW, response.id, 'phpinfo', vulndb_id=10038)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -294,7 +301,7 @@ def session_use_trans(response):
     desc = ('The phpinfo()::session.use_trans is enabled. This makes'
             ' session hijacking easier.')
     v = Vuln('PHP session_use_trans: On', desc,
-             severity.MEDIUM, response.id, 'phpinfo')
+             severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10039)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -312,7 +319,7 @@ def default_charset(response):
             ' makes PHP scripts vulnerable to various charset'
             ' encoding XSS.')
     v = Vuln('PHP default_charset: Off', desc,
-             severity.MEDIUM, response.id, 'phpinfo')
+             severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10040)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -330,7 +337,7 @@ def enable_dl(response):
     if rg == 'On':
         desc = 'The phpinfo()::enable_dl is on.'
         v = Vuln('PHP enable_dl: On', desc,
-                 severity.MEDIUM, response.id, 'phpinfo')
+                 severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10041)
         v.set_url(response.get_url())
 
         kb.kb.append('phpinfo', 'phpinfo', v)
@@ -338,7 +345,14 @@ def enable_dl(response):
     else:
         ed_name = 'PHP enable_dl: Off'
         ed_desc = 'The phpinfo()::enable_dl is off.'
-        i = Info(ed_name, ed_desc, response.id, 'phpinfo')
+        i = Vuln(
+            ed_name,
+            ed_desc,
+            severity.INFORMATION,
+            response.id,
+            'phpinfo',
+            vulndb_id=10093,
+        )
         i.set_url(response.get_url())
 
         kb.kb.append('phpinfo', 'phpinfo', i)
@@ -363,7 +377,7 @@ def memory_limit(response):
         desc %= (memory_limit_mo.group(1),)
 
         v = Vuln('PHP high memory limit', desc,
-                 severity.MEDIUM, response.id, 'phpinfo')
+                 severity.MEDIUM, response.id, 'phpinfo', vulndb_id=10042)
         v.set_url(response.get_url())
 
         kb.kb.append('phpinfo', 'phpinfo', v)
@@ -389,7 +403,7 @@ def post_max_size(response):
     desc %= (post_max_size_mo.group(1),)
 
     v = Vuln('PHP high POST max size', desc,
-             severity.LOW, response.id, 'phpinfo')
+             severity.LOW, response.id, 'phpinfo', vulndb_id=10043)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -415,7 +429,7 @@ def upload_max_filesize(response):
     desc %= (upload_max_filesize_mo.group(1),)
 
     v = Vuln('PHP upload_max_filesize:high', desc,
-             severity.LOW, response.id, 'phpinfo')
+             severity.LOW, response.id, 'phpinfo', vulndb_id=10044)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -431,7 +445,7 @@ def upload_tmp_dir(response):
 
     desc = 'The phpinfo()::upload_tmp_dir may be set to world-readable directory.'
     v = Vuln('PHP upload_tmp_dir is world readable', desc,
-             severity.LOW, response.id, 'phpinfo')
+             severity.LOW, response.id, 'phpinfo', vulndb_id=10045)
     v.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', v)
@@ -446,7 +460,14 @@ def file_uploads(response):
         return
 
     desc = 'The phpinfo()::file_uploads is enabled.'
-    i = Info('PHP file_uploads: On', desc, response.id, 'phpinfo')
+    i = Vuln(
+        'PHP file_uploads: On',
+        desc,
+        severity.LOW,
+        response.id,
+        'phpinfo',
+        vulndb_id=10086,
+    )
     i.set_url(response.get_url())
 
     kb.kb.append('phpinfo', 'phpinfo', i)
@@ -464,13 +485,13 @@ def magic_quotes_gpc(response):
 
     if mqg == 'On':
         desc = 'The phpinfo()::magic_quotes_gpc is on.'
-        i = Info('PHP magic_quotes_gpc: On', desc, response.id,
-                 'phpinfo')
+        i = Vuln('PHP magic_quotes_gpc: On', desc, severity.LOW, response.id,
+                 'phpinfo', vulndb_id=10087)
 
     else:
         desc = 'The phpinfo()::magic_quotes_gpc is off.'
-        i = Info('PHP magic_quotes_gpc: Off', desc, response.id,
-                 'phpinfo')
+        i = Vuln('PHP magic_quotes_gpc: Off', desc, severity.LOW, response.id,
+                 'phpinfo', vulndb_id=10088)
 
     i.set_url(response.get_url())
     kb.kb.append('phpinfo', 'phpinfo', i)
@@ -488,14 +509,14 @@ def open_basedir(response):
 
     if obd == '<i>no value</i>':
         desc = 'The phpinfo()::open_basedir is not set.'
-        i = Info('PHP open_basedir:disabled', desc, response.id,
-                 'phpinfo')
+        i = Vuln('PHP open_basedir:disabled', desc, response.id, severity.LOW,
+                 'phpinfo', vulndb_id=10089)
 
     else:
         desc = 'The phpinfo()::open_basedir is set to %s.'
         desc %= open_basedir_mo.group(1)
-        i = Info('PHP open_basedir:enabled', desc, response.id,
-                 'phpinfo')
+        i = Vuln('PHP open_basedir:enabled', desc, severity.LOW, response.id,
+                 'phpinfo', vulndb_id=10090)
 
     i.set_url(response.get_url())
     kb.kb.append('phpinfo', 'phpinfo', i)
@@ -512,12 +533,12 @@ def session_hash_function(response):
     if session_hash_function_mo.group(1) == 0 \
             or session_hash_function_mo.group(1) != 'no':
         desc = 'The phpinfo()::session.hash_function uses the insecure md5 algorithm.'
-        i = Info('PHP session.hash_function:md5', desc, response.id,
-                 'phpinfo')
+        i = Vuln('PHP session.hash_function:md5', desc, severity.LOW, response.id,
+                 'phpinfo', vulndb_id=10091)
     else:
         desc = 'The phpinfo()::session.hash_function uses the insecure sha algorithm.'
-        i = Info('PHP session.hash_function:sha', desc, response.id,
-                 'phpinfo')
+        i = Vuln('PHP session.hash_function:sha', desc, severity.LOW, response.id,
+                 'phpinfo', vulndb_id=10092)
 
     i.set_url(response.get_url())
 

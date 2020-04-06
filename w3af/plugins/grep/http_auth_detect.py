@@ -82,7 +82,7 @@ class http_auth_detect(GrepPlugin):
                     ' the URI.')
             desc %= response.get_uri()
             v = Vuln('Basic HTTP credentials', desc, severity.HIGH,
-                     response.id, self.get_name())
+                     response.id, self.get_name(), vulndb_id=10049)
 
             v.set_url(response.get_url())
             v.add_to_highlight(response.get_uri().url_string)
@@ -113,7 +113,8 @@ class http_auth_detect(GrepPlugin):
                 desc %= (response.get_url(), url)
                 
                 v = Vuln('Basic HTTP credentials', desc,
-                         severity.HIGH, response.id, self.get_name())
+                         severity.HIGH, response.id, self.get_name(),
+                         vulndb_id=10049)
 
                 v.set_url(response.get_url())
                 v.add_to_highlight(url.url_string)
@@ -144,8 +145,14 @@ class http_auth_detect(GrepPlugin):
                 ' 401) but the www-authenticate header is not present.'
                 ' This requires human verification.')
         desc %= response.get_url()
-        i = Info('Authentication without www-authenticate header', desc,
-                 response.id, self.get_name())
+        i = Vuln(
+            'Authentication without www-authenticate header',
+            desc,
+            severity.LOW,
+            response.id,
+            self.get_name(),
+            vulndb_id=10076,
+        )
         i.set_url(response.get_url())
 
         kb.kb.append(self, 'non_rfc_auth', i)
@@ -180,11 +187,13 @@ class http_auth_detect(GrepPlugin):
         if 'ntlm' in realm.lower():
             
             v = Vuln('NTLM authentication', desc,
-                     vuln_severity, response.id, self.get_name())
+                     vuln_severity, response.id, self.get_name(),
+                     vulndb_id=10050)
 
         else:
             v = Vuln('HTTP Basic authentication', desc,
-                     vuln_severity, response.id, self.get_name())
+                     vuln_severity, response.id, self.get_name(),
+                     vulndb_id=10051)
 
         v.set_url(response.get_url())
         v['message'] = realm

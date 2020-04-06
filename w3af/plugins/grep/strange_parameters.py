@@ -29,7 +29,6 @@ from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
-from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.vuln import Vuln
 
 
@@ -105,13 +104,13 @@ class strange_parameters(GrepPlugin):
         args = tuple(smart_str_ignore(i) for i in args)
         desc %= args
 
-        i = Info('Uncommon query string parameter', desc, response.id,
-                 self.get_name())
-        i['parameter_value'] = token_value
-        i.add_to_highlight(token_value)
-        i.set_uri(ref)
+        v = Vuln('Uncommon query string parameter', desc, severity.LOW, response.id,
+                 self.get_name(), vulndb_id=10019)
+        v['parameter_value'] = token_value
+        v.add_to_highlight(token_value)
+        v.set_uri(ref)
 
-        self.kb_append(self, 'strange_parameters', i)
+        self.kb_append(self, 'strange_parameters', v)
         return True
 
     def _analyze_SQL(self, request, response, ref, token_name, token_value):
@@ -131,7 +130,7 @@ class strange_parameters(GrepPlugin):
             desc %= (response.get_uri(), token_name, token_value)
 
             v = Vuln('Parameter has SQL sentence', desc, severity.LOW,
-                     response.id, self.get_name())
+                     response.id, self.get_name(), vulndb_id=10075)
             v['parameter_value'] = token_value
             v.add_to_highlight(token_value)
             v.set_uri(ref)

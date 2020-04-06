@@ -141,7 +141,8 @@ class shared_hosting(InfrastructurePlugin):
                 kb.kb.raw_write(self, 'domains', domain_list)
                     
                 v = Vuln.from_fr('Shared hosting', desc, severity.MEDIUM, 1,
-                                 self.get_name(), fuzzable_request)
+                                 self.get_name(), fuzzable_request,
+                                 vulndb_id=10103)
 
                 v['also_in_hosting'] = results
                 

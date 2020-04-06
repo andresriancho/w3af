@@ -83,7 +83,7 @@ class format_string(AuditPlugin):
 
             v = Vuln.from_mutant('Format string vulnerability', desc,
                                  severity.MEDIUM, response.id,
-                                 self.get_name(), mutant)
+                                 self.get_name(), mutant, vulndb_id=10003)
 
             v.add_to_highlight(error)
 

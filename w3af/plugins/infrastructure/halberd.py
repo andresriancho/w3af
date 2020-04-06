@@ -35,8 +35,9 @@ from w3af.core.controllers.misc.temp_dir import get_temp_dir
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
+from w3af.core.data.constants import severity
+from w3af.core.data.kb.vuln import Vuln
 from w3af.plugins.infrastructure.halberd_helpers.strategy import CustomScanStrategy
-from w3af.core.data.kb.info import Info
 
 
 class halberd(InfrastructurePlugin):
@@ -128,8 +129,14 @@ class halberd(InfrastructurePlugin):
             # This is added so other w3af plugins can read the halberd results.
             # If needed by other plugins, I could fill up the info object with
             # more data about the different headers, time, etc...
-            i = Info('HTTP load balancer detected', halberd_report, 1,
-                     self.get_name())
+            i = Vuln(
+                'HTTP load balancer detected',
+                halberd_report,
+                severity.INFORMATION,
+                1,
+                self.get_name(),
+                vulndb_id=10072,
+            )
             i['server_number'] = len(clues)
 
             kb.kb.append(self, 'halberd', i)

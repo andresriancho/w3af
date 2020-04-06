@@ -25,6 +25,8 @@ import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePlugin
+from w3af.core.data.constants import severity
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.url.helpers import is_no_content_response
 from w3af.core.data.kb.info import Info
 
@@ -89,7 +91,14 @@ class server_header(InfrastructurePlugin):
             desc = 'The server header for the remote web server is: "%s".'
             desc %= server
 
-            i = Info('Server header', desc, response.id, self.get_name())
+            i = Vuln(
+                'Server header',
+                desc,
+                severity.INFORMATION,
+                response.id,
+                self.get_name(),
+                vulndb_id=10098,
+            )
             i['server'] = server
             i.add_to_highlight(header_name + ':')
 
@@ -105,8 +114,8 @@ class server_header(InfrastructurePlugin):
             # strange !
             desc = ('The remote HTTP Server omitted the "server" header in'
                     ' its response.')
-            i = Info('Omitted server header', desc, response.id,
-                     self.get_name())
+            i = Vuln('Omitted server header', desc, severity.INFORMATION, response.id,
+                     self.get_name(), vulndb_id=10099)
 
             om.out.information(i.get_desc())
 
@@ -135,7 +144,14 @@ class server_header(InfrastructurePlugin):
                     desc = 'The %s header for the target HTTP server is "%s".'
                     desc %= (header_name, powered_by)
 
-                    i = Info('Powered-by header', desc, response.id, self.get_name())
+                    i = Vuln(
+                        'Powered-by header',
+                        desc,
+                        severity.INFORMATION,
+                        response.id,
+                        self.get_name(),
+                        vulndb_id=10100,
+                    )
                     i['powered_by'] = powered_by
                     i.add_to_highlight(header_name + ':')
 

@@ -27,6 +27,8 @@ from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePl
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.group_by_min_key import group_by_min_key
 from w3af.core.controllers.exceptions import HTTPRequestException
+from w3af.core.data.constants import severity
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
@@ -241,8 +243,14 @@ class allowed_methods(InfrastructurePlugin):
                     ' defaulted to GET instead of returning a "Not Implemented"'
                     ' response.')
             response_ids = [arg_response.get_id(), get_response.get_id()]
-            i = Info('Non existent methods default to GET',
-                     desc, response_ids, self.get_name())
+            i = Vuln(
+                'Non existent methods default to GET',
+                desc,
+                severity.INFORMATION,
+                response_ids,
+                self.get_name(),
+                vulndb_id=10095,
+            )
             i.set_url(url)
 
             kb.kb.append(self, 'custom-configuration', i)
@@ -301,7 +309,14 @@ class allowed_methods(InfrastructurePlugin):
                     ' include DAV methods and should be disabled: %s')
             desc = desc % (url, ', '.join(_allowed_methods))
             
-            i = Info('DAV methods enabled', desc, id_list, self.get_name())
+            i = Vuln(
+                'DAV methods enabled',
+                desc,
+                severity.INFORMATION,
+                id_list,
+                self.get_name(),
+                vulndb_id=10096,
+            )
             i.set_url(url)
             i['methods'] = _allowed_methods
             

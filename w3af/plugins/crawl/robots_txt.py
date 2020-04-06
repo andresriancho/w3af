@@ -26,7 +26,8 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.exceptions import RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
-from w3af.core.data.kb.info import Info
+from w3af.core.data.constants import severity
+from w3af.core.data.kb.vuln import Vuln
 
 
 class robots_txt(CrawlPlugin):
@@ -71,7 +72,14 @@ class robots_txt(CrawlPlugin):
                 ' analysis queue.')
         desc %= robots_url
 
-        i = Info('robots.txt file', desc, http_response.id, self.get_name())
+        i = Vuln(
+            'robots.txt file',
+            desc,
+            severity.LOW,
+            http_response.id,
+            self.get_name(),
+            vulndb_id=10073,
+        )
         i.set_url(robots_url)
 
         kb.kb.append(self, 'robots.txt', i)

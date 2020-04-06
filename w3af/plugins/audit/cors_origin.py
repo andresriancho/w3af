@@ -167,7 +167,14 @@ class cors_origin(AuditPlugin):
             msg %= (url, ACCESS_CONTROL_ALLOW_METHODS,
                     allow_methods, ', '.join(report_sensitive))
 
-            v = Vuln(name, msg, severity.LOW, response.get_id(), self.get_name())
+            v = Vuln(
+                name,
+                msg,
+                severity.LOW,
+                response.get_id(),
+                self.get_name(),
+                vulndb_id=10010,
+            )
             v.set_url(forged_req.get_url())
             v[METHODS] = allow_methods_set
 
@@ -184,7 +191,14 @@ class cors_origin(AuditPlugin):
             msg %= (url, ACCESS_CONTROL_ALLOW_METHODS,
                     allow_methods, ', '.join(report_strange))
 
-            v = Vuln(name, msg, severity.LOW, response.get_id(), self.get_name())
+            v = Vuln(
+                name,
+                msg,
+                severity.LOW,
+                response.get_id(),
+                self.get_name(),
+                vulndb_id=10011,
+            )
             v.set_url(forged_req.get_url())
             v[METHODS] = allow_methods_set
 
@@ -205,8 +219,14 @@ class cors_origin(AuditPlugin):
                   ' and leaves the application open to Cross-domain attacks.'
             msg %= (forged_req.get_url(), ACCESS_CONTROL_ALLOW_ORIGIN)
             
-            v = Vuln('Access-Control-Allow-Origin set to "*"', msg,
-                     severity.LOW, response.get_id(), self.get_name())
+            v = Vuln(
+                'Access-Control-Allow-Origin set to "*"',
+                msg,
+                severity.LOW,
+                response.get_id(),
+                self.get_name(),
+                vulndb_id=10012,
+            )
             v.set_url(forged_req.get_url())
             v[DOMAIN] = forged_req.get_url().get_domain()
 
@@ -249,7 +269,14 @@ class cors_origin(AuditPlugin):
                          ACCESS_CONTROL_ALLOW_ORIGIN,
                          ACCESS_CONTROL_ALLOW_CREDENTIALS)
 
-            v = Vuln(name, msg, sev, response.get_id(), self.get_name())
+            v = Vuln(
+                name,
+                msg,
+                sev,
+                response.get_id(),
+                self.get_name(),
+                vulndb_id=10013,
+            )
             v.set_url(forged_req.get_url())
             v[DOMAIN] = forged_req.get_url().get_domain()
 
@@ -266,7 +293,14 @@ class cors_origin(AuditPlugin):
             msg = msg % (forged_req.get_url(),
                          ACCESS_CONTROL_ALLOW_ORIGIN)
 
-            v = Vuln(name, msg, sev, response.get_id(), self.get_name())
+            v = Vuln(
+                name,
+                msg,
+                sev,
+                response.get_id(),
+                self.get_name(),
+                vulndb_id=10014,
+            )
             v.set_url(forged_req.get_url())
             v[DOMAIN] = forged_req.get_url().get_domain()
 
@@ -306,7 +340,8 @@ class cors_origin(AuditPlugin):
                          ACCESS_CONTROL_ALLOW_CREDENTIALS)
             
             v = Vuln('Incorrect withCredentials implementation', msg,
-                     severity.INFORMATION, response.get_id(), self.get_name())
+                     severity.INFORMATION, response.get_id(), self.get_name(),
+                     vulndb_id=10015)
             v.set_url(forged_req.get_url())
             v[DOMAIN] = forged_req.get_url().get_domain()
             

@@ -37,7 +37,6 @@ from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.kb.vuln import Vuln
-from w3af.core.data.kb.info import Info
 
 
 class find_vhosts(InfrastructurePlugin):
@@ -128,8 +127,8 @@ class find_vhosts(InfrastructurePlugin):
                     u' This can be a broken link, or an internal domain name.')
             desc %= (fuzzable_request.get_url(), domain)
 
-            i = Info(u'Internal hostname in HTML link', desc,
-                     original_response.id, self.get_name())
+            i = Vuln(u'Internal hostname in HTML link', desc, severity.INFORMATION,
+                     original_response.id, self.get_name(), vulndb_id=10055)
             i.set_url(fuzzable_request.get_url())
 
             kb.kb.append(self, 'find_vhosts', i)
@@ -168,7 +167,8 @@ class find_vhosts(InfrastructurePlugin):
             ids.extend([r.id for r in non_existent_responses])
 
             v = Vuln.from_fr('Virtual host identified', desc, severity.LOW,
-                             ids, self.get_name(), fuzzable_request)
+                             ids, self.get_name(), fuzzable_request,
+                             vulndb_id=10054)
 
             kb.kb.append(self, 'find_vhosts', v)
             om.out.information(v.get_desc())

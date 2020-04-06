@@ -121,8 +121,8 @@ class ria_enumerator(CrawlPlugin):
                 ' information that may get cached on the client.')
         desc %= url
 
-        i = Info('Gears manifest resource', desc, response.id,
-                 self.get_name())
+        i = Vuln('Gears manifest resource', desc, severity.LOW, response.id,
+                 self.get_name(), vulndb_id=10082)
         i.set_url(url)
 
         kb.kb.append(self, url, i)
@@ -149,8 +149,14 @@ class ria_enumerator(CrawlPlugin):
                 desc = 'The "%s" file at: "%s" is not a valid XML.'
                 desc %= (file_name, response.get_url())
 
-                i = Info('Invalid RIA settings file', desc, response.id,
-                         self.get_name())
+                i = Vuln(
+                    'Invalid RIA settings file',
+                    desc,
+                    severity.LOW,
+                    response.id,
+                    self.get_name(),
+                    vulndb_id=10083,
+                )
                 i.set_url(response.get_url())
 
                 kb.kb.append(self, 'info', i)
@@ -170,7 +176,7 @@ class ria_enumerator(CrawlPlugin):
                 desc %= (file_name, response.get_url())
 
                 v = Vuln('Insecure RIA settings', desc, severity.LOW,
-                         response.id, self.get_name())
+                         response.id, self.get_name(), vulndb_id=10026)
                 v.set_url(response.get_url())
                 v.set_method('GET')
 
@@ -186,8 +192,8 @@ class ria_enumerator(CrawlPlugin):
                        ' access from "%s".'
                 desc %= (file_name, response.get_url(), url)
 
-                i = Info('Cross-domain allow ACL', desc, response.id,
-                         self.get_name())
+                i = Vuln('Cross-domain allow ACL', desc, severity.LOW, response.id,
+                         self.get_name(), vulndb_id=10084)
                 i.set_url(response.get_url())
                 i.set_method('GET')
 
