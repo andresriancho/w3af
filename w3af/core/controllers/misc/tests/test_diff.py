@@ -135,6 +135,11 @@ class TestSplitBySep(unittest.TestCase):
         result = split_by_sep('hello world<bye\nbye!')
         self.assertEqual(result, ['hello world', 'bye', 'bye!'])
 
+    def test_split_by_sep_utf8(self):
+        sequence = u'ąęż'
+        # this shouldn't rise UnicodeDecodeError
+        split_by_sep(sequence)
+
     def test_split_by_sep_perf(self):
         loops = 1000
         inputs = [unittest.__doc__,
