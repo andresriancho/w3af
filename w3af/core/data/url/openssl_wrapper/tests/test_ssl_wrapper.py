@@ -23,7 +23,7 @@ import unittest
 import OpenSSL
 import ssl
 
-from w3af.core.data.url.openssl.ssl_wrapper import OpenSSLReformattedError
+from w3af.core.data.url.openssl_wrapper.ssl_wrapper import OpenSSLReformattedError
 
 
 class TestSSLError(unittest.TestCase):

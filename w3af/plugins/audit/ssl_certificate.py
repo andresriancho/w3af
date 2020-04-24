@@ -37,7 +37,7 @@ from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.parsers.doc.url import URL
-from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
+from w3af.core.data.url.openssl_wrapper.ssl_wrapper import wrap_socket
 from w3af.core.data.kb.info import Info
 from w3af.core.data.kb.vuln import Vuln
 
