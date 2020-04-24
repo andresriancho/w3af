@@ -18,6 +18,7 @@ import time
 import socket
 import select
 import OpenSSL
+from OpenSSL.SSL import SysCallError
 
 from ndg.httpsclient.subj_alt_name import SubjectAltName
 from pyasn1.codec.der.decoder import decode as der_decoder
@@ -122,7 +123,7 @@ class SSLSocket(object):
     def recv(self, *args, **kwargs):
         try:
             data = self.ssl_conn.recv(*args, **kwargs)
-        except OpenSSL.SSL.ZeroReturnError:
+        except (OpenSSL.SSL.ZeroReturnError, SysCallError):
             # empty string signalling that the other side has closed the
             # connection or that some kind of error happen and no more reads
             # should be done on this socket
