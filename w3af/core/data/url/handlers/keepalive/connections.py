@@ -33,7 +33,7 @@ from .http_response import HTTPResponse
 from .utils import debug
 
 from w3af.core.controllers.exceptions import HTTPRequestException
-from w3af.core.data.url.openssl.ssl_wrapper import wrap_socket
+from w3af.core.data.url.openssl_wrapper.ssl_wrapper import wrap_socket
 
 
 class UniqueID(object):
