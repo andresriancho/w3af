@@ -143,7 +143,7 @@ def chunked_diff(a, b):
     return ''.join(a_chunks), ''.join(b_chunks)
 
 
-def split_by_sep(seq):
+def split_by_sep(sequence):
     """
     This method will split the HTTP response body by various separators,
     such as new lines, tabs, <, double and single quotes.
@@ -178,7 +178,7 @@ def split_by_sep(seq):
     chunks without much meaning and reduce the performance improvement we
     have achieved.
 
-    :param seq: A string
+    :param sequence: A string which we will split
     :return: A list of strings (chunks) for the input string
     """
     #
@@ -195,5 +195,8 @@ def split_by_sep(seq):
     #
     # [0] https://github.com/andresriancho/w3af/blob/2ded693c959c91dc3e4daca276460d6c64ada479/w3af/core/controllers/misc/diff.py#L173
     #
-    translated_seq = string.translate(seq, TRANSLATION_TABLE)
+    try:
+        translated_seq = string.translate(sequence, TRANSLATION_TABLE)
+    except UnicodeDecodeError:
+        translated_seq = string.translate(sequence.encode('utf-8'), TRANSLATION_TABLE)
     return translated_seq.split('\0')
