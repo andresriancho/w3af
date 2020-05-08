@@ -8,6 +8,9 @@ yanc==0.2.4
 xunitparser==1.2.0
 nose-timer==0.5.0
 
+# Pytest
+pytest==4.6.9
+
 # Install requirements for coveralls
 coverage==3.6
 nose-cov==1.6
