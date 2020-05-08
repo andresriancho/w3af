@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.kb.info import Info
 from w3af.plugins.grep.websockets_links import WebSocketInfoSet
@@ -92,6 +93,7 @@ class OpenWebSocketsTest(WebSocketTest):
                                    status=101,
                                    headers=SUCCESSFUL_UPGRADE)]
 
+    @pytest.mark.deprecated
     def test_open_websockets(self):
         self.verify_found(['Open WebSocket'])
 
@@ -106,6 +108,7 @@ class NoWebSocketTest(WebSocketTest):
                                    method='GET',
                                    status=200)]
 
+    @pytest.mark.deprecated
     def test_no_websockets(self):
         self.verify_found([])
 
@@ -129,6 +132,7 @@ class OriginMatchBugTest(WebSocketTest):
                                          status=101,
                                          headers=SUCCESSFUL_UPGRADE)]
 
+    @pytest.mark.deprecated
     def test_origin_match_bug_websockets(self):
         self.verify_found(['Insecure WebSocket Origin filter'])
 
@@ -152,6 +156,7 @@ class OriginMatchTest(WebSocketTest):
                                       status=101,
                                       headers=SUCCESSFUL_UPGRADE)]
 
+    @pytest.mark.deprecated
     def test_origin_match_test_websockets(self):
         self.verify_found(['Origin restricted WebSocket'])
 
@@ -179,6 +184,7 @@ class BasicAuthWebSocketTest(WebSocketTest):
         self.w3afcore.uri_opener.settings.set_basic_auth(URL('websocket.com'),
                                                          'user1', 'password')
 
+    @pytest.mark.deprecated
     def test_basic_auth_websockets(self):
         self.setup_basic_authentication()
         self.verify_found(['Websockets CSRF vulnerability'])
@@ -208,6 +214,7 @@ class CookieAuthWebSocketTest(WebSocketTest):
                                      method='GET',
                                      status=None)]
 
+    @pytest.mark.deprecated
     def test_cookie_auth_websockets(self):
         self.verify_found(['Websockets CSRF vulnerability'])
 
@@ -246,6 +253,7 @@ class OpenWebSocketsWithCrawlTest(WebSocketTest):
                                    status=101,
                                    headers=SUCCESSFUL_UPGRADE)]
 
+    @pytest.mark.deprecated
     def test_open_websockets_with_crawl(self):
         # Run the plugin
         cfg = ALL_RUN_CONFIG['cfg']

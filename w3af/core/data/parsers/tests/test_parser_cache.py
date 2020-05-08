@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from mock import patch, PropertyMock
@@ -44,6 +45,7 @@ class TestParserCache(unittest.TestCase):
     def tearDown(self):
         self.dpc.clear()
 
+    @pytest.mark.deprecated
     def test_basic(self):
         resp1 = HTTPResponse(200, 'abc', self.headers, self.url, self.url)         
         resp2 = HTTPResponse(200, 'abc', self.headers, self.url, self.url)
@@ -53,6 +55,7 @@ class TestParserCache(unittest.TestCase):
         
         self.assertEqual(id(parser1), id(parser2))
     
+    @pytest.mark.deprecated
     def test_bug_13_Dec_2012(self):
         url1 = URL('http://w3af.com/foo/')
         url2 = URL('http://w3af.com/bar/')
@@ -70,12 +73,14 @@ class TestParserCache(unittest.TestCase):
         
         self.assertEqual(parsed_refs_1, parsed_refs_2)
     
+    @pytest.mark.deprecated
     def test_issue_188_invalid_url(self):
         # https://github.com/andresriancho/w3af/issues/188
         all_chars = ''.join([chr(i) for i in xrange(0, 255)])
         response = HTTPResponse(200, all_chars, self.headers, self.url, self.url)
         self.dpc.get_document_parser_for(response)
 
+    @pytest.mark.deprecated
     def test_cache_blacklist_after_timeout(self):
         #
         # If the cache tries to parse an HTTP response, that process fails, then we blacklist
@@ -124,6 +129,7 @@ class TestParserCache(unittest.TestCase):
         msg = 'Reached timeout parsing "http://w3af.com/".'
         self.assertEquals(str(toe), msg)
 
+    @pytest.mark.deprecated
     def test_get_tags_by_filter_simple(self):
         html = '<a href="/def">abc</a>'
         resp1 = HTTPResponse(200, html, self.headers, self.url, self.url)
@@ -134,6 +140,7 @@ class TestParserCache(unittest.TestCase):
 
         self.assertEqual(id(parser1), id(parser2))
 
+    @pytest.mark.deprecated
     def test_get_tags_by_filter_different_tags(self):
         html = '<a href="/def">abc</a><b>hello</b>'
         resp1 = HTTPResponse(200, html, self.headers, self.url, self.url)

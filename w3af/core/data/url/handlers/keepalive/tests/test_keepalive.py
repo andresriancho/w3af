@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import socket
 import unittest
 import time
@@ -155,9 +156,11 @@ class TestKeepalive(unittest.TestCase):
         
         self.assertIsNot(conn_mgr_http, conn_mgr_https)
 
+    @pytest.mark.deprecated
     def test_close_all_established_sockets(self):
         self.close_all_sockets(0)
 
+    @pytest.mark.deprecated
     def test_close_all_close_wait_sockets(self):
         # Give the socket time to move to close_wait
         self.close_all_sockets(20)

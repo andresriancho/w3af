@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import httpretty
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
@@ -43,6 +44,7 @@ class TestUnSSL(PluginTest):
         super(TestUnSSL, self).setUp()
         self._register_httpretty_uri('https', 'httpretty', 443)
 
+    @pytest.mark.deprecated
     def test_found_unssl(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -73,6 +75,7 @@ class TestNotFoundUnSSL(PluginTest):
     }
 
     @httpretty.activate
+    @pytest.mark.deprecated
     def test_not_found_unssl(self):
         httpretty.register_uri(httpretty.GET, self.target_url,
                                body='This is NOT SECURE')

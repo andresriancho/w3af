@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import time
 
@@ -84,6 +85,7 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         self.assertEqual(future.result(), usage)
         self.assertEqual(workers_before_test, pool._pool_manager.worker_manager.workers.keys()[:])
 
+    @pytest.mark.slow
     def test_effective_kill_limit(self):
         #
         # This started as a tool to let me know when the process is killed.
@@ -111,6 +113,7 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         #self.assertGreaterEqual(self.MEMORY_LIMIT * 1.2, current_len)
         #self.assertLessEqual(self.MEMORY_LIMIT * 0.8, current_len)
 
+    @pytest.mark.deprecated
     def test_sub_process_with_high_memory_usage_is_killed(self):
         #
         # Run a task that requires a lot of memory. Confirm that the process
@@ -144,6 +147,7 @@ class TestPebbleMemoryUsage(unittest.TestCase):
 
         self.assertEqual(workers_before_test, pool._pool_manager.worker_manager.workers.keys()[:])
 
+    @pytest.mark.slow
     def test_main_process_high_memory_usage_after_starting_nothing_killed(self):
         #
         # Run a task that sleeps for a while and start consuming a lot of
@@ -165,6 +169,7 @@ class TestPebbleMemoryUsage(unittest.TestCase):
         for future in results:
             self.assertEqual(future.result(), secs)
 
+    @pytest.mark.slow
     def test_main_process_high_memory_usage_before_starting_nothing_killed(self):
         #
         # Consume a lot of memory in the MAIN process, and then run a task in

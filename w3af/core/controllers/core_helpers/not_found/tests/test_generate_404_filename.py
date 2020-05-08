@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from __future__ import division
+import pytest
 
 import unittest
 
@@ -28,6 +29,7 @@ from w3af.core.controllers.core_helpers.not_found.generate_404 import generate_4
 
 
 class TestGenerate404Filename(unittest.TestCase):
+    @pytest.mark.deprecated
     def test_404_generation(self):
 
         tests = [

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import time
 import socket
 import urllib2
@@ -149,6 +150,7 @@ class TestSpiderman(PluginTest):
 
 class TestHTTPSpiderman(TestSpiderman):
 
+    @pytest.mark.deprecated
     def test_spiderman_http(self):
         port = get_unused_port()
 
@@ -165,6 +167,7 @@ class TestHTTPSpiderman(TestSpiderman):
 
 class TestHTTPSSpiderman(TestSpiderman):
 
+    @pytest.mark.deprecated
     def test_spiderman_https(self):
         port = get_unused_port()
 

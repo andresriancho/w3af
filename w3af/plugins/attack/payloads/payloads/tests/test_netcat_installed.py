@@ -1,4 +1,6 @@
 """
+@pytest.mark.deprecated
+@pytest.mark.deprecated
 test_netcat_installed.py
 
 Copyright 2012 Andres Riancho
@@ -18,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
 
@@ -32,6 +35,7 @@ class test_netcat_installed(PayloadTestHelper):
                                  'path': None,
                                  'supports_shell_bind': False}
 
+    @pytest.mark.deprecated
     def test_netcat_installed(self):
         result = exec_payload(self.shell, 'netcat_installed', use_api=True)
         

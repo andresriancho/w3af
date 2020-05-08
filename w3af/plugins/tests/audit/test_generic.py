@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import re
 import urllib
 
@@ -44,6 +45,7 @@ class TestGenericOnly(PluginTest):
     MOCK_RESPONSES = [GenericErrorMockResponse(re.compile('.*'), body=None,
                                                method='GET', status=200)]
 
+    @pytest.mark.deprecated
     def test_found_generic(self):
         self._scan(self.target_url, self.CONFIG)
         
@@ -78,6 +80,7 @@ class TestGenericExtensive(PluginTest):
     MOCK_RESPONSES = [GenericErrorMockResponse(re.compile('.*'), body=None,
                                                method='GET', status=200)]
 
+    @pytest.mark.deprecated
     def test_found_generic_extensive(self):
         self._scan(self.target_url, self.CONFIG)
 
@@ -112,6 +115,7 @@ class TestGenericSQLInjection(PluginTest):
     MOCK_RESPONSES = [SQLIMockResponse(re.compile('.*'), body=None,
                                        method='GET', status=200)]
 
+    @pytest.mark.deprecated
     def test_found_sqli_not_generic(self):
         self._scan(self.target_url, self.CONFIG)
 

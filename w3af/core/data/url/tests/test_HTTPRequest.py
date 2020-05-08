@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import msgpack
@@ -42,6 +43,7 @@ class TestHTTPRequest(unittest.TestCase):
         self.assertEqual(req.get_full_url(), 'http://www.w3af.com/')
         self.assertEqual(req.get_uri().url_string, 'http://www.w3af.com/')
 
+    @pytest.mark.deprecated
     def test_to_from_dict(self):
         headers = Headers([('Host', 'www.w3af.com')])
         req = HTTPRequest(URL("http://www.w3af.com/"), data='spameggs',

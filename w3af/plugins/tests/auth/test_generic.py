@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
@@ -86,6 +87,7 @@ class TestGeneric(PluginTest):
     }
 
     @attr('smoke')
+    @pytest.mark.deprecated
     def test_post_auth_xss(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
@@ -101,6 +103,7 @@ class TestGeneric(PluginTest):
 
     @attr('internet')
     @attr('fails')
+    @pytest.mark.deprecated
     def test_demo_testfire_net(self):
         # We don't control the demo.testfire.net domain, so we'll check if its
         # up before doing anything else

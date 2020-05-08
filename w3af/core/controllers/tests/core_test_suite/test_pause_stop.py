@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 import time
 import pprint
@@ -67,6 +68,7 @@ class CountTestMixin(unittest.TestCase):
 class TestW3afCorePause(CountTestMixin):
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_pause_unpause(self):
         """
         Verify that the pause method actually works. In this case, working
@@ -100,6 +102,7 @@ class TestW3afCorePause(CountTestMixin):
         self.assertEqual(self.count_plugin.count, self.count_plugin.loops)
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_pause_stop(self):
         """
         Verify that the pause method actually works. In this case, working
@@ -138,6 +141,7 @@ class TestW3afCorePause(CountTestMixin):
         self.assertEqual(self.count_plugin.count, count_after_sleep)
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_stop(self):
         """
         Verify that the stop method actually works. In this case, working

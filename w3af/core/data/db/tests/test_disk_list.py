@@ -18,6 +18,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import random
 import string
 import unittest
@@ -43,6 +44,7 @@ class TestDiskList(unittest.TestCase):
         create_temp_dir()
 
     @attr('smoke')
+    @pytest.mark.slow
     def test_int(self):
         dl = DiskList()
 
@@ -66,6 +68,7 @@ class TestDiskList(unittest.TestCase):
         self.assertEqual(unicode(dl), u'<DiskList [1, 2, 3]>')
             
     @attr('smoke')
+    @pytest.mark.slow
     def test_string(self):
         dl = DiskList()
 
@@ -237,6 +240,7 @@ class TestDiskList(unittest.TestCase):
 
         self.assertEqual(reverse_iter_res, [3, 2, 1])
 
+    @pytest.mark.slow
     def test_thread_safe(self):
         dl = DiskList()
 
@@ -350,6 +354,7 @@ class TestDiskList(unittest.TestCase):
         self.assertNotIn('2', dl_copy)
         self.assertNotIn('3', dl_copy)
 
+    @pytest.mark.slow
     def test_no_specific_serializer_with_string(self):
         #
         #   This test runs in ~5.1 seconds on my workstation
@@ -366,6 +371,7 @@ class TestDiskList(unittest.TestCase):
             # This tests the deserialization
             _ = dl[i]
 
+    @pytest.mark.slow
     def test_specific_serializer_with_string(self):
         #
         #   This test runs in ~5.0 seconds on my workstation
@@ -386,6 +392,7 @@ class TestDiskList(unittest.TestCase):
             # This tests the deserialization
             _ = dl[i]
 
+    @pytest.mark.slow
     def test_no_specific_serializer_with_http_response(self):
         #
         #   This test runs in 28.14 seconds on my workstation
@@ -405,6 +412,7 @@ class TestDiskList(unittest.TestCase):
             # This tests the deserialization
             _ = dl[i]
 
+    @pytest.mark.slow
     def test_specific_serializer_with_http_response(self):
         #
         #   This test runs in 26.42 seconds on my workstation

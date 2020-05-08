@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -38,6 +39,7 @@ class TestAnalyzeCookies(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_negative(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -48,6 +50,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 0)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_simple_cookie(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -60,6 +63,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_collect_no_group(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -77,6 +81,7 @@ class TestAnalyzeCookies(unittest.TestCase):
 
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 2)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_collect_one(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -96,6 +101,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(info_set.infos), 1)
         self.assertEqual(info_set.get_desc(), expected_desc)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_collect_group_by_key(self):
         body = ''
         url_1 = URL('http://www.w3af.com/1')
@@ -122,6 +128,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(info_set.infos), 2)
         self.assertEqual(info_set.get_desc(), expected_desc)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_collect_uniq(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -146,6 +153,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 2)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_secure_httponly(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -157,6 +165,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_empty(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -168,6 +177,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'invalid-cookies')), 0)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_fingerprint(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -187,6 +197,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         msg = 'The remote platform is: "PHP"'
         self.assertTrue(any([True for i in fingerprint if msg in i.get_desc()]))
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_secure_over_http(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -206,6 +217,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         msg = 'A cookie marked with the secure flag'
         self.assertTrue(any([True for i in false_secure if msg in i.get_desc()]))
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_no_httponly(self):
         body = ''
         url = URL('http://www.w3af.com/1')
@@ -240,6 +252,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(info_set.get_id(), [1, 2])
         self.assertEqual(len(info_set.infos), 2)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_with_httponly(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -254,6 +267,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'http_only')), 0)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'secure')), 0)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_with_httponly_case_sensitive(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -267,6 +281,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'cookies')), 1)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'http_only')), 0)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_with_httponly_secure(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -281,6 +296,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'http_only')), 0)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'secure')), 0)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_with_httponly_case_sensitive_expires(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -297,6 +313,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'http_only')), 0)
         self.assertEqual(len(kb.kb.get('analyze_cookies', 'secure')), 0)
 
+    @pytest.mark.deprecated
     def test_analyze_cookies_https_value_over_http(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -326,6 +343,7 @@ class TestAnalyzeCookies(unittest.TestCase):
         names = [i.get_name() for i in secure_via_http]
         self.assertIn('Secure cookies over insecure channel', names)
 
+    @pytest.mark.deprecated
     def test_analyze_ssl_cookie_without_secure_flag(self):
         body = ''
         url = URL('https://www.w3af.com/')

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 
 import w3af.core.data.constants.severity as severity
@@ -47,6 +48,7 @@ class TestErrorPages(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_found_vuln(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -64,6 +66,7 @@ class TestErrorPages(PluginTest):
         super(TestErrorPages, self).setUp()
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_found_vuln_max_reports(self):
         kb.kb.cleanup()
         plugin = error_pages()
@@ -83,6 +86,7 @@ class TestErrorPages(PluginTest):
         self.assertEqual(len(kb.kb.get('error_pages', 'error_page')),
                          plugin.MAX_REPORTED_PER_MSG + 1)
 
+    @pytest.mark.deprecated
     def test_found_vuln_max_reports_two_different(self):
         kb.kb.cleanup()
         plugin = error_pages()

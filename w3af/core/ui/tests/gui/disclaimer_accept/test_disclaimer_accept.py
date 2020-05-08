@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import subprocess
 
@@ -48,6 +49,7 @@ class TestDisclaimer(XpresserUnittest):
         startup_cfg.accepted_disclaimer = True
         startup_cfg.save()
 
+    @pytest.mark.deprecated
     def test_disclaimer_shown_accept(self):
         startup_cfg = StartUpConfig()
         startup_cfg.accepted_disclaimer = False
@@ -58,6 +60,7 @@ class TestDisclaimer(XpresserUnittest):
         
         self.find('owasp_top_10_profile')
 
+    @pytest.mark.deprecated
     def test_disclaimer_shown_not_accept(self):
         startup_cfg = StartUpConfig()
         startup_cfg.accepted_disclaimer = False
@@ -68,6 +71,7 @@ class TestDisclaimer(XpresserUnittest):
         
         self.not_find('owasp_top_10_profile')
 
+    @pytest.mark.deprecated
     def test_disclaimer_not_shown(self):
         startup_cfg = StartUpConfig()
         startup_cfg.accepted_disclaimer = True

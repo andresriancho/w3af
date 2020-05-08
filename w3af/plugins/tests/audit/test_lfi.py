@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wavsep import get_wavsep_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -37,6 +38,7 @@ class TestLFI(PluginTest):
 
     target_url = get_moth_http('/audit/local_file_read/')
 
+    @pytest.mark.deprecated
     def test_found_lfi(self):
         self._scan(self.target_url, CONFIG)
 
@@ -59,6 +61,7 @@ class TestWAVSEP500Error(PluginTest):
 
     target_url = get_wavsep_http(base_path)
 
+    @pytest.mark.deprecated
     def test_find_lfi_wavsep_error(self):
         expected_path_param = {
             (u'Case01-LFI-FileClass-FilenameContext-Unrestricted-OSPath-DefaultFullInput-AnyPathReq-Read.jsp', u'target'),

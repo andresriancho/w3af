@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from w3af.core.data.parsers.doc.url import URL
@@ -43,6 +44,7 @@ class TestEvasion(unittest.TestCase):
         r = HTTPRequest( u, data='' )
         self.assertEqual(modsec.modify_request( r ).get_data(), '')
 
+    @pytest.mark.deprecated
     def test_urlencoded_post_data(self):
         modsec = mod_security()
         

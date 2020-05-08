@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -40,6 +41,7 @@ class test_oracle(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_oracle_empty(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -49,6 +51,7 @@ class test_oracle(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('oracle', 'oracle')), 0)
 
+    @pytest.mark.deprecated
     def test_oracle_long(self):
         body = 'ABC ' * 10000
         url = URL('http://www.w3af.com/')
@@ -58,6 +61,7 @@ class test_oracle(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('oracle', 'oracle')), 0)
 
+    @pytest.mark.deprecated
     def test_oracle_positive(self):
         body = 'ABC ' * 100
         body += '<!-- Created by Oracle '

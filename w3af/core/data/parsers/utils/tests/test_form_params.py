@@ -18,6 +18,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import cPickle
 import copy
@@ -154,6 +155,7 @@ class TestFormParams(unittest.TestCase):
         # Variants shouldn't appear duplicated
         self.assertEquals(len(variants_set), total_variants)
 
+    @pytest.mark.deprecated
     def test_tmb_variants_large(self):
         """
         Note that this test has several changes from test_tmb_variants:
@@ -214,6 +216,7 @@ class TestFormParams(unittest.TestCase):
         # Variants shouldn't appear duplicated
         self.assertEquals(len(variants_set), f.TOP_VARIANTS)
 
+    @pytest.mark.deprecated
     def test_all_variants(self):
         # 'all' mode variants
         bigform_data = form_with_radio + form_select_misc

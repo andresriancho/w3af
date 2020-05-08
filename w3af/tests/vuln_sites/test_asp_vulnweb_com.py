@@ -18,10 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
+
 from w3af.tests.vuln_sites.utils.scan_vulnerable_site import TestScanVulnerableSite
 from w3af.plugins.tests.helper import PluginTest
 
 
+@pytest.mark.deprecated
 class TestScanASPVulnwebCom(TestScanVulnerableSite, PluginTest):
 
     target_url = 'http://testasp.vulnweb.com/'

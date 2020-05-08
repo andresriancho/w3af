@@ -22,6 +22,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 import Queue
 import urllib2
+import pytest
 import unittest
 import threading
 
@@ -69,6 +70,7 @@ class TestInterceptProxy(unittest.TestCase):
     def test_no_request(self):
         self.assertEqual(self._proxy.get_trapped_request(), None)
     
+    @pytest.mark.deprecated
     def test_no_trap(self):
         self._proxy.set_trap(False)
         response = self.proxy_opener.open(self.HTTP_URL)
@@ -76,6 +78,7 @@ class TestInterceptProxy(unittest.TestCase):
         self.assertIn(self.EXPECTED_BODY, response.read())
         self.assertEqual(response.code, 200)
 
+    @pytest.mark.deprecated
     def test_request_trapped_drop(self):
         def send_request(proxy_opener, result_queue):
             try:
@@ -105,6 +108,7 @@ class TestInterceptProxy(unittest.TestCase):
         self.assertEqual(response.code, 403)
         self.assertIn('HTTP request drop by user', response.read())
     
+    @pytest.mark.deprecated
     def test_request_trapped_send(self):
         def send_request(proxy_opener, result_queue):
             try:
@@ -141,6 +145,7 @@ class TestInterceptProxy(unittest.TestCase):
     def _get_url_with_id(self, _id):
         return self.HTTP_URL_CODE + str(200 + _id)
 
+    @pytest.mark.deprecated
     def test_trap_many(self):
         def send_request(_id, proxy_opener, results, exceptions):
             url = self._get_url_with_id(_id)

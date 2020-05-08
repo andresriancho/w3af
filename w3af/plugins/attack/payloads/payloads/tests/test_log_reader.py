@@ -1,4 +1,6 @@
 """
+@pytest.mark.deprecated
+@pytest.mark.deprecated
 test_log_reader.py
 
 Copyright 2012 Andres Riancho
@@ -18,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
 from w3af.plugins.attack.payloads.payload_handler import exec_payload
@@ -33,6 +36,7 @@ class test_log_reader(PayloadTestHelper):
                            '/var/log/faillog'])
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_log_reader(self):
         result = exec_payload(self.shell, 'log_reader', use_api=True)
         logs = set(result.keys())

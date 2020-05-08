@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 from unittest import TestCase
 
@@ -106,6 +107,7 @@ class TestXSS(PluginTest):
         return expected_data
 
     @attr('smoke')
+    @pytest.mark.deprecated
     def test_find_one_xss(self):
         """
         Simplest possible test to verify that we identify XSSs.
@@ -125,6 +127,7 @@ class TestXSS(PluginTest):
             set(kb_data),
         )
 
+    @pytest.mark.deprecated
     def test_2919_javascript_src_frame(self):
         """
         https://github.com/andresriancho/w3af/issues/2919
@@ -146,6 +149,7 @@ class TestXSS(PluginTest):
             set(kb_data),
         )
 
+    @pytest.mark.deprecated
     def test_no_false_positive_499(self):
         """
         Avoiding false positives in the case where the payload is echoed back
@@ -165,6 +169,7 @@ class TestXSS(PluginTest):
         target_path = get_php_moth_http('/audit/file_upload/echo_content/')
         self._scan(target_path, cfg['plugins'])
 
+    @pytest.mark.deprecated
     def test_user_configured_find_in_file_upload_content(self):
         """
         Do not send file content mutants unless the user configures it.
@@ -182,6 +187,7 @@ class TestXSS(PluginTest):
         xss_vulns = self.kb.get('xss', 'xss')
         self.assertEqual(len(xss_vulns), 0, xss_vulns)
 
+    @pytest.mark.deprecated
     def test_find_in_file_upload_content(self):
         """
         Find XSS in the content of an uploaded file
@@ -201,6 +207,7 @@ class TestXSS(PluginTest):
             set(kb_data),
         )
 
+    @pytest.mark.deprecated
     def test_found_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(self.XSS_PATH, cfg['plugins'])
@@ -257,6 +264,7 @@ class TestXSS(PluginTest):
                          csp_vulns)
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_found_xss_with_redirect(self):
         cfg = self._run_configs['cfg']
         self._scan(self.XSS_302_URL, cfg['plugins'])
@@ -281,6 +289,7 @@ class TestXSS(PluginTest):
             set(kb_data),
         )
 
+    @pytest.mark.deprecated
     def test_found_wavsep_get_xss(self):
         cfg = self._run_configs['cfg']
         self._scan(self.WAVSEP_PATH, cfg['plugins'])

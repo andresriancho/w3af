@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
 from nose.plugins.attrib import attr
@@ -49,6 +50,7 @@ class TestCrossDomainJS(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_found_vuln(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -82,6 +84,7 @@ class TestCrossDomainJSRaw(unittest.TestCase):
     def tearDown(self):
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_cross_domain_third_party_is_secure(self):
         body = '<script src="https://cdn.akamai.net/foo.js"></script>'
         url = URL('http://www.w3af.com/')
@@ -95,6 +98,7 @@ class TestCrossDomainJSRaw(unittest.TestCase):
         infos = kb.kb.get('cross_domain_js', 'cross_domain_js')
         self.assertEquals(len(infos), 0)
 
+    @pytest.mark.deprecated
     def test_cross_domain_third_party_is_insecure(self):
         body = '<script src="https://cdn.akamai-wannabe.net/foo.js"></script>'
         url = URL('http://www.w3af.com/')
@@ -108,6 +112,7 @@ class TestCrossDomainJSRaw(unittest.TestCase):
         infos = kb.kb.get('cross_domain_js', 'cross_domain_js')
         self.assertEquals(len(infos), 1)
 
+    @pytest.mark.deprecated
     def test_cross_domain_third_party_is_insecure_group_info_set(self):
         body = '<script src="https://cdn.akamai-wannabe.net/foo.js"></script>'
         url_1 = URL('http://www.w3af.com/1')

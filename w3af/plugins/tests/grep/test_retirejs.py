@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import unittest
 
@@ -61,6 +62,7 @@ class TestRetireJSNotAnalyzeHTMLContentType(PluginTest):
         }
     }
 
+    @pytest.mark.slow
     def test_is_vulnerable_not_detected(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -114,6 +116,7 @@ class TestRetireJS(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_is_vulnerable_detected(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

@@ -1,4 +1,6 @@
 """
+@pytest.mark.deprecated
+@pytest.mark.deprecated
 test_get_source_code.py
 
 Copyright 2012 Andres Riancho
@@ -18,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import tempfile
 import shutil
 
@@ -37,6 +40,7 @@ class test_get_source_code(PayloadTestHelper):
     CONTENT = "echo file_get_contents( $_REQUEST['file'] );"
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_get_source_code(self):
         temp_dir = tempfile.mkdtemp()
         result = exec_payload(self.shell, 'get_source_code', args=(temp_dir,),

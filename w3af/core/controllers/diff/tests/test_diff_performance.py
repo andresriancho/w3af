@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from __future__ import print_function
+import pytest
 
 import os
 import time
@@ -36,7 +37,43 @@ class TestDiffPerformance(unittest.TestCase):
     FUNCTIONS = [chunked_diff, ]
     ROUNDS = 1
 
+    @pytest.mark.slow
     def test_xml(self):
+        self._generic_runner(self._run_test_xml)
+
+    @pytest.mark.slow
+    def test_diff_large_different_responses(self):
+        self._generic_runner(self._run_diff_large_different_responses)
+
+    def test_large_equal_responses(self):
+        self._generic_runner(self._run_large_equal_responses)
+
+    def _generic_runner(self, test_func):
+        result = {}
+
+        for func in self.FUNCTIONS:
+            start = time.time()
+
+            for _ in xrange(self.ROUNDS):
+                test_func(func)
+
+            spent = time.time() - start
+            result[func.__name__] = spent
+
+        self._print_result(result)
+
+    def _print_result(self, result):
+        results = result.items()
+        results.sort(lambda a, b: a[1] < b[1])
+
+        print()
+
+        for func, spent in results:
+            print('%s: %.2f' % (func, spent))
+
+        print()
+
+    def _run_test_xml(self, diff):
         a = file(os.path.join(self.DATA, 'source.xml')).read()
         b = file(os.path.join(self.DATA, 'target.xml')).read()
 

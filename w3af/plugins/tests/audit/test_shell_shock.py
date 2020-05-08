@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
@@ -47,6 +48,7 @@ class BasicShellShockTest(PluginTest):
                                    status=200,
                                    headers={'shellshock': 'check'})]
 
+    @pytest.mark.deprecated
     def test_shell_shock_basic(self):
         cfg = RUN_CONFIG['cfg']
         self._scan(self.target_url, cfg['plugins'])
@@ -64,6 +66,7 @@ class BasicNegativeShellShockTest(PluginTest):
                                    method='GET',
                                    status=200)]
 
+    @pytest.mark.deprecated
     def test_shell_shock_basic(self):
         cfg = RUN_CONFIG['cfg']
         self._scan(self.target_url, cfg['plugins'])

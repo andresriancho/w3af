@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, LOREM
@@ -59,6 +60,7 @@ class TestCSRF(PluginTest):
         self.uri_opener = ExtendedUrllib()
         self.csrf_plugin.set_url_opener(self.uri_opener)
 
+    @pytest.mark.deprecated
     def test_found_csrf(self):
         expected = [
             '/w3af/audit/csrf/vulnerable/buy.php',
@@ -81,6 +83,7 @@ class TestCSRF(PluginTest):
         self.assertTrue(
             all(['CSRF vulnerability' == v.get_name() for v in vulns]))
 
+    @pytest.mark.deprecated
     def test_resp_is_equal(self):
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
@@ -97,6 +100,7 @@ class TestCSRF(PluginTest):
         r2 = HTTPResponse(200, 'a', headers, url, url)
         self.assertTrue(self.csrf_plugin._is_resp_equal(r1, r2))
 
+    @pytest.mark.deprecated
     def test_is_suitable(self):
         url = URL('http://www.w3af.com/')
         headers = Headers([('content-type', 'text/html')])
@@ -155,6 +159,7 @@ class TestCSRF(PluginTest):
         suitable = self.csrf_plugin._is_suitable(req, res)
         self.assertTrue(suitable)
 
+    @pytest.mark.deprecated
     def test_is_origin_checked_true_case01(self):
         url = URL(get_w3af_moth_http('/w3af/audit/csrf/referer/buy.php?shares=123'))
         headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer/')])
@@ -165,6 +170,7 @@ class TestCSRF(PluginTest):
         origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
         self.assertTrue(origin_checked)
 
+    @pytest.mark.deprecated
     def test_is_origin_checked_true_case02(self):
         url = URL(get_w3af_moth_http('/w3af/audit/csrf/referer-rnd/buy.php?shares=123'))
         headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer-rnd/')])
@@ -175,6 +181,7 @@ class TestCSRF(PluginTest):
         origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
         self.assertTrue(origin_checked)
 
+    @pytest.mark.deprecated
     def test_is_origin_checked_false(self):
         url = URL(get_w3af_moth_http('/w3af/audit/csrf/vulnerable/buy.php?shares=123'))
         headers = Headers([('Referer', 'http://moth/w3af/audit/csrf/referer-rnd/')])
@@ -185,6 +192,7 @@ class TestCSRF(PluginTest):
         origin_checked = self.csrf_plugin._is_origin_checked(freq, orig_response, None)
         self.assertFalse(origin_checked)
 
+    @pytest.mark.deprecated
     def test_is_token_checked_true(self):
         generator = URL(get_w3af_moth_http('/w3af/audit/csrf/secure-replay-allowed/'))
         http_response = self.uri_opener.GET(generator)
@@ -204,6 +212,7 @@ class TestCSRF(PluginTest):
                                                      original_response)
         self.assertTrue(checked)
 
+    @pytest.mark.deprecated
     def test_is_token_checked_false(self):
         """
         This covers the case where there is a token but for some reason it
@@ -244,12 +253,15 @@ class TestLowLevelCSRF(unittest.TestCase):
     def test_is_csrf_token_false_case01(self):
         self.assertFalse(self.csrf_plugin.is_csrf_token('token', ''))
     
+    @pytest.mark.deprecated
     def test_is_csrf_token_false_case02(self):
         self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'helloworld'))
 
+    @pytest.mark.deprecated
     def test_is_csrf_token_false_case03(self):
         self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'helloworld123'))
 
+    @pytest.mark.deprecated
     def test_is_csrf_token_false_case04(self):
         self.assertFalse(self.csrf_plugin.is_csrf_token('secret', 'hello world 123'))
 
@@ -262,6 +274,7 @@ class TestLowLevelCSRF(unittest.TestCase):
     def test_is_csrf_token_false_unicode(self):
         self.assertFalse(self.csrf_plugin.is_csrf_token('secret', u'áÄé'))
 
+    @pytest.mark.deprecated
     def test_is_csrf_token_false_case05(self):
         self.assertTrue(self.csrf_plugin.is_csrf_token('secret', LOREM))
 

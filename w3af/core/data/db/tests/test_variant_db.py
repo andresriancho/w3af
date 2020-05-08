@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from w3af.core.controllers.misc_settings import MiscSettings
@@ -124,6 +125,7 @@ class TestVariantDB(unittest.TestCase):
         e = u'(GET)-http://w3af.org/%s.php' % FILENAME_TOKEN
         self.assertEqual(s, e)
 
+    @pytest.mark.deprecated
     def test_clean_fuzzable_request_directory_file(self):
         u = 'http://w3af.org/foo/index.php'
         s = clean_fuzzable_request(fr(URL(u)))

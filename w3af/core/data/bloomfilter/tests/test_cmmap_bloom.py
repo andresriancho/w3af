@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 from nose.plugins.attrib import attr
 
 from pybloomfilter import BloomFilter as CMmapFilter
@@ -26,6 +27,7 @@ from w3af.core.data.bloomfilter.tests.generic_filter_test import GenericFilterTe
 from w3af.core.data.bloomfilter.wrappers import GenericBloomFilter
 
 
+@pytest.mark.deprecated
 class TestCMmapBloomfilterLarge(GenericFilterTest):
 
     CAPACITY = 20000

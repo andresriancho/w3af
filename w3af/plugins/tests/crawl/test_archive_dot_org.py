@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.exceptions import RunOnce
@@ -38,6 +39,7 @@ class TestArchiveDotOrg(PluginTest):
     }
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_found_urls(self):
         self._scan(self.archive_url, self._run_config['plugins'])
         urls = self.kb.get_all_known_urls()
@@ -54,12 +56,14 @@ class TestArchiveDotOrg(PluginTest):
         self.assertTrue(urls_as_strings.issuperset(expected_set), msg)
         self.assertGreater(len(urls), 50)
 
+    @pytest.mark.deprecated
     def test_raise_on_local_domain(self):
         url = URL('http://moth/')
         fr = FuzzableRequest(url, method='GET')
         ado = archive_dot_org()
         self.assertRaises(RunOnce, ado.discover_wrapper, fr)
 
+    @pytest.mark.deprecated
     def test_raise_on_domain_not_in_archive(self):
         url = URL('http://www.w3af-scanner.org/')
         fr = FuzzableRequest(url, method='GET')

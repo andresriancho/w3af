@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import subprocess
 import sys
 import os
@@ -83,6 +84,9 @@ class TestStrategy(PluginTest):
         if os.path.exists(OUTPUT_PATH):
             os.unlink(OUTPUT_PATH)
 
+    @pytest.mark.deprecated
+    @pytest.mark.slow
+    @pytest.mark.slow
     def test_1557_random_number_of_results(self):
         """
         Pseudo-random number of vulnerabilities found in audit phase (xss)
@@ -143,6 +147,7 @@ class TestSameFuzzableRequestSet(PluginTest):
 
     @attr('smoke')
     @attr('moth')
+    @pytest.mark.deprecated
     def test_same_fr_set_object(self):
         cfg = self._run_configs['cfg']
 

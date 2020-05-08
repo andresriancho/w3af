@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import urllib2
 import threading
 
@@ -73,6 +74,7 @@ class TestRFI(PluginTest):
 
     }
 
+    @pytest.mark.deprecated
     def test_found_rfi_with_w3af_site(self):
         cfg = self._run_configs['remote_rce']
         self._scan(cfg['target'], cfg['plugins'])
@@ -86,6 +88,7 @@ class TestRFI(PluginTest):
         self.assertEquals(self.target_rce, vuln.get_url().url_string)
 
     @attr('smoke')
+    @pytest.mark.deprecated
     def test_found_rfi_with_local_server_rce(self):
         cfg = self._run_configs['local_rce']
         self._scan(cfg['target'], cfg['plugins'])
@@ -98,6 +101,7 @@ class TestRFI(PluginTest):
         self.assertEquals("Remote code execution", vuln.get_name())
         self.assertEquals(self.target_rce, vuln.get_url().url_string)
 
+    @pytest.mark.deprecated
     def test_found_rfi_with_local_server_read(self):
         cfg = self._run_configs['local_read']
         self._scan(cfg['target'], cfg['plugins'])
@@ -110,6 +114,7 @@ class TestRFI(PluginTest):
         self.assertEquals("Remote file inclusion", vuln.get_name())
         self.assertEquals(self.target_read, vuln.get_url().url_string)
 
+    @pytest.mark.deprecated
     def test_found_rfi_with_remote_server_read(self):
         cfg = self._run_configs['remote_read']
         self._scan(cfg['target'], cfg['plugins'])
@@ -122,6 +127,7 @@ class TestRFI(PluginTest):
         self.assertEquals("Remote file inclusion", vuln.get_name())
         self.assertEquals(self.target_read, vuln.get_url().url_string)
 
+    @pytest.mark.deprecated
     def test_custom_web_server(self):
         RFIWebHandler.RESPONSE_BODY = '<? echo "hello world"; ?>'
         ws = HTTPServer(('127.0.0.1', 0), '.', RFIWebHandler)

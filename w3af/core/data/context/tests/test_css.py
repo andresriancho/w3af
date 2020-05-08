@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.core.data.context.tests.context_test import ContextTest
 from w3af.core.data.context.context.css import get_css_context
 from w3af.core.data.context.context.css import (GenericStyleContext,

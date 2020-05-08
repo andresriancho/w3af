@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import os
 import unittest
 
@@ -43,6 +44,7 @@ class TestKeys(PluginTest):
     def tearDown(self):
         self.plugin.end()        
         
+    @pytest.mark.deprecated
     def test_private_key(self):
         body = '-----BEGIN PRIVATE KEY-----'
         url = URL('http://www.w3af.com/')
@@ -55,6 +57,7 @@ class TestKeys(PluginTest):
         self.assertEquals(len(data), 1)
         self.assertEquals(type(data[0]), Vuln)
 
+    @pytest.mark.deprecated
     def test_public_key(self):
         body = '-----BEGIN PUBLIC KEY-----'
         url = URL('http://www.w3af.com/')
@@ -67,6 +70,7 @@ class TestKeys(PluginTest):
         self.assertEquals(len(data), 1)
         self.assertEquals(type(data[0]), Info)        
 
+    @pytest.mark.deprecated
     def test_xml_key(self):
         body = '<RSAKeyValue>'
         url = URL('http://www.w3af.com/')
@@ -78,6 +82,7 @@ class TestKeys(PluginTest):
         data = kb.kb.get('keys', 'keys')
         self.assertEquals(len(data), 1)  
 
+    @pytest.mark.deprecated
     def test_public_ecdsa_key(self):
         body = 'ecdsa-sha2-nistp256'
         url = URL('http://www.w3af.com/')
@@ -90,6 +95,7 @@ class TestKeys(PluginTest):
         self.assertEquals(len(data), 1)
         self.assertEquals(type(data[0]), Info)        
 
+    @pytest.mark.deprecated
     def test_multi_match(self):
         body = """
         -----BEGIN OPENSSH PRIVATE KEY----- ssh-ed25519
@@ -104,6 +110,7 @@ class TestKeys(PluginTest):
         data = kb.kb.get('keys', 'keys')
         self.assertEquals(len(data), 3)
 
+    @pytest.mark.deprecated
     def test_no_match(self):
         body = '-----BEGIN-----ssh----- BEGIN PRIVATE PUBLIC KEY'
         url = URL('http://www.w3af.com/')

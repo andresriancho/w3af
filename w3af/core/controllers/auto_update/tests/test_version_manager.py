@@ -18,10 +18,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import gc
 import unittest
 import datetime
 
+import pytest
 from nose.plugins.attrib import attr
 from mock import MagicMock
 
@@ -32,6 +34,7 @@ from w3af.core.controllers.misc.home_dir import W3AF_LOCAL_PATH
 from w3af.core.controllers.auto_update.git_client import GitClient
 
 
+@pytest.mark.skip(reason='deprecated')
 class TestVersionMgr(unittest.TestCase):
 
     def setUp(self):

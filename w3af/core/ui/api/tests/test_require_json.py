@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import json
 
 from w3af.core.ui.api.middlewares.require_json import NO_HEADER, INVALID_JSON
@@ -28,6 +29,7 @@ from w3af.core.ui.api.tests.utils.test_profile import get_test_profile
 
 class RequireJSONTest(APIUnitTest):
 
+    @pytest.mark.deprecated
     def test_require_json_header(self):
         profile, target_url = get_test_profile()
         data = {'scan_profile': profile,
@@ -46,6 +48,7 @@ class RequireJSONTest(APIUnitTest):
         self.assertEqual(error['message'], NO_HEADER)
         self.assertEqual(response.status_code, 400)
 
+    @pytest.mark.deprecated
     def test_require_json_data(self):
         response = self.app.post('/scans/',
                                  data='{3,.-1!}--',

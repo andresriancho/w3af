@@ -19,10 +19,12 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import time
 import unittest
 import SocketServer
 
+import pytest
 from mock import Mock, patch, call
 from nose.plugins.attrib import attr
 
@@ -51,6 +53,7 @@ class TestXUrllibDelayOnError(unittest.TestCase):
     def tearDown(self):
         self.uri_opener.end()
 
+    @pytest.mark.deprecated
     def test_increasing_delay_on_errors(self):
         expected_log = {0: False, 70: False, 40: False, 10: False, 80: False,
                         50: False, 20: False, 90: False, 60: False, 30: False,
@@ -209,6 +212,7 @@ class TestXUrllibErrorHandling(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_do_not_reach_must_stop_exception(self):
         # Configure low timeout to have faster test
         self.w3afcore.uri_opener.settings.set_configured_timeout(TIMEOUT_SECS)

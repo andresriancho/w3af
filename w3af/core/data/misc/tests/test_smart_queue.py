@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import time
 import Queue
@@ -28,6 +29,7 @@ from w3af.core.data.misc.smart_queue import SmartQueue
 
 class TestSmarterQueue(unittest.TestCase):
     
+    @pytest.mark.slow
     def test_simple(self):
         q = SmartQueue()
         
@@ -60,6 +62,7 @@ class TestSmarterQueue(unittest.TestCase):
             self.assertEqual(0.0, q.get_input_rpm())
             self.assertEqual(0.0, q.get_output_rpm())
     
+    @pytest.mark.slow
     def test_many_items(self):
         q = SmartQueue()
 
@@ -76,6 +79,7 @@ class TestSmarterQueue(unittest.TestCase):
 
         self.assertEqual(len(q._output_timestamps), q.MAX_SIZE - 1)
     
+    @pytest.mark.slow
     def test_exceptions(self):
         q = SmartQueue(4)
         

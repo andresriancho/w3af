@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from mock import patch
 from nose.plugins.attrib import attr
 
@@ -61,6 +62,7 @@ class TestEmailReport(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_found_xss(self):
         # monkey-patch smtplib so we don't send actual emails
         inbox = []

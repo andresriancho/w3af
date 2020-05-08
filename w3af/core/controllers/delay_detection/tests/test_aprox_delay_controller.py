@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import random
 
@@ -72,6 +73,7 @@ class TestAproxDelayController(unittest.TestCase):
                   (False, (0.1, 0.1, 0.1, 2.3, 0.1, 0.1, 0.1, 0.9, 0.1, 0.1, 0.1, 0.1))
                   ]
     
+    @pytest.mark.deprecated
     def test_delay_controlled(self):
         
         for expected_result, delays in self.TEST_SUITE:

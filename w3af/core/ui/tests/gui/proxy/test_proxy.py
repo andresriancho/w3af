@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import urllib2
 import threading
@@ -55,11 +56,13 @@ class TestProxy(XpresserUnittest):
         
         XpresserUnittest.tearDown(self)
     
+    @pytest.mark.deprecated
     def test_basic_forwarding(self):
         port = self.http_daemon.get_port()
         http_response = self.opener.open('http://127.0.0.1:%s/foo' % port).read()
         self.assertEqual('ABCDEF\n', http_response)
 
+    @pytest.mark.deprecated
     def test_intercept(self):
         
         self.click('intercept')

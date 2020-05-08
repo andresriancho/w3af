@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import urllib2
 import cPickle
 import warnings
@@ -581,6 +582,7 @@ class TestURLParser(unittest.TestCase):
     #
     #    get_domain_path
     #
+    @pytest.mark.deprecated
     def test_get_domain_path(self):
         self.assertEqual(URL('http://w3af.com/def/jkl/').get_domain_path().url_string,
                          u'http://w3af.com/def/jkl/')
@@ -644,6 +646,7 @@ class TestURLParser(unittest.TestCase):
     #
     #    get_params_string
     #
+    @pytest.mark.deprecated
     def test_get_params_string(self):
         self.assertEqual(URL(u'http://w3af.com/').get_params_string(),
                          u'')

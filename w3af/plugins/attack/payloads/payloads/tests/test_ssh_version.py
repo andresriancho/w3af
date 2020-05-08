@@ -1,4 +1,6 @@
 """
+@pytest.mark.deprecated
+@pytest.mark.deprecated
 test_ssh_version.py
 
 Copyright 2012 Andres Riancho
@@ -18,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
@@ -31,6 +34,7 @@ class test_ssh_version(PayloadTestHelper):
     EXPECTED_RESULT = {'ssh_version': 'OpenSSH_5.9p1 Debian-5ubuntu1'}
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_ssh_version(self):
         result = exec_payload(self.shell, 'ssh_version', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)

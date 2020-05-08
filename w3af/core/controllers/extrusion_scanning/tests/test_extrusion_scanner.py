@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import commands
 
@@ -33,6 +34,7 @@ class TestExtrusionScanner(unittest.TestCase):
     """
     Test the extrusion scanner's basic features.
     """
+    @pytest.mark.deprecated
     def test_basic(self):
         es = extrusionScanner(commands.getoutput)
 

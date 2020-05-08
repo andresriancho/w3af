@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import re
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
@@ -45,6 +46,7 @@ class TestFindBackdoor(PluginTest):
                       MockResponse('http://httpretty-mock/c99shell.php',
                                    '<html> c99shell</title>')]
 
+    @pytest.mark.deprecated
     def test_find_backdoor(self):
         cfg = run_configs['base']
         self._scan(self.target_url, cfg['plugins'])
@@ -71,6 +73,7 @@ class TestFalsePositiveFindBackdoor2017_1(PluginTest):
 
     MOCK_RESPONSES = [MockResponse(re.compile('(.*)'), APACHE_403, status=403)]
 
+    @pytest.mark.deprecated
     def test_2017_false_positive_backdoor_1(self):
         cfg = run_configs['base']
         self._scan(self.target_url, cfg['plugins'])
@@ -93,6 +96,8 @@ class TestFalsePositiveFindBackdoor2017_2(PluginTest):
                       MockResponse(re.compile('http://.*?/forbidden/.*'),
                                    APACHE_403, status=403)]
 
+    @pytest.mark.deprecated
+    @pytest.mark.slow
     def test_2017_false_positive_backdoor_2(self):
         cfg = run_configs['crawl']
         self._scan(self.target_url, cfg['plugins'])

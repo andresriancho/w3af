@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 from nose.plugins.skip import SkipTest
 
@@ -29,10 +30,12 @@ class TestLDAPConfigFiles(PayloadTestHelper):
 
     EXPECTED_RESULT = {}
 
+    @pytest.mark.deprecated
     def test_ldap_config_files(self):
         result = exec_payload(self.shell, 'ldap_config_files', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_a_positive_test(self):
         raise SkipTest('FIXME: I need a positive test.')

@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from w3af.core.controllers.misc.get_w3af_version import (get_w3af_version_as_dict,
@@ -31,6 +32,7 @@ class TestGetVersion(unittest.TestCase):
     def test_trivial(self):
         self.assertIn(get_minimalistic_version(), get_w3af_version())
 
+    @pytest.mark.deprecated
     def test_minimal(self):
         self.assertTrue(get_minimalistic_version().startswith('1'))
 

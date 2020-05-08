@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import re
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
@@ -51,6 +52,7 @@ class TestRosettaFlash(PluginTest):
                                         method='GET', status=200,
                                         content_type='application/javascript')]
 
+    @pytest.mark.deprecated
     def test_found_rosetta_flash(self):
         self._scan(self.target_url, CONFIG)
         vulns = self.kb.get('rosetta_flash', 'rosetta_flash')
@@ -91,6 +93,7 @@ class TestRosettaFlashFixed(PluginTest):
                                         method='GET', status=200,
                                         content_type='application/javascript')]
 
+    @pytest.mark.deprecated
     def test_not_found_rosetta_flash(self):
         self._scan(self.target_url, CONFIG)
         vulns = self.kb.get('rosetta_flash', 'rosetta_flash')

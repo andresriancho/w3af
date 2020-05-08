@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 RUN_CONFIG = {
@@ -57,6 +58,7 @@ class TestJSONAllFiltered(PluginTest):
                            method='GET', status=200),
               ]
 
+    @pytest.mark.deprecated
     def test_not_found_json_all_filtered(self):
         cfg = RUN_CONFIG['cfg']
         self._scan(self.target_url, cfg['plugins'])
@@ -85,6 +87,7 @@ class TestJSON(PluginTest):
                            method='GET', status=200),
               ]
 
+    @pytest.mark.deprecated
     def test_found_json(self):
         cfg = RUN_CONFIG['cfg']
         self._scan(self.target_url, cfg['plugins'])
@@ -113,6 +116,7 @@ class TestJSONDobleQuotesFiltered(PluginTest):
                            method='GET', status=200),
               ]
 
+    @pytest.mark.deprecated
     def test_not_found_json(self):
         cfg = RUN_CONFIG['cfg']
         self._scan(self.target_url, cfg['plugins'])
@@ -139,6 +143,7 @@ class TestJSONP(PluginTest):
                        method='GET', status=200),
                       ]
 
+    @pytest.mark.deprecated
     def test_found_jsonp(self):
         cfg = RUN_CONFIG['cfg']
         self._scan(self.target_url, cfg['plugins'])

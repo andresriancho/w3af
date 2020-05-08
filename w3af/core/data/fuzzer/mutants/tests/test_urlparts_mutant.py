@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import cPickle
 
@@ -51,6 +52,7 @@ class TestURLPartsMutant(unittest.TestCase):
 
         self.assertEqual(generated_found_at, expected_found_at)
 
+    @pytest.mark.deprecated
     def test_pickle(self):
         divided_path = URLPartsContainer('/', 'ping!', '/bar')
         loaded_dp = cPickle.loads(cPickle.dumps(divided_path))

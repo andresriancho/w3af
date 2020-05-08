@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import re
 
+import pytest
+
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
@@ -41,6 +43,7 @@ class TestFoundAFD(PluginTest):
                       MockResponse(BAD_SIG_URI, 'Blocked by WAF'),
                       MockResponse(re.compile(target_url + '.*'), 'Another page')]
 
+    @pytest.mark.deprecated
     def test_afd_found_http(self):
         cfg = self._run_configs['cfg']
         self._scan(self.target_url, cfg['plugins'])
@@ -84,6 +87,7 @@ class TestAFDShortResponses(PluginTest):
                       MockResponse(BAD_SIG_URI, MOD_SECURITY_ANSWER, status=403),
                       MockResponse(re.compile(target_url + '\?.*'), 'hello world')]
 
+    @pytest.mark.deprecated
     def test_afd_found(self):
         cfg = self._run_configs['cfg']
         self._scan(self.target_url, cfg['plugins'])
@@ -99,6 +103,7 @@ class TestAFDShortResponses(PluginTest):
         self.assertIn('../../../../etc/passwd', set(values), values)
 
 
+@pytest.mark.deprecated
 class TestFoundHttpsAFD(TestFoundAFD):
 
     target_url = 'https://httpretty/'
@@ -121,6 +126,7 @@ class TestNotFoundAFD(PluginTest):
 
     MOCK_RESPONSES = [MockResponse(re.compile('.*'), 'Static page')]
 
+    @pytest.mark.deprecated
     def test_afd_not_found_http(self):
         cfg = self._run_configs['cfg']
         self._scan(self.target_url, cfg['plugins'])

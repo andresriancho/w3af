@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import urllib2
 import re
 import os
@@ -79,6 +80,7 @@ class TestWebSpider(PluginTest):
         self.assertEquals(found_urls, expected_urls)
 
     @attr('smoke')
+    @pytest.mark.deprecated
     def test_spider_found_urls(self):
         config = self._run_configs['basic']
         expected_files = ['1.html', '2.html', '3.html', '4.html',
@@ -88,6 +90,7 @@ class TestWebSpider(PluginTest):
         self.generic_scan(config, self.follow_links_url,
                           start_url, expected_files)
 
+    @pytest.mark.deprecated
     def test_utf8_urls(self):
         config = self._run_configs['basic']
         expected_files = [u'vúlnerable.py',
@@ -98,6 +101,7 @@ class TestWebSpider(PluginTest):
 
         self.generic_scan(config, start_url, start_url, expected_files)
 
+    @pytest.mark.deprecated
     def test_euc_jp_urls(self):
         config = self._run_configs['basic']
         expected_files = [u'raw-qs-jp.py',
@@ -106,12 +110,15 @@ class TestWebSpider(PluginTest):
 
         self.generic_scan(config, start_url, start_url, expected_files)
 
+    @pytest.mark.deprecated
     def test_spider_relative_urls_found_with_regex(self):
         raise SkipTest('FIXME: Need to test this feature!')
 
+    @pytest.mark.deprecated
     def test_spider_traverse_directories(self):
         raise SkipTest('FIXME: Need to test this feature!')
 
+    @pytest.mark.deprecated
     def test_wivet(self):
         clear_wivet()
 
@@ -258,6 +265,7 @@ class TestRelativePathsIn404(PluginTest):
                       MockResponse('http://mock/', 'Thanks.', method='POST'),
                       MockResponse('http://mock/', INDEX_HTML)]
 
+    @pytest.mark.deprecated
     def test_crawl_404_relative(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -304,6 +312,7 @@ class TestDeadLock(PluginTest):
     MOCK_RESPONSES = [MockResponse('http://mock/', INDEX_HTML),
                       MockResponse('http://mock/', 'Thanks.', method='POST')]
 
+    @pytest.mark.deprecated
     def test_no_lock(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -335,6 +344,7 @@ class TestFormExclusions(PluginTest):
                       MockResponse('http://mock/out/', 'Thanks.', method='POST'),
                       MockResponse('http://mock/in/', 'Thanks.', method='POST')]
 
+    @pytest.mark.deprecated
     def test_form_exclusions(self):
         user_value = '[{"action": "/out.*"}]'
         cf.cf.save('form_id_list', FormIDMatcherList(user_value))

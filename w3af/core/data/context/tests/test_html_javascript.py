@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
 from w3af.core.data.context.context.main import get_context
@@ -104,6 +105,7 @@ class TestJavaScriptInHTML(unittest.TestCase):
         self.assertIsInstance(context, HtmlAttrDoubleQuote)
         self.assertTrue(context.is_executable())
 
+    @pytest.mark.deprecated
     def test_payload_href_append_no_exec(self):
         html = """
         <html>

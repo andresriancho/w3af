@@ -1,4 +1,6 @@
 """
+@pytest.mark.deprecated
+@pytest.mark.deprecated
 test_feeds.py
 
 Copyright 2012 Andres Riancho
@@ -19,6 +21,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -38,6 +41,7 @@ class test_feeds(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_rss(self):
         body = 'header <rss version="3"> footer'
         url = URL('http://www.w3af.com/')
@@ -51,6 +55,7 @@ class test_feeds(unittest.TestCase):
         self.assertTrue('RSS' in i.get_desc())
         self.assertTrue('3' in i.get_desc())
 
+    @pytest.mark.deprecated
     def test_feed(self):
         body = 'header <feed foo="4" version="3"> footer'
         url = URL('http://www.w3af.com/')
@@ -64,6 +69,7 @@ class test_feeds(unittest.TestCase):
         self.assertTrue('OPML' in i.get_desc())
         self.assertTrue('3' in i.get_desc())
 
+    @pytest.mark.deprecated
     def test_opml(self):
         body = 'header <opml version="3" foo="4"> footer'
         url = URL('http://www.w3af.com/')
@@ -77,6 +83,7 @@ class test_feeds(unittest.TestCase):
         self.assertTrue('OPML' in i.get_desc())
         self.assertTrue('3' in i.get_desc())
 
+    @pytest.mark.deprecated
     def test_no_feeds(self):
         body = 'header <nofeed version="3" foo="4"> footer'
         url = URL('http://www.w3af.com/')
@@ -87,6 +94,7 @@ class test_feeds(unittest.TestCase):
 
         self.assertEquals(len(kb.kb.get('feeds', 'feeds')), 0)
 
+    @pytest.mark.deprecated
     def test_no_version(self):
         body = 'header <rss foo="3"> footer'
         url = URL('http://www.w3af.com/')
