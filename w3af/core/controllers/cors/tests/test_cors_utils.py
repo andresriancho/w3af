@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from mock import MagicMock, Mock
@@ -38,6 +39,7 @@ class TestUtils(unittest.TestCase):
     def test_provides_cors_features_fails(self):
         self.assertRaises(AttributeError, provides_cors_features, None, None, None)
 
+    @pytest.mark.deprecated
     def test_provides_cors_features_false(self):
         url = URL('http://moth/')
         fr = FuzzableRequest(url)

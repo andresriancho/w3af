@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import os
 
@@ -74,6 +75,7 @@ class TestSWFParser(unittest.TestCase):
         self.assertEqual(parsed, [])
         self.assertEqual(set(re_refs), expected)
 
+    @pytest.mark.deprecated
     def test_swf_parser_domain_encoding_1(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/5682

@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import threading
 import time
@@ -93,6 +94,7 @@ class TestCachedQueue(unittest.TestCase):
         q.put(1)
         self.assertEquals(q.get(), 1)
 
+    @pytest.mark.slow
     def test_simple_rpm_speed(self):
         q = CachedQueue()
 

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.mcir import get_mcir_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -50,6 +51,7 @@ class TestEval(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_found_eval_echo(self):
         cfg = self._run_configs['echo']
         self._scan(cfg['target'], cfg['plugins'])
@@ -64,6 +66,7 @@ class TestEval(PluginTest):
         self.assertEquals("text", vuln.get_token_name())
         self.assertEquals(self.target_echo, str(vuln.get_url()))
 
+    @pytest.mark.deprecated
     def test_found_eval_delay(self):
         cfg = self._run_configs['delay']
         self._scan(cfg['target'], cfg['plugins'])
@@ -96,6 +99,7 @@ class TestPHPEchoEval(PluginTest):
                                     ('use_time_delay', False, PluginConfig.BOOL)),),
     }
 
+    @pytest.mark.deprecated
     def test_found_eval_echo_php(self):
         self._scan(self.target, self.config)
 
@@ -126,6 +130,7 @@ class TestPHPSleepEval(PluginTest):
                                     ('use_time_delay', True, PluginConfig.BOOL)),),
     }
 
+    @pytest.mark.deprecated
     def test_found_eval_echo_php(self):
         self._scan(self.target, self.config)
 

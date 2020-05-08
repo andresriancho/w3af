@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from itertools import repeat
@@ -50,6 +51,7 @@ class TestMetaGenerator(unittest.TestCase):
         self.plugin.end()
 
     @patch('w3af.plugins.grep.meta_generator.is_404', side_effect=repeat(False))
+    @pytest.mark.deprecated
     def test_detects_meta_tags_with_generator(self, *args):
         request = FuzzableRequest(self.url)
         response = self._generate_response('<meta name="generator" content="wordpress 1.2.3">')
@@ -69,6 +71,7 @@ class TestMetaGenerator(unittest.TestCase):
         self.assertEquals(info_set.get_desc(), expected_desc)
 
     @patch('w3af.plugins.grep.meta_generator.is_404', side_effect=repeat(False))
+    @pytest.mark.deprecated
     def test_groups_findings(self, *args):
         request = FuzzableRequest(self.url)
 
@@ -98,6 +101,7 @@ class TestMetaGenerator(unittest.TestCase):
         self.assertEquals(descs, {expected_desc_1, expected_desc_2})
 
     @patch('w3af.plugins.grep.meta_generator.is_404', side_effect=repeat(False))
+    @pytest.mark.deprecated
     def test_avoid_false_positive_0(self, *args):
         request = FuzzableRequest(self.url)
         response = self._generate_response('<meta name="not-a-generator" content="wordpress 1.2.3">')
@@ -109,6 +113,7 @@ class TestMetaGenerator(unittest.TestCase):
         self.assertEqual(len(info_sets), 0)
 
     @patch('w3af.plugins.grep.meta_generator.is_404', side_effect=repeat(False))
+    @pytest.mark.deprecated
     def test_avoid_false_positive_1(self, *args):
         request = FuzzableRequest(self.url)
         response = self._generate_response('<meta name="generator">')
@@ -120,6 +125,7 @@ class TestMetaGenerator(unittest.TestCase):
         self.assertEqual(len(info_sets), 0)
 
     @patch('w3af.plugins.grep.meta_generator.is_404', side_effect=repeat(False))
+    @pytest.mark.deprecated
     def test_avoid_false_positive_2(self, *args):
         request = FuzzableRequest(self.url)
         response = self._generate_response('<meta name="generator" name="">')

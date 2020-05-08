@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
 from w3af.core.data.misc.file_utils import get_days_since_last_update
@@ -27,6 +28,7 @@ from w3af.plugins.attack.db.sqlmap_wrapper import SQLMapWrapper
 class TestSQLMapUpdate(unittest.TestCase):
     """Verify that we have an updated version of sqlmap within w3af"""
     
+    @pytest.mark.deprecated
     def test_updated(self):
         days = get_days_since_last_update(SQLMapWrapper.SQLMAP_LOCATION)
         

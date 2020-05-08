@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import random
 
@@ -83,6 +84,7 @@ class FormAuthTest(GenericFormAuthTest):
     }
 
     @attr('smoke')
+    @pytest.mark.deprecated
     def test_found_credentials_post(self):
         self._scan(self.target_post_url, self.basic_config)
 
@@ -97,6 +99,7 @@ class FormAuthTest(GenericFormAuthTest):
         self.assertEquals(vuln['user'], 'admin')
         self.assertEquals(vuln['pass'], '1234')
 
+    @pytest.mark.deprecated
     def test_found_credentials_get(self):
         self._scan(self.target_get_url, self.basic_config)
 
@@ -111,6 +114,7 @@ class FormAuthTest(GenericFormAuthTest):
         self.assertEquals(vuln['user'], 'admin')
         self.assertEquals(vuln['pass'], 'admin')
 
+    @pytest.mark.deprecated
     def test_found_credentials_password_only(self):
         self._scan(self.target_password_only_url, self.basic_config)
 
@@ -126,6 +130,7 @@ class FormAuthTest(GenericFormAuthTest):
         self.assertEquals(vuln['user'], 'password-only-form')
         self.assertEquals(vuln['pass'], '1234')
 
+    @pytest.mark.deprecated
     def test_negative(self):
         self._scan(self.target_negative_url, self.negative_test)
 
@@ -173,6 +178,7 @@ class TestFormAuthFailedLoginMatchTrivial(GenericFormAuthTest):
 
     ]
 
+    @pytest.mark.deprecated
     def test_found_credentials(self):
         self._scan(self.target_url, self.basic_config)
 
@@ -234,6 +240,7 @@ class TestFormAuthFailedLoginMatchWithStaticLargeResponse(GenericFormAuthTest):
 
     ]
 
+    @pytest.mark.deprecated
     def test_found_credentials(self):
         self._scan(self.target_url, self.basic_config)
 
@@ -297,6 +304,7 @@ class TestFormAuthFailedLoginMatchWithLargeRandomFailedResponse(GenericFormAuthT
 
     ]
 
+    @pytest.mark.deprecated
     def test_found_credentials(self):
         # Controls the numbers generated in the request_callback
         random.seed(1)
@@ -361,6 +369,7 @@ class TestFormAuthFailedLoginMatchWithLargeRandomFailedResponseShortSuccess(Gene
 
     ]
 
+    @pytest.mark.deprecated
     def test_found_credentials(self):
         # Controls the numbers generated in the request_callback
         random.seed(1)
@@ -437,6 +446,7 @@ class TestFormAuthFailedLoginMatchWithCAPTCHA(GenericFormAuthTest):
 
     ]
 
+    @pytest.mark.deprecated
     def test_not_found_credentials(self):
         # Controls the numbers generated in the request_callback
         random.seed(1)

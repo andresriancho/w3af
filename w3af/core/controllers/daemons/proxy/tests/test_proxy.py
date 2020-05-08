@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import urllib2
 import unittest
 
@@ -53,6 +54,7 @@ class TestProxy(unittest.TestCase):
         self.proxy_opener = urllib2.build_opener(proxy_handler,
                                                  urllib2.HTTPHandler)
 
+    @pytest.mark.deprecated
     def test_do_req_through_proxy(self):
         resp_body = self.proxy_opener.open(get_moth_http()).read()
 
@@ -85,6 +87,7 @@ class TestProxy(unittest.TestCase):
 
         self.assertEqual(direct_resp_headers, proxy_resp_headers)
 
+    @pytest.mark.deprecated
     def test_do_ssl_req_through_proxy(self):
         resp_body = self.proxy_opener.open(get_moth_https()).read()
 
@@ -114,6 +117,7 @@ class TestProxy(unittest.TestCase):
 
         self.assertEqual(direct_resp_headers, proxy_resp_headers)
 
+    @pytest.mark.deprecated
     def test_proxy_req_ok(self):
         """Test if self._proxy.stop() works as expected. Note that the check
         content is the same as the previous check, but it might be that this
@@ -156,6 +160,7 @@ class TestProxy(unittest.TestCase):
             self.assertIn('Proxy error', body)
             self.assertIn('HTTP request', body)
 
+    @pytest.mark.deprecated
     def test_proxy_gzip_encoding(self):
         """
         When we perform a request to a site which returns gzip encoded data, the

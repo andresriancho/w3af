@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.core.controllers.ci.moth import get_moth_http
 
 from w3af.plugins.tests.helper import PluginConfig, ExecExploitTest
@@ -37,6 +38,7 @@ class TestEvalShell(ExecExploitTest):
         },
     }
 
+    @pytest.mark.deprecated
     def test_found_exploit_eval(self):
         # Run the scan
         cfg = self._run_configs['eval']
@@ -54,6 +56,7 @@ class TestEvalShell(ExecExploitTest):
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'eval')
 
+    @pytest.mark.deprecated
     def test_from_template(self):
         et = EvalTemplate()
         

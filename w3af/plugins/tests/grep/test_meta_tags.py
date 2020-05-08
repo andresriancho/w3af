@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 from itertools import repeat
 
@@ -53,6 +54,7 @@ class TestMetaTags(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
@@ -82,6 +84,7 @@ class TestMetaTagsRaw(unittest.TestCase):
         kb.kb.cleanup()
 
     @patch('w3af.plugins.grep.meta_tags.is_404', side_effect=repeat(False))
+    @pytest.mark.deprecated
     def test_meta_user(self, *args):
         body = '<meta test="user/pass"></script>'
         url = URL('http://www.w3af.com/')
@@ -100,6 +103,7 @@ class TestMetaTagsRaw(unittest.TestCase):
         self.assertIn('pass', info.get_desc())
 
     @patch('w3af.plugins.grep.meta_tags.is_404', side_effect=repeat(False))
+    @pytest.mark.deprecated
     def test_group_info_set(self, *args):
         body = '<meta test="user/pass"></script>'
         url_1 = URL('http://www.w3af.com/1')

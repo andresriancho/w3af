@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import time
 
@@ -27,6 +28,7 @@ from w3af.core.controllers.core_helpers.strategy_observers.thread_state_observer
 
 
 class TestThreadStateObserver(unittest.TestCase):
+    @pytest.mark.deprecated
     def test_inspect_data_to_log(self):
         worker_pool = Pool(processes=1, worker_names='WorkerThread')
         tso = ThreadStateObserver()

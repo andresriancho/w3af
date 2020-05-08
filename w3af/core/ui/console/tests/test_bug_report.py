@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import re
 import shutil
@@ -76,6 +77,7 @@ class TestConsoleBugReport(ConsoleTestHelper):
 
         super(TestConsoleBugReport, self).tearDown()
         
+    @pytest.mark.deprecated
     def test_buggy_scan(self):
         target = get_moth_http('/grep/csp/')
         commands_to_run = ['plugins',

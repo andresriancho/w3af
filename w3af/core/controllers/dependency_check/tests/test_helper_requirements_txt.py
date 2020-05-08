@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import os
 import unittest
 
@@ -33,6 +34,7 @@ class TestGenerateTXT(unittest.TestCase):
     MOCK_TARGET = 'w3af.core.controllers.ci.only_ci_decorator.is_running_on_ci'
     
     @patch(MOCK_TARGET, return_value=True)
+    @pytest.mark.deprecated
     def test_generate_requirements_txt_empty(self, ci_mock):
         requirements_file = generate_requirements_txt([])
         
@@ -47,4 +49,3 @@ class TestGenerateTXT(unittest.TestCase):
         
         self.assertEqual(EXPECTED, file(requirements_file).read())
         os.unlink(requirements_file)
-        

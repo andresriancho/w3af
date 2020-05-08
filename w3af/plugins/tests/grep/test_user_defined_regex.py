@@ -1,4 +1,7 @@
 """
+@pytest.mark.deprecated
+@pytest.mark.deprecated
+@pytest.mark.deprecated
 test_user_defined_regex.py
 
 Copyright 2012 Andres Riancho
@@ -19,6 +22,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -34,6 +38,7 @@ class test_user_defined_regex(unittest.TestCase):
     def setUp(self):
         self.plugin = user_defined_regex()
 
+    @pytest.mark.deprecated
     def test_user_defined_regex(self):
         body = '<html><head><script>xhr = new XMLHttpRequest(); xhr.open(GET, "data.txt",  true);'
         url = URL('http://www.w3af.com/')

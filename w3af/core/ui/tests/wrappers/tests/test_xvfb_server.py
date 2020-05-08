@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 import os
 import time
@@ -43,39 +44,47 @@ class TestEnvironment(unittest.TestCase):
         self.xvfb_server.stop()
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_verify_xvfb_installed_true(self):
         self.assertTrue(self.xvfb_server.is_installed())
 
     @patch('commands.getstatusoutput', return_value=(1, ''))
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_verify_xvfb_installed_false_1(self, *args):
         self.assertFalse(self.xvfb_server.is_installed())
 
     @patch('commands.getstatusoutput', return_value=(256, ''))
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_verify_xvfb_installed_false_2(self, *args):
         self.assertFalse(self.xvfb_server.is_installed())
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_stop_not_started(self):
         self.assertTrue(self.xvfb_server.stop())
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_not_running(self):
         self.assertFalse(self.xvfb_server.is_running())
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_start(self):
         self.xvfb_server.start_sync()
         self.assertTrue(self.xvfb_server.is_running())
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_start_start(self):
         self.xvfb_server.start_sync()
         self.assertRaises(RuntimeError, self.xvfb_server.start_sync)
         self.assertTrue(self.xvfb_server.is_running())
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_two_servers(self):
         xvfb_server_1 = XVFBServer()
         xvfb_server_2 = XVFBServer()
@@ -89,11 +98,13 @@ class TestEnvironment(unittest.TestCase):
         xvfb_server_1.stop()
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_get_screenshot_not_started(self):
         output_files = self.xvfb_server.get_screenshot()
         self.assertEqual(output_files, None)
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_get_screenshot(self):
         self.xvfb_server.start_sync()
         self.assertTrue(self.xvfb_server.is_running(),
@@ -111,11 +122,13 @@ class TestEnvironment(unittest.TestCase):
         os.remove(output_file)
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_run_with_stopped_xvfb(self):
         run_result = self.xvfb_server.run_x_process(self.X_TEST_COMMAND)
         self.assertFalse(run_result)
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_run_hello_world_in_xvfb(self):
         self.xvfb_server.start_sync()
         self.assertTrue(self.xvfb_server.is_running())
@@ -137,6 +150,7 @@ class TestEnvironment(unittest.TestCase):
         self.assertFalse(is_black_image(Image.open(screen_0)))
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_start_vnc_server(self):
         self.xvfb_server.start_sync()
         self.xvfb_server.start_vnc_server()

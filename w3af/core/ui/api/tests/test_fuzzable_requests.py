@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import json
 import base64
 
@@ -37,6 +38,7 @@ EXPECTED_FUZZABLE_REQUESTS = [
 
 class FuzzableRequestsTest(APIUnitTest):
 
+    @pytest.mark.deprecated
     def test_fuzzable_request_list(self):
         profile, target_url = get_test_profile()
         data = {'scan_profile': profile,

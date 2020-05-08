@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from w3af.core.data.kb.vuln_templates.dav_template import DAVTemplate
@@ -26,6 +27,7 @@ from w3af.core.data.kb.knowledge_base import kb
 
 
 class DAVTemplateTest(unittest.TestCase):
+    @pytest.mark.deprecated
     def test_store_in_kb(self):
         dt = DAVTemplate()
         dt.store_in_kb()

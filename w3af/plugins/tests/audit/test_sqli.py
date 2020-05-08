@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
@@ -40,6 +41,7 @@ class TestSQLI(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_found_sqli(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -67,6 +69,7 @@ class TestSQLMapTestEnv(PluginTest):
                                ('ignore_regex', '.*(asp|aspx)', PluginConfig.STR)),),
     }
 
+    @pytest.mark.deprecated
     def test_found_sqli_in_testenv(self):
         """
         SqlMap's testenv is a rather strange test application since it doesn't
@@ -166,6 +169,7 @@ class TestWAVSEPError(WAVSEPTest):
 
     target_url = get_wavsep_http(base_path)
 
+    @pytest.mark.deprecated
     def test_found_sqli_wavsep_error(self):
         expected_path_param = {
             # These are detected using sql injection errors:
@@ -214,6 +218,7 @@ class TestWAVSEP500Error(WAVSEPTest):
 
     target_url = get_wavsep_http(base_path)
 
+    @pytest.mark.deprecated
     def test_found_sqli_wavsep_error(self):
         expected_path_param = {
             (u'Case01-InjectionInLogin-String-LoginBypass-WithErrors.jsp', u'username'),
@@ -257,6 +262,7 @@ class TestWAVSEPWithDifferentiation(WAVSEPTest):
 
     target_url = get_wavsep_http(base_path)
 
+    @pytest.mark.deprecated
     def test_found_sqli_wavsep_differentiation(self):
         expected_path_param = {
             (u'Case01-InjectionInLogin-String-LoginBypass-WithDifferent200Responses.jsp', u'username'),
@@ -300,6 +306,7 @@ class TestWAVSEPIdentical(WAVSEPTest):
 
     target_url = get_wavsep_http(base_path)
 
+    @pytest.mark.deprecated
     def test_found_sqli_wavsep_identical(self):
         expected_path_param = {
             (u'Case01-InjectionInView-Numeric-Blind-200ValidResponseWithDefaultOnException.jsp', u'transactionId'),
@@ -331,6 +338,7 @@ class TestWAVSEPExperimental(WAVSEPTest):
 
     target_url = get_wavsep_http(base_path)
 
+    @pytest.mark.deprecated
     def test_found_sqli_wavsep_experimental(self):
         expected_path_param = {
             (u'Case01-InjectionInInsertValues-String-BinaryDeliberateRuntimeError-With200Errors.jsp', u'target'),
@@ -356,6 +364,7 @@ class TestWAVSEPError500POST(WAVSEPTest):
 
     target_url = get_wavsep_http(base_path)
 
+    @pytest.mark.deprecated
     def test_found_sqli_wavsep_error_500_post(self):
         expected_path_param = {
             (u'Case01-InjectionInLogin-String-LoginBypass-WithErrors.jsp', u'username'),
@@ -398,6 +407,7 @@ class TestWAVSEPError200POST(WAVSEPTest):
 
     target_url = get_wavsep_http(base_path)
 
+    @pytest.mark.deprecated
     def test_found_sqli_wavsep_error_200_post(self):
         expected_path_param = {
             (u'Case01-InjectionInLogin-String-LoginBypass-With200Errors.jsp', u'password'),
@@ -441,6 +451,7 @@ class TestWAVSEPWithDifferentiationPOST(WAVSEPTest):
 
     target_url = get_wavsep_http(base_path)
 
+    @pytest.mark.deprecated
     def test_found_sqli_wavsep_differentiation_post(self):
         expected_path_param = {
             (u'Case01-InjectionInLogin-String-LoginBypass-WithDifferent200Responses.jsp', u'username'),
@@ -484,6 +495,7 @@ class TestWAVSEPIdenticalPOST(WAVSEPTest):
 
     target_url = get_wavsep_http(base_path)
 
+    @pytest.mark.deprecated
     def test_found_sqli_wavsep_identical_post(self):
         expected_path_param = {
             (u'Case01-InjectionInView-Numeric-Blind-200ValidResponseWithDefaultOnException.jsp', u'transactionId'),
@@ -515,6 +527,7 @@ class TestWAVSEPExperimentalPOST(WAVSEPTest):
 
     target_url = get_wavsep_http(base_path)
 
+    @pytest.mark.deprecated
     def test_found_sqli_wavsep_experimental_post(self):
         expected_path_param = {
             (u'Case01-InjectionInInsertValues-String-BinaryDeliberateRuntimeError-With200Errors.jsp', u'target'),

@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -38,6 +39,7 @@ class TestXSSProtectionHeader(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_no_xss_protection_header(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -48,6 +50,7 @@ class TestXSSProtectionHeader(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('xss_protection_header',
                                        'xss_protection_header')), 0)
 
+    @pytest.mark.deprecated
     def test_xss_protection_header_enable(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -59,6 +62,7 @@ class TestXSSProtectionHeader(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('xss_protection_header',
                                        'xss_protection_header')), 0)
 
+    @pytest.mark.deprecated
     def test_xss_protection_header_disable(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -70,6 +74,7 @@ class TestXSSProtectionHeader(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('xss_protection_header',
                                        'xss_protection_header')), 1)
 
+    @pytest.mark.deprecated
     def test_xss_protection_header_invalid(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -81,6 +86,7 @@ class TestXSSProtectionHeader(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('xss_protection_header',
                                        'xss_protection_header')), 0)
 
+    @pytest.mark.deprecated
     def test_xss_protection_header_disable_group(self):
         body = ''
         headers = Headers([('content-type', 'text/html'),

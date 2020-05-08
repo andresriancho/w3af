@@ -1,4 +1,6 @@
 """
+@pytest.mark.deprecated
+@pytest.mark.deprecated
 test_running_vm.py
 
 Copyright 2012 Andres Riancho
@@ -18,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
@@ -29,6 +32,7 @@ class test_running_vm(PayloadTestHelper):
 
     EXPECTED_RESULT = {'running_vm': False}
 
+    @pytest.mark.deprecated
     def test_running_vm(self):
         result = exec_payload(self.shell, 'running_vm', use_api=True)
         self.assertEquals(self.EXPECTED_RESULT, result)

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.plugins.grep.password_profiling import password_profiling
@@ -44,6 +45,7 @@ class TestPasswordProfiling(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_collected_passwords(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
@@ -64,6 +66,7 @@ class TestPasswordProfiling(PluginTest):
         self.assertIn('application', collected_passwords)
         self.assertIn('creators', collected_passwords)
 
+    @pytest.mark.deprecated
     def test_merge_password_profiling(self):
         pp = password_profiling()
         
@@ -80,6 +83,7 @@ class TestPasswordProfiling(PluginTest):
                                       'spameggs': 3,
                                       'charlotte': 3})
 
+    @pytest.mark.deprecated
     def test_merge_password_profiling_unknown_lang(self):
         pp = password_profiling()
         

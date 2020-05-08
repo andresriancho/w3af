@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import base64
 import os.path
@@ -76,6 +77,7 @@ class TestXMLOutput(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_found_vuln(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -111,6 +113,7 @@ class TestXMLOutput(PluginTest):
         finally:
             self.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_error_null_byte(self):
         w3af_core = w3afCore()
         w3af_core.status.start()
@@ -141,6 +144,7 @@ class TestNoDuplicate(unittest.TestCase):
         HistoryItem().clear()
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_no_duplicate_vuln_reports(self):
         # The xml_file plugin had a bug where vulnerabilities were written to
         # disk multiple times, this test makes sure I fixed that vulnerability
@@ -307,6 +311,7 @@ class TestXMLOutputBinary(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_binary_handling_in_xml(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -359,6 +364,7 @@ class TestXML0x0B(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_binary_0x0b_handling_in_xml(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -408,6 +414,7 @@ class TestSpecialCharacterInURL(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_special_character_in_url_handling(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -449,6 +456,7 @@ class TestHTTPTransaction(XMLNodeGeneratorTest):
         HistoryItem().clear()
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_render_simple(self):
         url = URL('http://w3af.com/a/b/c.php')
         hdr = Headers([('User-Agent', 'w3af')])
@@ -489,6 +497,7 @@ class TestHTTPTransaction(XMLNodeGeneratorTest):
         self.assertEqual(expected, xml)
         self.assertValidXML(xml)
 
+    @pytest.mark.deprecated
     def test_cache(self):
         url = URL('http://w3af.com/a/b/c.php')
         hdr = Headers([('User-Agent', 'w3af')])
@@ -555,6 +564,7 @@ class TestScanInfo(XMLNodeGeneratorTest):
         HistoryItem().clear()
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_render_simple(self):
         w3af_core = w3afCore()
 
@@ -617,6 +627,7 @@ class TestScanStatus(XMLNodeGeneratorTest):
         HistoryItem().clear()
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_render_simple(self):
         w3af_core = w3afCore()
 
@@ -720,6 +731,7 @@ class TestFinding(XMLNodeGeneratorTest):
         HistoryItem().clear()
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_render_simple(self):
         _id = 2
 
@@ -769,6 +781,7 @@ class TestFinding(XMLNodeGeneratorTest):
         self.assertEqual(xml, expected)
         self.assertValidXML(xml)
 
+    @pytest.mark.deprecated
     def test_render_with_special_chars(self):
         _id = 2
 
@@ -802,6 +815,7 @@ class TestFinding(XMLNodeGeneratorTest):
         self.assertIn('such as &lt;, &amp; and &gt; which MUST', xml)
         self.assertValidXML(xml)
 
+    @pytest.mark.deprecated
     def test_render_with_unicode_control_chars(self):
         _id = 2
 
@@ -834,6 +848,7 @@ class TestFinding(XMLNodeGeneratorTest):
         self.assertIn('unicode control characters such as <character code="000c"/> and <character code="0009"/>', xml)
         self.assertValidXML(xml)
 
+    @pytest.mark.deprecated
     def test_render_attr_with_special_chars(self):
         _id = 2
 
@@ -865,6 +880,7 @@ class TestFinding(XMLNodeGeneratorTest):
         self.assertIn('A long description with special characters: &lt;&amp;&quot;&gt;', xml)
         self.assertValidXML(xml)
 
+    @pytest.mark.deprecated
     def test_render_unicode_bytestring(self):
         vuln = MockVuln(name='á')
         vuln.set_id([])
@@ -877,6 +893,7 @@ class TestFinding(XMLNodeGeneratorTest):
         self.assertIn(u'á', xml)
         self.assertValidXML(xml)
 
+    @pytest.mark.deprecated
     def test_render_url_special_chars(self):
         self.maxDiff = None
 
@@ -930,6 +947,7 @@ class TestFinding(XMLNodeGeneratorTest):
         self.assertEqual(xml, expected)
         self.assertValidXML(xml)
 
+    @pytest.mark.deprecated
     def test_is_generated_xml_valid(self):
         xml = ('''<vulnerability id="[14787]" method="GET" name="Strange HTTP response code" plugin="strange_http_codes" 
                    severity="Information" url="https://w3af.com/._basebind/node_modules/lodash._basecreate/LICENSE.txtZȨZȨ+k%s=ڞ"
@@ -963,6 +981,7 @@ class TestFindingsCache(XMLNodeGeneratorTest):
         HistoryItem().clear()
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_cache_works_as_expected(self):
         #
         # Cache starts empty

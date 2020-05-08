@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -31,6 +32,7 @@ class TestUpdateURLs(unittest.TestCase):
     def setUp(self):
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_basic(self):
         u1 = URL('http://w3af.org/')
         r1 = FuzzableRequest(u1, method='GET')

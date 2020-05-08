@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -38,6 +39,7 @@ class test_file_upload(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_simple(self):
         body = 'header <form><input type="file"></form> footer'
         url = URL('http://www.w3af.com/')
@@ -50,6 +52,7 @@ class test_file_upload(unittest.TestCase):
         i = kb.kb.get('file_upload', 'file_upload')[0]
         self.assertEquals(i.get_name(), 'File upload form')
 
+    @pytest.mark.deprecated
     def test_complex(self):
         body = 'header <form><Input type="File"></form> footer'
         url = URL('http://www.w3af.com/')
@@ -62,6 +65,7 @@ class test_file_upload(unittest.TestCase):
         i = kb.kb.get('file_upload', 'file_upload')[0]
         self.assertEquals(i.get_name(), 'File upload form')
 
+    @pytest.mark.deprecated
     def test_none(self):
         body = 'header <form><noinput type="file"></form> footer'
         url = URL('http://www.w3af.com/')

@@ -19,8 +19,10 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
+import pytest
 from github import Github
 from nose.plugins.attrib import attr
 
@@ -31,6 +33,7 @@ from w3af.core.controllers.easy_contribution.github_issues import (GithubIssues,
 
 
 @attr('internet')
+@pytest.mark.skip(reason='deprecated')
 class TestGithubIssues(unittest.TestCase):
 
     def test_report(self):

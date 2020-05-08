@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
 from mock import Mock
@@ -33,6 +34,7 @@ class TestBaseConsumer(unittest.TestCase):
     def setUp(self):
         self.bc = BaseConsumer([], w3afCore(), 'TestConsumer')
 
+    @pytest.mark.deprecated
     def test_handle_exception(self):
         url = URL('http://moth/')
         fr = FuzzableRequest(url)

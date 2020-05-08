@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import re
 import unittest
 import threading
@@ -42,6 +43,7 @@ class TestStrategy(unittest.TestCase):
     def setUp(self):
         kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_strategy_run(self):
         core = w3afCore()
         
@@ -100,6 +102,7 @@ class TestStrategy(unittest.TestCase):
 
         self.assertEqual(thread_names_set, expected_names)
 
+    @pytest.mark.deprecated
     def test_strategy_exception(self):
         core = w3afCore()
         
@@ -128,6 +131,7 @@ class TestStrategy(unittest.TestCase):
 
         self._assert_thread_names()
         
+    @pytest.mark.deprecated
     def test_strategy_verify_target_server_up(self):
         core = w3afCore()
         
@@ -155,6 +159,7 @@ class TestStrategy(unittest.TestCase):
             self.assertTrue(False)
 
     @httpretty.activate
+    @pytest.mark.deprecated
     def test_alert_if_target_is_301_all_proto_redir(self):
         """
         Tests that the protocol redirection is detected and reported in
@@ -185,6 +190,7 @@ class TestStrategy(unittest.TestCase):
         self.assertEqual(len(infos), 1, infos)
 
     @httpretty.activate
+    @pytest.mark.deprecated
     def test_alert_if_target_is_301_all_domain_redir(self):
         """
         Tests that the domain redirection is detected and reported in
@@ -215,6 +221,7 @@ class TestStrategy(unittest.TestCase):
         self.assertEqual(len(infos), 1, infos)
 
     @httpretty.activate
+    @pytest.mark.deprecated
     def test_alert_if_target_is_301_all_internal_redir(self):
         """
         Tests that no info is created if the site redirects internally

@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import time
 
 from nose.plugins.attrib import attr
@@ -47,6 +48,7 @@ class TestTimeLimit(PluginTest):
 
     @attr('slow')
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_spider_with_time_limit(self):
         #
         #    First scan

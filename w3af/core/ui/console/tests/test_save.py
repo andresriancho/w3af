@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.core.ui.console.console_ui import ConsoleUI
@@ -29,6 +30,7 @@ class TestSaveConsoleUI(ConsoleTestHelper):
     """
     Save test for the console UI.
     """
+    @pytest.mark.deprecated
     def test_menu_simple_save(self):
         commands_to_run = ['plugins crawl config dir_file_bruter',
                            'set file_wordlist /etc/passwd',
@@ -45,6 +47,7 @@ class TestSaveConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_substring_in_output(expected_start_with)
         self.assertTrue(assert_result, msg)
 
+    @pytest.mark.deprecated
     def test_menu_save_with_dependencies_error(self):
         commands_to_run = ['plugins audit config rfi',
                            'set use_w3af_site false',
@@ -61,6 +64,7 @@ class TestSaveConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected_start_with)
         self.assertTrue(assert_result, msg)
 
+    @pytest.mark.deprecated
     def test_menu_save_with_dependencies_success(self):
         commands_to_run = ['plugins audit config rfi',
                            'set use_w3af_site false',
@@ -79,6 +83,7 @@ class TestSaveConsoleUI(ConsoleTestHelper):
         assert_result, msg = self.all_expected_substring_in_output(expected_start_with)
         self.assertTrue(assert_result, msg)
 
+    @pytest.mark.deprecated
     def test_menu_simple_save_with_view(self):
         """
         Reproduces the issue at https://github.com/andresriancho/w3af/issues/474

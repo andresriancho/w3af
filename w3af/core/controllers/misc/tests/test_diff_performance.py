@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from __future__ import print_function
+import pytest
 
 import os
 import time
@@ -36,9 +37,11 @@ class TestDiffPerformance(unittest.TestCase):
     FUNCTIONS = [chunked_diff, diff_dmp]
     ROUNDS = 5
 
+    @pytest.mark.slow
     def test_xml(self):
         self._generic_runner(self._run_test_xml)
 
+    @pytest.mark.slow
     def test_diff_large_different_responses(self):
         self._generic_runner(self._run_diff_large_different_responses)
 

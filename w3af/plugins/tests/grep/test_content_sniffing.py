@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -40,6 +41,7 @@ class TestContentSniffingSecurity(unittest.TestCase):
         self.plugin.end()
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_has_content_sniffing_header(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -52,6 +54,7 @@ class TestContentSniffingSecurity(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('content_sniffing',
                                         'content_sniffing')), 0)
 
+    @pytest.mark.deprecated
     def test_no_content_sniffing(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -75,6 +78,7 @@ class TestContentSniffingSecurity(unittest.TestCase):
         self.assertEqual(info_set.get_name(),
                          'Missing X-Content-Type-Options header')
 
+    @pytest.mark.deprecated
     def test_no_content_sniffing_group_by_domain(self):
         body = ''
         url = URL('https://www.w3af.com/1')

@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import ssl
 import time
@@ -63,6 +64,7 @@ class TestXUrllib(unittest.TestCase):
         self.uri_opener.end()
         httpretty.reset()
         
+    @pytest.mark.deprecated
     def test_basic(self):
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
@@ -72,6 +74,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertGreaterEqual(http_response.id, 1)
         self.assertNotEqual(http_response.id, None)
 
+    @pytest.mark.deprecated
     def test_basic_ssl(self):
         url = URL(get_moth_https())
         http_response = self.uri_opener.GET(url, cache=False)
@@ -91,6 +94,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertGreaterEqual(http_response.id, 1)
         self.assertNotEqual(http_response.id, None)
 
+    @pytest.mark.deprecated
     def test_cache(self):
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url)
@@ -100,6 +104,7 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
+    @pytest.mark.deprecated
     def test_qs_params(self):
         url = URL(get_moth_http('/audit/xss/simple_xss.py?text=123456abc'))
         http_response = self.uri_opener.GET(url, cache=False)
@@ -156,6 +161,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual(httpretty.last_request().body, data)
         self.assertEqual(httpretty.last_request().path, '/' + qs)
 
+    @pytest.mark.deprecated
     def test_post(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
 
@@ -165,6 +171,7 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn('123456abc', http_response.body)
 
+    @pytest.mark.deprecated
     def test_post_special_chars(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
         test_data = u'abc<def>"-á-'
@@ -188,6 +195,7 @@ class TestXUrllib(unittest.TestCase):
         url = URL('http://127.0.0.1:2312/')
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
 
+    @pytest.mark.deprecated
     def test_url_port_not_http(self):
         upper_daemon = UpperDaemon(EmptyTCPHandler)
         upper_daemon.start()
@@ -232,6 +240,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual(scan_must_stop_e, 1)
         self.assertEqual(http_request_e, 9)
 
+    @pytest.mark.deprecated
     def test_get_wait_time(self):
         """
         Asserts that all the responses coming out of the extended urllib have a
@@ -289,6 +298,7 @@ class TestXUrllib(unittest.TestCase):
 
     @attr('internet')
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_ssl_sni(self):
         """
         Test is our HTTP client supports SSL SNI
@@ -359,6 +369,7 @@ class TestXUrllib(unittest.TestCase):
 
         self.assertRaises(Queue.Empty, output.get, True, 2)
 
+    @pytest.mark.deprecated
     def test_pause_unpause(self):
         output = Queue.Queue()
         self.uri_opener.pause(True)
@@ -388,6 +399,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual(http_response.get_code(), 200)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
     
+    @pytest.mark.deprecated
     def test_removes_cache(self):
         url = URL(get_moth_http())
         self.uri_opener.GET(url, cache=False)
@@ -406,6 +418,7 @@ class TestXUrllib(unittest.TestCase):
             self.assertFalse(os.path.exists(test_db_path), test_db_path)
             self.assertFalse(os.path.exists(test_trace_path), test_trace_path)
     
+    @pytest.mark.deprecated
     def test_special_char_header(self):
         url = URL(get_moth_http('/core/headers/echo-headers.py'))
         header_content = u'name=ábc'
@@ -413,6 +426,7 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False, headers=headers)
         self.assertIn(header_content, http_response.body)
 
+    @pytest.mark.deprecated
     def test_bad_file_descriptor_8125_local(self):
         """
         8125 is basically an issue with the way HTTP SSL connections handle the

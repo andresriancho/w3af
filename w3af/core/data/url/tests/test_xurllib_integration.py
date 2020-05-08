@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 import httpretty
 
@@ -41,6 +42,7 @@ class TestXUrllibIntegration(unittest.TestCase):
         self.uri_opener = ExtendedUrllib()
         
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_ntlm_auth_not_configured(self):
         self.uri_opener = ExtendedUrllib()
         url = URL("http://moth/w3af/core/ntlm_auth/ntlm_v1/")
@@ -48,6 +50,7 @@ class TestXUrllibIntegration(unittest.TestCase):
         self.assertIn('Must authenticate.', http_response.body)
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_ntlm_auth_valid_creds(self):
         
         self.uri_opener = ExtendedUrllib()
@@ -71,6 +74,7 @@ class TestXUrllibIntegration(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertIn('You are admin from MOTH/', http_response.body)
 
+    @pytest.mark.deprecated
     def test_gzip(self):
         url = URL(get_moth_http('/core/gzip/gzip.html'))
         res = self.uri_opener.GET(url, cache=False)
@@ -82,6 +86,7 @@ class TestXUrllibIntegration(unittest.TestCase):
         self.assertTrue(test_res, content_encoding)
         self.assertIn('View HTTP response headers.', res.get_body())
 
+    @pytest.mark.deprecated
     def test_deflate(self):
         url = URL(get_moth_http('/core/deflate/deflate.html'))
         res = self.uri_opener.GET(url, cache=False)
@@ -91,6 +96,7 @@ class TestXUrllibIntegration(unittest.TestCase):
         self.assertIn('deflate', content_encoding)
         self.assertIn('View HTTP response headers.', res.get_body())
 
+    @pytest.mark.deprecated
     def test_get_cookies(self):
         self.assertEqual(len([c for c in self.uri_opener.get_cookies()]), 0)
 

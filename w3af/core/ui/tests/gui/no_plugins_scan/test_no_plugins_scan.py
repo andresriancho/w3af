@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 
 from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
@@ -28,6 +29,7 @@ class TestNoPluginsScan(XpresserUnittest):
     
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'no_plugins_scan', 'images')
     
+    @pytest.mark.deprecated
     def test_no_plugins_enabled(self):
         self.click('insert_target_url_here')
         self.type('http://moth/', False)

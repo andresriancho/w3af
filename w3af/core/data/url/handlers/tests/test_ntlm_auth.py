@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 import urllib2
 
@@ -30,6 +31,7 @@ from w3af.core.data.url.handlers.ntlm_auth import HTTPNtlmAuthHandler
 class TestNTLMHandler(unittest.TestCase):
     
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_auth_valid_creds(self):
         url = "http://moth/w3af/core/ntlm_auth/ntlm_v1/"
         user = u'moth\\admin'

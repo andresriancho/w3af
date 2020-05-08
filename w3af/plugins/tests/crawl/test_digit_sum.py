@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.ci.moth import get_moth_http
 
@@ -31,6 +32,7 @@ class TestDigitSum(PluginTest):
         'plugins': {'crawl': (PluginConfig('digit_sum',),)}
     }
 
+    @pytest.mark.deprecated
     def test_found_fname(self):
         self._scan(self.target_url + 'index-3-1.html',
                    self._run_config['plugins'])
@@ -39,6 +41,7 @@ class TestDigitSum(PluginTest):
                          u'/crawl/digit_sum/index-2-1.html')
         self.assertAllURLsFound(EXPECTED_URLS)
 
+    @pytest.mark.deprecated
     def test_found_qs(self):
         self._scan(self.target_url + 'index1.py?id=22',
                    self._run_config['plugins'])

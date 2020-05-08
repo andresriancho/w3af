@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import time
 import unittest
 
@@ -42,6 +43,7 @@ class TestStrangeHeaders(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_strange_headers_positive(self):
         body = 'Hello world'
         url = URL('http://www.w3af.com/')
@@ -65,6 +67,7 @@ class TestStrangeHeaders(unittest.TestCase):
         self.assertEqual(info.get_url(), url)
         self.assertEqual(info.get_desc(), expected_desc)
 
+    @pytest.mark.deprecated
     def test_strange_headers_timing(self):
         body = 'Hello world'
         url = URL('http://www.w3af.com/')
@@ -82,6 +85,7 @@ class TestStrangeHeaders(unittest.TestCase):
         spent = time.time() - start
         # print('Profiling run in %s seconds' % spent)
 
+    @pytest.mark.deprecated
     def test_strange_headers_no_group(self):
         body = 'Hello world'
 
@@ -102,6 +106,7 @@ class TestStrangeHeaders(unittest.TestCase):
         info_sets = kb.kb.get('strange_headers', 'strange_headers')
         self.assertEquals(len(info_sets), 2)
 
+    @pytest.mark.deprecated
     def test_strange_headers_group(self):
         body = 'Hello world'
 
@@ -122,6 +127,7 @@ class TestStrangeHeaders(unittest.TestCase):
         info_sets = kb.kb.get('strange_headers', 'strange_headers')
         self.assertEquals(len(info_sets), 1)
 
+    @pytest.mark.deprecated
     def test_strange_headers_negative(self):
         body = 'Hello world'
         url = URL('http://www.w3af.com/')

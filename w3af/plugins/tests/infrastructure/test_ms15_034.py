@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
@@ -34,6 +35,7 @@ class TestFindMS14_034(PluginTest):
 
     MOCK_RESPONSES = [MockResponse(target_url, 'PASS', status=416)]
 
+    @pytest.mark.deprecated
     def test_vulnerable_host(self):
         cfg = self._run_configs['cfg']
         self._scan(self.target_url, cfg['plugins'])
@@ -59,6 +61,7 @@ class TestNotFindMS14_034(PluginTest):
 
     MOCK_RESPONSES = [MockResponse(target_url, 'PASS', status=415)]
 
+    @pytest.mark.deprecated
     def test_vulnerable_host(self):
         cfg = self._run_configs['cfg']
         self._scan(self.target_url, cfg['plugins'])

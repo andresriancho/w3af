@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import OpenSSL
 import ssl
@@ -34,12 +35,14 @@ class TestSSLError(unittest.TestCase):
         e = Exception('Message')
         self.assertEqual(str(OpenSSLReformattedError(e)), 'Message')
 
+    @pytest.mark.deprecated
     def test_str_8663_2(self):
         e = OpenSSL.SSL.Error('OpenSSL.SSL.Error Message')
         se = ssl.SSLError('ssl.SSLError Message', OpenSSLReformattedError(e))
         self.assertEqual(str(se), '[Errno ssl.SSLError Message] '
                                   'OpenSSL.SSL.Error Message')
 
+    @pytest.mark.deprecated
     def test_str_8663_3(self):
         e = OpenSSL.SSL.Error('OpenSSL.SSL.Error Message')
         se = ssl.SSLError('ssl.SSLError Message', e)

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -30,6 +31,7 @@ class TestShellHandler(unittest.TestCase):
 
     TEST_CMD = 'ls'
 
+    @pytest.mark.deprecated
     def test_get_shell_code_extension(self):
         shells = get_shell_code('php', self.TEST_CMD)
         
@@ -48,6 +50,7 @@ class TestShellHandler(unittest.TestCase):
         self.assertEqual(lang, 'php')
         self.assertIn('echo ', php_shell_code)
 
+    @pytest.mark.deprecated
     def test_get_shell_code_no_extension(self):
         shells = get_shell_code('', self.TEST_CMD)
         
@@ -57,6 +60,7 @@ class TestShellHandler(unittest.TestCase):
         self.assertEqual(lang, 'php')
         self.assertIn('echo ', php_shell_code)
 
+    @pytest.mark.deprecated
     def test_get_shell_code_invalid_extension(self):
         shells = get_shell_code('123456', self.TEST_CMD)
         
@@ -66,6 +70,7 @@ class TestShellHandler(unittest.TestCase):
         self.assertEqual(lang, 'php')
         self.assertIn('echo ', php_shell_code)
         
+    @pytest.mark.deprecated
     def test_get_web_shell_extension(self):
         shells = get_webshells('php')
         
@@ -87,18 +92,21 @@ class TestShellHandler(unittest.TestCase):
         self.assertEqual(lang, 'php')
         self.assertIn('echo ', php_shell_code)
 
+    @pytest.mark.deprecated
     def test_get_web_shell_code_no_extension(self):
         shells = get_webshells('')
         
         # All returned when invalid extension
         self.assertEqual(len(shells), 6)
 
+    @pytest.mark.deprecated
     def test_get_web_shell_code_invalid_extension(self):
         shells = get_webshells('123456')
         
         # All returned when invalid extension
         self.assertEqual(len(shells), 6)
     
+    @pytest.mark.deprecated
     def test_with_kb_data(self):
         kb.kb.raw_write('server_header', 'powered_by_string', ['ASP foo bar',])
         

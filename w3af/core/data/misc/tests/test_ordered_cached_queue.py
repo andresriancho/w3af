@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import time
 import unittest
 import threading
@@ -147,6 +148,7 @@ class TestOrderedCachedQueue(unittest.TestCase):
         q.put(create_simple_fuzzable_request(1))
         self.assertEquals(read_fuzzable_request_parameter(q.get()), 1)
 
+    @pytest.mark.slow
     def test_simple_rpm_speed(self):
         q = OrderedCachedQueue()
 

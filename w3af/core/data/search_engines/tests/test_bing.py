@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from nose.plugins.attrib import attr
@@ -33,10 +34,12 @@ class test_bing(unittest.TestCase):
     def setUp(self):
         self.bing_se = bing(ExtendedUrllib())
 
+    @pytest.mark.slow
     def test_get_links_results_few(self):
         self.query, self.limit = ('two and half man', 60)
         self.get_links_results()
         
+    @pytest.mark.slow
     def test_get_links_results_many(self):
         self.query, self.limit = ('big bang theory', 200)
         self.get_links_results()
