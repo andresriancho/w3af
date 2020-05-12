@@ -81,6 +81,7 @@ class autocomplete_js(autocomplete):
         return True
 
     def _handle_authentication_success(self):
+        self._login_result_log.append(True)
         #
         # Logging
         #
