@@ -31,7 +31,7 @@ class FormSubmitter(object):
     STRATEGIES = [
         PressEnterStrategy,
         PressTabEnterStrategy,
-        #FormInputSubmitStrategy
+        FormInputSubmitStrategy
     ]
 
     def __init__(self, chrome, form, login_form_url, username, password, debugging_id):

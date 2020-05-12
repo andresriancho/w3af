@@ -330,7 +330,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, type ) ) return false;
 
         let selector = OptimalSelect.getSingleSelector(element);
-        
+
         // node_type is https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType#Node_type_constants
         _DOMAnalyzer.event_listeners.push({"tag_name": tag_name,
                                            "node_type": element.nodeType,
@@ -866,6 +866,44 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     },
 
     /**
+     * This is naive function which takes parentElement (the login form) and
+     * tries to find username input field within it.
+     * @param  {Node} parentElement - parent element to scope to document.querySelectorAll()
+     * @returns {NodeList} - result of querySelectorAll()
+     */
+    _getUsernameInput(parentElement) {
+        result = document.querySelectorAll("input[type='email']", parentElement);
+        if (!result.length) {
+            result = document.querySelectorAll("input[type='text']", parentElement);
+        }
+        return result;
+    },
+
+    /**
+     * This is naive function which takes parentElement (the login form) and tries
+     * to find submit button within it.
+     * @param  {Node} parentElement - parent element to scope to document.querySelectorAll()
+     * @returns {NodeList} - result of querySelectorAll()
+     */
+    _getSubmitButton(parentElement) {
+        result = document.querySelectorAll("input[type='submit']", parentElement);
+        if (!result.length) {
+            result = document.querySelectorAll("button[type='submit']", parentElement);
+        }
+        // Maybe it's just normal button with innerText: 'Login'...
+        if (!result.length) {
+            result = [];
+            let buttons = document.querySelectorAll('button', parentElement);
+            for (let button of buttons) {
+                if (button.innerText.toLocaleLowerCase().includes('log')) {
+                    result.push(button);
+                }
+            }
+        }
+        return result;
+    },
+
+    /**
     * Return the CSS selector for the login forms which exist in the DOM.
     *
     * For this method login forms are defined as:
@@ -898,7 +936,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             let form = forms[0];
 
             // Finally we confirm that the form has a type=text input
-            let text_fields = document.querySelectorAll("input[type='text']", form)
+            let text_fields = _getUsernameInput(form);
 
             // Zero text fields is most likely a password-only login form
             // Two text fields or more is most likely a registration from
@@ -906,7 +944,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             if (text_fields.length !== 1) continue;
 
             // And if there is a submit button I want that selector too
-            let submit_fields = document.querySelectorAll("input[type='submit']", form)
+            let submit_fields = _getSubmitButton(form);
             let submit_selector = null;
 
             if (submit_fields.length !== 0) {
@@ -962,7 +1000,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 // go up one more level, and so one.
                 //
                 // Find if this parent has a type=text input
-                let text_fields = document.querySelectorAll("input[type='text']", parent)
+                let text_fields = _getUsernameInput(parent)
 
                 // Zero text fields is most likely a password-only login form
                 // Two text fields or more is most likely a registration from
@@ -974,7 +1012,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 }
 
                 // And if there is a submit button I want that selector too
-                let submit_fields = document.querySelectorAll("input[type='submit']", parent)
+                let submit_fields = _getSubmitButton(parent)
                 let submit_selector = null;
 
                 if (submit_fields.length !== 0) {
