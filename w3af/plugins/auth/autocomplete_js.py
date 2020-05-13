@@ -251,7 +251,7 @@ class autocomplete_js(autocomplete):
 
         for form_submit_strategy in form_submitter.submit_form():
 
-            if not self.has_active_session(debugging_id=self._debugging_id):
+            if not self.has_active_session(debugging_id=self._debugging_id, chrome=chrome):
                 # No need to set the state of the chrome browser back to the
                 # login page, that is performed inside the FormSubmitter
                 continue
@@ -268,17 +268,24 @@ class autocomplete_js(autocomplete):
 
         return None
 
-    def has_active_session(self, debugging_id=None):
+    def has_active_session(self, debugging_id=None, chrome=None):
         """
         Check user session with chrome
         """
         has_active_session = False
         self._set_debugging_id(debugging_id)
-        chrome = self._get_chrome_instance(load_url=False)
+        if not chrome:
+            chrome = self._get_chrome_instance(load_url=False)
 
         try:
             chrome.load_url(self.check_url)
-            chrome.wait_for_load()
+            chrome.chrome_conn.Page.reload(ignore_cache=True)
+            loaded = chrome.wait_for_load()
+            if not loaded:
+                msg = 'Failed to load %s in chrome for autocomplete_js'
+                args = (self.check_url,)
+                self._log_debug(msg % args)
+                return False
             has_active_session = self.check_string in chrome.get_dom()
         finally:
             chrome.terminate()
