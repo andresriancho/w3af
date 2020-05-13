@@ -993,7 +993,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     * @param {String} submitButtonCssSelector - CSS selector for submit button. If
     * provided we won't try to find submit button autmatically.
     */
-    getLoginFormsWithoutFormTags: function () {
+    getLoginFormsWithoutFormTags: function (usernameCssSelector = '', submitButtonCssSelector = '') {
         let login_forms = [];
 
         // First we identify the password fields
