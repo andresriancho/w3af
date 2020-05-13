@@ -297,11 +297,20 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         return True
 
-    def get_login_forms(self):
+    def get_login_forms(self, exact_css_selectors):
         """
+        :param dict exact_css_selectors: Optional parameter containing css selectors
+        for part of form like username input or login button.
         :return: Yield LoginForm instances
         """
-        result = self.js_runtime_evaluate('window._DOMAnalyzer.getLoginForms()')
+        func = (
+            'window._DOMAnalyzer.getLoginForms("{}", "{}")'
+        )
+        func = func.format(
+            exact_css_selectors.get('username_input', ''),
+            exact_css_selectors.get('login_button', ''),
+        )
+        result = self.js_runtime_evaluate(func)
 
         if result is None:
             raise EventTimeout('The event execution timed out')
@@ -316,11 +325,20 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
             yield login_form
 
-    def get_login_forms_without_form_tags(self):
+    def get_login_forms_without_form_tags(self, exact_css_selectors):
         """
+        :param dict exact_css_selectors: Optional parameter containing css selectors
+        for part of form like username input or login button.
         :return: Yield LoginForm instances
         """
-        result = self.js_runtime_evaluate('window._DOMAnalyzer.getLoginFormsWithoutFormTags()')
+        func = (
+            'window._DOMAnalyzer.getLoginFormsWithoutFormTags("{}", "{}")'
+        )
+        func = func.format(
+            exact_css_selectors.get('username_input', ''),
+            exact_css_selectors.get('login_button', ''),
+        )
+        result = self.js_runtime_evaluate(func)
 
         if result is None:
             raise EventTimeout('The event execution timed out')

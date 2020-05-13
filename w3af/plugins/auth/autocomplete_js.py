@@ -20,7 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Queue
+from copy import deepcopy
 
+from w3af.core.data.options.opt_factory import opt_factory
+from w3af.core.data.options.option_types import STRING
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
 from w3af.core.controllers.chrome.login.find_form.main import FormFinder
@@ -35,6 +38,10 @@ class autocomplete_js(autocomplete):
 
     def __init__(self):
         autocomplete.__init__(self)
+
+        # default values for autocomplete_js options
+        self.username_field_css_selector = ''
+        self.login_button_css_selector = ''
 
         self._login_form = None
         self._http_traffic_queue = None
@@ -208,8 +215,12 @@ class autocomplete_js(autocomplete):
          * Use the FormFinder class to yield all existing forms
         """
         form_finder = FormFinder(chrome, self._debugging_id)
+        css_selectors = {
+            'username_input': self.username_field_css_selector,
+            'login_button': self.login_button_css_selector,
+        }
 
-        for form in form_finder.find_forms():
+        for form in form_finder.find_forms(css_selectors):
 
             msg = 'Found potential login form: %s'
             args = (form,)
@@ -272,6 +283,49 @@ class autocomplete_js(autocomplete):
         finally:
             chrome.terminate()
             return has_active_session
+
+    def get_options(self):
+        """
+        :returns OptionList: list of option objects for plugin
+        """
+        option_list = super(autocomplete_js, self).get_options()
+        autocomplete_js_options = [
+            (
+                'username_field_css_selector',
+                self.username_field_css_selector,
+                STRING,
+                "(Optional) Exact CSS selector which will be used to retrieve "
+                "the username input field. If provided then w3af won't try "
+                "to detect input field automatically."
+            ),
+            (
+                'login_button_css_selector',
+                self.login_button_css_selector,
+                STRING,
+                "(Optional) Exact CSS selector which will be used to retrieve "
+                "the login button field. If provided then w3af won't try "
+                "to detect button automatically."
+            ),
+        ]
+        for option in autocomplete_js_options:
+            option_list.add(opt_factory(
+                option[0],
+                option[1],
+                option[3],
+                option[2],
+                help=option[3],
+            ))
+        return option_list
+
+    def set_options(self, options_list):
+        options_list_copy = deepcopy(options_list)  # we don't want to touch real option_list
+        self.username_field_css_selector = options_list_copy.pop(
+            'username_field_css_selector'
+        ).get_value()
+        self.login_button_css_selector = options_list_copy.pop(
+            'login_button_css_selector'
+        ).get_value()
+        super(autocomplete_js, self).set_options(options_list_copy)
 
     def get_long_desc(self):
         """
