@@ -137,7 +137,12 @@ class autocomplete_js(autocomplete):
         :param chrome: The chrome instance to use during login
         :return: True if login was successful
         """
-        raise NotImplementedError
+        form_submit_strategy = self._find_form_submit_strategy(chrome, self._login_form)
+        if form_submit_strategy is None:
+            return False
+        self._login_form.set_submit_strategy(form_submit_strategy)
+        self._log_debug('Identified valid login form: %s' % self._login_form)
+        return True
 
     def _login_and_save_form(self, chrome):
         """
