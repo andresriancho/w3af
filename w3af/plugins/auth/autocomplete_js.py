@@ -279,7 +279,6 @@ class autocomplete_js(autocomplete):
 
         try:
             chrome.load_url(self.check_url)
-            chrome.chrome_conn.Page.reload(ignore_cache=True)
             loaded = chrome.wait_for_load()
             if not loaded:
                 msg = 'Failed to load %s in chrome for autocomplete_js'
