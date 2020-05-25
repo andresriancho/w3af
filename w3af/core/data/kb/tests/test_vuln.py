@@ -23,6 +23,7 @@ import unittest
 
 from nose.plugins.attrib import attr
 
+from w3af.core.data.constants.vulns import VULNS
 from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
@@ -90,3 +91,33 @@ class TestVuln(unittest.TestCase):
         self.assertEqual(inst.get_method(), mutant.get_method())
         self.assertEqual(inst.get_dc(), mutant.get_dc())
         self.assertEqual(inst.get_token_name(), mutant.get_token().get_name())
+
+    def test_from_mutant_can_match_vulndb_id(self):
+        url = URL('http://moth/?a=1&b=2')
+        payloads = ['abc', 'def']
+
+        freq = FuzzableRequest(url)
+        fuzzer_config = {}
+
+        created_mutants = QSMutant.create_mutants(
+            freq,
+            payloads,
+            [],
+            False,
+            fuzzer_config
+        )
+        mutant = created_mutants[0]
+
+        inst = Vuln.from_mutant(
+            'Blind SQL injection vulnerability',
+            'desc' * 30,
+            'High',
+            1,
+            'plugin_name',
+            mutant
+        )
+        self.assertEqual(
+            inst.get_vulndb_id(),
+            VULNS.get('Blind SQL injection vulnerability'),
+        )
+        self.assertIsNotNone(inst.get_vulndb_id())
