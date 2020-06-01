@@ -257,6 +257,9 @@ class autocomplete_js(autocomplete):
         for form_submit_strategy in form_submitter.submit_form():
 
             if not self.has_active_session(debugging_id=self._debugging_id, chrome=chrome):
+                msg = '%s is invalid form submit strategy for %s'
+                args = (form_submit_strategy.get_name(), form)
+                self._log_debug(msg % args)
                 # No need to set the state of the chrome browser back to the
                 # login page, that is performed inside the FormSubmitter
                 continue
@@ -276,23 +279,31 @@ class autocomplete_js(autocomplete):
     def has_active_session(self, debugging_id=None, chrome=None):
         """
         Check user session with chrome
+        :param str debugging_id: string representing debugging id.
+        :param InstrumentedChrome chrome: chrome instance passed from outer scope
+        to reuse. EDGE CASE EXAMPLE:
+        Sometimes we don't want to create new chrome instance. For example
+        when we login for the first time to webapp and in _find_form_submit_strategy()
+        we just pressed enter in login form. Browser may take some actions under
+        the hood like sending XHR to backend API and after receiving response
+        setting API token at localStorage. Before token will be saved to localStorage
+        it may exist only in webapp's code, so using the same chrome will prevent
+        us from performing check without credentials.
         """
         has_active_session = False
+        is_new_chrome_instance_created = False
         self._set_debugging_id(debugging_id)
-        if not chrome:
+        if not chrome or not chrome.chrome_conn:
             chrome = self._get_chrome_instance(load_url=False)
+            is_new_chrome_instance_created = True
 
         try:
             chrome.load_url(self.check_url)
-            loaded = chrome.wait_for_load()
-            if not loaded:
-                msg = 'Failed to load %s in chrome for autocomplete_js'
-                args = (self.check_url,)
-                self._log_debug(msg % args)
-                return False
+            chrome.wait_for_load()
             has_active_session = self.check_string in chrome.get_dom()
         finally:
-            chrome.terminate()
+            if is_new_chrome_instance_created:
+                chrome.terminate()
             return has_active_session
 
     def get_options(self):

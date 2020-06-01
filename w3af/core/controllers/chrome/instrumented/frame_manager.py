@@ -166,7 +166,7 @@ class FrameManager(object):
         # URL all the child frames are removed from Chrome, we should remove
         # them from our code too to mirror state
         if frame:
-            for child_frame_id, child_frame in frame.child_frames:
+            for child_frame_id, child_frame in frame.child_frames.items():
                 child_frame.detach(self)
 
             frame.set_navigated()
