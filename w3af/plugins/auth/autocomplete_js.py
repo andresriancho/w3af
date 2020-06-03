@@ -317,16 +317,16 @@ class autocomplete_js(autocomplete):
                 self.username_field_css_selector,
                 STRING,
                 "(Optional) Exact CSS selector which will be used to retrieve "
-                "the username input field. If provided then w3af won't try "
-                "to detect input field automatically."
+                "the username input field. When provided the scanner is not going"
+                " to try to detect the input field in an automated way"
             ),
             (
                 'login_button_css_selector',
                 self.login_button_css_selector,
                 STRING,
                 "(Optional) Exact CSS selector which will be used to retrieve "
-                "the login button field. If provided then w3af won't try "
-                "to detect button automatically."
+                "the login button field. When provided the scanner is not going "
+                "to try to detect the login button in an automated way"
             ),
         ]
         for option in autocomplete_js_options:
@@ -360,7 +360,11 @@ class autocomplete_js(autocomplete):
         
         The plugin loads the `login_form_url` to obtain the login form, automatically
         identifies the inputs where the `username` and `password` should be entered,
-        and then submits the form by clicking on the login button.
+        and then submits the form by clicking on the login button. You can specify
+        the exact CSS selectors (like ".login > input #password") in
+        `username_filed_css_selector` and `login_button_css_selector` to force
+        plugin to use those selectors in case when it can't find username field
+        or login button automatically.
 
         The following configurable parameters exist:
             - username
@@ -368,4 +372,6 @@ class autocomplete_js(autocomplete):
             - login_form_url
             - check_url
             - check_string
+            - username_field_css_selector
+            - login_button_css_selector
         """
