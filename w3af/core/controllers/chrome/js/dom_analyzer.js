@@ -900,15 +900,9 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         if (!result.length) {
             result = document.querySelectorAll("button[type='submit']", parentElement);
         }
-        // Maybe it's just normal button with innerText: 'Login'...
+        // Maybe it's just normal button without type="submit"...
         if (!result.length) {
-            result = [];
-            let buttons = document.querySelectorAll('button', parentElement);
-            for (let button of buttons) {
-                if (button.innerText.toLocaleLowerCase().includes('log')) {
-                    result.push(button);
-                }
-            }
+            result = document.querySelectorAll('button', parentElement);
         }
         return result;
     },
