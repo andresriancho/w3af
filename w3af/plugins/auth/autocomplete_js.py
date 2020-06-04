@@ -42,6 +42,7 @@ class autocomplete_js(autocomplete):
         # default values for autocomplete_js options
         self.username_field_css_selector = ''
         self.login_button_css_selector = ''
+        self.login_form_activator_css_selector = ''
 
         self._login_form = None
         self._http_traffic_queue = None
@@ -223,6 +224,7 @@ class autocomplete_js(autocomplete):
         css_selectors = {
             'username_input': self.username_field_css_selector,
             'login_button': self.login_button_css_selector,
+            'form_activator': self.login_form_activator_css_selector,
         }
 
         for form in form_finder.find_forms(css_selectors):
@@ -328,6 +330,13 @@ class autocomplete_js(autocomplete):
                 "the login button field. When provided the scanner is not going "
                 "to try to detect the login button in an automated way"
             ),
+            (
+                'login_form_activator_css_selector',
+                self.login_form_activator_css_selector,
+                STRING,
+                "(Optional) Exact CSS selector for the element which needs to be "
+                "clicked to show login form."
+            )
         ]
         for option in autocomplete_js_options:
             option_list.add(opt_factory(
@@ -346,6 +355,9 @@ class autocomplete_js(autocomplete):
         ).get_value()
         self.login_button_css_selector = options_list_copy.pop(
             'login_button_css_selector'
+        ).get_value()
+        self.login_form_activator_css_selector = options_list_copy.pop(
+            'login_form_activator_css_selector'
         ).get_value()
         super(autocomplete_js, self).set_options(options_list_copy)
 
@@ -366,6 +378,10 @@ class autocomplete_js(autocomplete):
         plugin to use those selectors in case when it can't find username field
         or login button automatically.
 
+        If the page requires to click on something to show the login form you
+        can set `login_form_activator_css_selector` and scanner will use it
+        find and click on element
+
         The following configurable parameters exist:
             - username
             - password
@@ -374,4 +390,5 @@ class autocomplete_js(autocomplete):
             - check_string
             - username_field_css_selector
             - login_button_css_selector
+            - login_form_activator_css_selector
         """

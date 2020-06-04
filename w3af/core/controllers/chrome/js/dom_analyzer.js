@@ -1049,6 +1049,11 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         return JSON.stringify(login_forms);
     },
 
+    clickOnSelector(exactSelector) {
+        let element = document.querySelector(exactSelector);
+        element.click();
+    },
+
     sliceAndSerialize: function (filtered_event_listeners, start, count) {
         return JSON.stringify(filtered_event_listeners.slice(start, start + count));
     },

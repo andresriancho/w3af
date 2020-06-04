@@ -53,6 +53,7 @@ class FormFinder(object):
             strategy = strategy_klass(self.chrome, self.debugging_id, css_selectors)
 
             try:
+                strategy.prepare()
                 for form in strategy.find_forms():
                     if form in identified_forms:
                         continue
