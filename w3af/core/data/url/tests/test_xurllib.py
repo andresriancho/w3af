@@ -182,6 +182,7 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn(test_data, http_response.body)
 
+    @pytest.mark.deprecated
     def test_unknown_domain(self):
         url = URL('http://longsitethatdoesnotexistfoo.com/')
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
@@ -190,6 +191,7 @@ class TestXUrllib(unittest.TestCase):
         url = URL('file://foo/bar.txt')
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
 
+    @pytest.mark.deprecated
     def test_url_port_closed(self):
         # TODO: Change 2312 by an always closed/non-http port
         url = URL('http://127.0.0.1:2312/')
@@ -212,6 +214,7 @@ class TestXUrllib(unittest.TestCase):
         else:
             self.assertTrue(False, 'Expected HTTPRequestException.')
 
+    @pytest.mark.deprecated
     def test_url_port_not_http_many(self):
         upper_daemon = UpperDaemon(EmptyTCPHandler)
         upper_daemon.start()
@@ -308,6 +311,7 @@ class TestXUrllib(unittest.TestCase):
         resp = self.uri_opener.GET(url)
         self.assertIn('<strong>Great!', resp.get_body())
 
+    @pytest.mark.deprecated
     def test_ssl_fail_when_requesting_http(self):
         http_daemon = UpperDaemon(Ok200Handler)
         http_daemon.start()
@@ -321,6 +325,7 @@ class TestXUrllib(unittest.TestCase):
 
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
 
+    @pytest.mark.deprecated
     def test_ssl_fail_when_requesting_moth_http(self):
         """
         https://github.com/andresriancho/w3af/issues/7989

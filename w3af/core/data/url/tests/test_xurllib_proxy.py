@@ -86,6 +86,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
         self.assertEqual(self._proxy.total_handled_requests, 1)
 
+    @pytest.mark.deprecated
     def test_offline_port_via_proxy(self):
         url = URL('http://127.0.0.1:8181/')
         http_response = self.uri_opener.GET(url, cache=False)
