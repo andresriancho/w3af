@@ -53,6 +53,7 @@ class TestXUrllibTimeout(unittest.TestCase):
     def tearDown(self):
         self.uri_opener.end()
 
+    @pytest.mark.deprecated
     def test_timeout(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
         upper_daemon.start()
@@ -82,6 +83,7 @@ class TestXUrllibTimeout(unittest.TestCase):
         self.uri_opener.settings.set_default_values()
         self.assertLess(end-start, 1.5)
 
+    @pytest.mark.deprecated
     def test_timeout_ssl(self):
         ssl_daemon = RawSSLDaemon(TimeoutTCPHandler)
         ssl_daemon.start()

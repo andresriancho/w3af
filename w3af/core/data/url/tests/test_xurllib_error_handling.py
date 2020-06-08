@@ -122,6 +122,7 @@ class TestXUrllibDelayOnError(unittest.TestCase):
             # The log was cleared, all values should be False
             self.assertTrue(all([not v for v in self.uri_opener._sleep_log.values()]))
 
+    @pytest.mark.deprecated
     def test_error_handling_disable_per_request(self):
         upper_daemon = UpperDaemon(TimeoutTCPHandler)
         upper_daemon.start()
@@ -144,6 +145,7 @@ class TestXUrllibDelayOnError(unittest.TestCase):
 
         self.uri_opener.settings.set_default_values()
 
+    @pytest.mark.deprecated
     def test_exception_is_raised_always_after_stop(self):
         return_empty_daemon = UpperDaemon(EmptyTCPHandler)
         return_empty_daemon.start()
