@@ -3,7 +3,6 @@ import subprocess
 import shlex
 import sys
 
-import pytest
 from nose.plugins.attrib import attr
 
 
