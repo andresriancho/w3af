@@ -23,6 +23,7 @@ import time
 import json
 
 import w3af.core.controllers.output_manager as om
+from w3af.core.controllers.chrome.devtools.exceptions import ChromeScriptRuntimeException
 
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.chrome.instrumented.instrumented_base import InstrumentedChromeBase
@@ -307,8 +308,8 @@ class InstrumentedChrome(InstrumentedChromeBase):
             'window._DOMAnalyzer.getLoginForms("{}", "{}")'
         )
         func = func.format(
-            exact_css_selectors.get('username_input', ''),
-            exact_css_selectors.get('login_button', ''),
+            exact_css_selectors.get('username_input', '').replace('"', '\\"'),
+            exact_css_selectors.get('login_button', '').replace('"', '\\"'),
         )
         result = self.js_runtime_evaluate(func)
 
@@ -335,8 +336,8 @@ class InstrumentedChrome(InstrumentedChromeBase):
             'window._DOMAnalyzer.getLoginFormsWithoutFormTags("{}", "{}")'
         )
         func = func.format(
-            exact_css_selectors.get('username_input', ''),
-            exact_css_selectors.get('login_button', ''),
+            exact_css_selectors.get('username_input', '').replace('"', '\\"'),
+            exact_css_selectors.get('login_button', '').replace('"', '\\"'),
         )
         result = self.js_runtime_evaluate(func)
 
@@ -607,19 +608,13 @@ class InstrumentedChrome(InstrumentedChromeBase):
                                                    timeout=timeout)
 
         # This is a rare case where the DOM is not present
-        if result is None:
-            return None
-
-        if 'result' not in result:
-            return None
-
-        if 'result' not in result['result']:
-            return None
-
-        if 'value' not in result['result']['result']:
-            return None
-
-        return result['result']['result']['value']
+        runtime_exception = result.get('result', {}).get('exceptionDetails')
+        if runtime_exception:
+            raise ChromeScriptRuntimeException(
+                runtime_exception,
+                function_called=expression
+            )
+        return result.get('result', {}).get('result', {}).get('value', None)
 
     def get_js_variable_value(self, variable_name):
         """

@@ -63,6 +63,6 @@ class FormFinder(object):
             except Exception as e:
                 msg = 'Form finder strategy %s raised exception: "%s" (did: %s)'
                 args = (strategy.get_name(),
-                        e,
+                        repr(e),
                         self.debugging_id)
                 om.out.debug(msg % args)

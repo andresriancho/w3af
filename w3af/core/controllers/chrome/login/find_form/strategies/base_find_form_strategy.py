@@ -20,8 +20,8 @@ class BaseFindFormStrategy:
         """
         form_activator_selector = self.exact_css_selectors.get('form_activator')
         if form_activator_selector:
-            func = 'window._DOMAnalyzer.clickOnSelector({})'.format(
-                form_activator_selector
+            func = 'window._DOMAnalyzer.clickOnSelector("{}")'.format(
+                form_activator_selector.replace('"', '\\"')
             )
             result = self.chrome.js_runtime_evaluate(func)
             if result is None:

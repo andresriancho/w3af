@@ -27,3 +27,11 @@ class ChromeInterfaceException(Exception):
 
 class ChromeInterfaceTimeout(Exception):
     pass
+
+
+class ChromeScriptRuntimeException(Exception):
+    def __init__(self, message, function_called=None, *args):
+        if function_called:
+            message = "function: {}, exception: {}".format(function_called, message)
+        super(ChromeScriptRuntimeException, self).__init__(message, *args)
+    pass

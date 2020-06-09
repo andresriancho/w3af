@@ -1052,6 +1052,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     clickOnSelector(exactSelector) {
         let element = document.querySelector(exactSelector);
         element.click();
+        return 'success'
     },
 
     sliceAndSerialize: function (filtered_event_listeners, start, count) {
