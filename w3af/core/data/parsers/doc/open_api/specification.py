@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import json
-import yaml
 import logging
 
 from yaml import load
@@ -232,7 +231,8 @@ class SpecificationHandler(object):
         :return: The dict with the open api data
         """
         try:
-            spec_dict = json.loads(self.http_response.body)
+            decoded_response = self.http_response.body.decode('ascii', 'ignore')
+            spec_dict = json.loads(decoded_response)
         except ValueError:
             # Seems like the OpenAPI was specified using Yaml instead of
             # JSON. Let's parse the Yaml data!
