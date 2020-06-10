@@ -425,9 +425,9 @@ class InstrumentedChrome(InstrumentedChromeBase):
         if result is None:
             return None
 
-        node_ids = result.get('result', {}).get('nodeIds', None)
+        node_ids = result.get('result', {}).get('nodeIds')
 
-        if node_ids is None:
+        if not node_ids:
             msg = ('The call to chrome.focus() failed.'
                    ' CSS selector "%s" returned no nodes (did: %s)')
             args = (selector, self.debugging_id)
