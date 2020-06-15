@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
 from mock import patch
@@ -27,6 +28,7 @@ from w3af.core.controllers.w3afCore import w3afCore
 
 
 class TestTookHelper(unittest.TestCase):
+    @pytest.mark.deprecated
     def test_took_simple(self):
         w3af_core = w3afCore()
 
@@ -46,6 +48,7 @@ class TestTookHelper(unittest.TestCase):
                                      'plugin_name.method_name\(test="yes",did="ML7aEYsa"\)'
                                      ' took .*? seconds to run \(.*? seconds / .*?% consuming CPU cycles\)')
 
+    @pytest.mark.deprecated
     def test_took_with_rtt(self):
         debugging_id = 'ML7aEYsa'
 

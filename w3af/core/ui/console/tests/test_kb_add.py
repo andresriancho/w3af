@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.core.ui.console.console_ui import ConsoleUI
@@ -29,6 +30,7 @@ class TestKBAdd(ConsoleTestHelper):
     """
     Basic test for the console UI.
     """
+    @pytest.mark.deprecated
     def test_kb_add(self):
         commands_to_run = ['kb',
                                 'add dav',
@@ -50,6 +52,7 @@ class TestKBAdd(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
     
+    @pytest.mark.deprecated
     def test_kb_add_with_errors(self):
         commands_to_run = ['kb',
                                 'add',
@@ -70,6 +73,7 @@ class TestKBAdd(ConsoleTestHelper):
         assert_result, msg = self.startswith_expected_in_output(expected)
         self.assertTrue(assert_result, msg)
 
+    @pytest.mark.deprecated
     def test_kb_add_back_without_config(self):
         commands_to_run = ['kb',
                                 'add',

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -59,6 +60,7 @@ class TestHTMLCommentsIntegration(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_found_vuln(self):
         cfg = self._run_configs['cfg1']
         self._scan(cfg['target'], cfg['plugins'])
@@ -87,6 +89,7 @@ class TestHTMLCommentsUnit(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_html_comment(self):
         body = '<!-- secret password123 -->'
         url = URL('http://www.w3af.com/')
@@ -99,6 +102,7 @@ class TestHTMLCommentsUnit(unittest.TestCase):
         info_sets = kb.kb.get('html_comments', 'interesting_comments')
         self.assertEquals(len(info_sets), 1)
 
+    @pytest.mark.deprecated
     def test_html_comment_profiling(self):
         body = '<!-- secret password123 -->'
         url = URL('http://www.w3af.com/')

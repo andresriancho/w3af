@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import time
 import random
 import unittest
@@ -52,6 +53,7 @@ class TestGetAverageRTT(unittest.TestCase):
         return 200, headers, body
 
     @httpretty.activate
+    @pytest.mark.deprecated
     def test_get_average_rtt_for_mutant_all_equal(self):
         httpretty.register_uri(httpretty.GET,
                                self.MOCK_URL,
@@ -105,6 +107,7 @@ class TestGetAverageRTT(unittest.TestCase):
         self.assertGreater(0.90, average_rtt)
 
     @httpretty.activate
+    @pytest.mark.deprecated
     def test_get_average_rtt_for_mutant_with_threads(self):
         httpretty.register_uri(httpretty.GET,
                                self.MOCK_URL,

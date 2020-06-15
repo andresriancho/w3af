@@ -1,4 +1,6 @@
 """
+@pytest.mark.deprecated
+@pytest.mark.deprecated
 test_w3af_agent.py
 
 Copyright 2012 Andres Riancho
@@ -18,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.misc.get_local_ip import get_local_ip
@@ -31,6 +34,7 @@ class test_w3af_agent(PayloadTestHelperExec):
 
     @onlyroot
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_w3af_agent(self):
         result = exec_payload(self.shell, 'w3af_agent', args=(get_local_ip(),),
                               use_api=True)

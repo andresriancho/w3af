@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from mock import patch
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
@@ -70,6 +71,7 @@ class TestFileUpload(PluginTest):
         },
     }
 
+    @pytest.mark.deprecated
     def test_reported_file_uploads(self):
         cfg = self._run_configs['basic']
         self._scan(cfg['target'], cfg['plugins'])
@@ -82,6 +84,7 @@ class TestFileUpload(PluginTest):
         self.assertEquals(str(v.get_url().get_domain_path()),
                           self.file_upload_url)
 
+    @pytest.mark.deprecated
     def test_reported_file_uploads_issue_534(self):
         # https://github.com/andresriancho/w3af/issues/534
         cfg = self._run_configs['crawling']
@@ -148,6 +151,7 @@ class TestParseOutputFromUpload(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_parse_response(self):
         cfg = self._run_configs['cfg']
 
@@ -200,6 +204,7 @@ class TestRegexOutputFromUpload(TestParseOutputFromUpload):
                            method='GET', status=200),
     ]
 
+    @pytest.mark.deprecated
     def test_parse_response(self):
         with patch(self.FILENAME_RAND_ALPHA) as rand_alpha_mock:
             rand_alpha_mock.return_value = 'mockname'

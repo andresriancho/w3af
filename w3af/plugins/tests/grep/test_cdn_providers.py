@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from w3af.core.data.dc.headers import Headers
@@ -37,6 +38,7 @@ class TestCDNProviders(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_if_cdn_can_be_detected(self):
         url = URL('https://example.com/')
         headers = Headers([('server', 'Netlify')])
@@ -45,6 +47,7 @@ class TestCDNProviders(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.get('cdn_providers', 'cdn_providers')), 1)
 
+    @pytest.mark.deprecated
     def test_if_wrong_cdn_info_is_not_detected(self):
         url = URL('https://example.com/')
         headers = Headers([('server', 'Netlifo')])  # There's no Netlifo provider,
@@ -54,6 +57,7 @@ class TestCDNProviders(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.get('cdn_providers', 'cdn_providers')), 0)
 
+    @pytest.mark.deprecated
     def test_if_cdns_are_grouped_by_provider_name(self):
         netlify_header = Headers([('server', 'Netlify')])
         cloudflare_header = Headers([('server', 'cloudflare')])
@@ -77,6 +81,7 @@ class TestCDNProviders(unittest.TestCase):
 
         self.assertEqual(len(kb.get('cdn_providers', 'cdn_providers')), 2)
 
+    @pytest.mark.deprecated
     def test_if_cdn_provider_can_be_detected_by_url(self):
         url = URL('https://cdn.jsdelivr.net/npm/bootstrap@3.3.7/dist/css/bootstrap.min.css')
         empty_header = Headers()

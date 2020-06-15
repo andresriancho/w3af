@@ -1,4 +1,6 @@
 """
+@pytest.mark.deprecated
+@pytest.mark.deprecated
 test_list_processes.py
 
 Copyright 2012 Andres Riancho
@@ -18,6 +20,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.plugins.attack.payloads.payloads.tests.payload_test_helper import PayloadTestHelper
@@ -30,6 +33,7 @@ class test_list_processes(PayloadTestHelper):
 
     EXPECTED_RESULT = set(['/sbin/getty -8 38400 tty4', 'cron'])
 
+    @pytest.mark.deprecated
     def test_list_processes(self):
         result = exec_payload(
             self.shell, 'list_processes', args=(2000,), use_api=True)

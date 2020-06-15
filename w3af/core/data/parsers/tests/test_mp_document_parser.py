@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import os
 import time
 import random
@@ -49,6 +50,7 @@ class TestMPDocumentParser(unittest.TestCase):
     def tearDown(self):
         self.mpdoc.stop_workers()
 
+    @pytest.mark.deprecated
     def test_basic(self):
         resp = HTTPResponse(200, '<a href="/abc">hello</a>',
                             self.headers, self.url, self.url)
@@ -58,6 +60,7 @@ class TestMPDocumentParser(unittest.TestCase):
         parsed_refs, _ = parser.get_references()
         self.assertEqual([URL('http://w3af.com/abc')], parsed_refs)
 
+    @pytest.mark.deprecated
     def test_no_parser_for_images(self):
         body = ''
         url = URL('http://w3af.com/foo.jpg')
@@ -71,6 +74,7 @@ class TestMPDocumentParser(unittest.TestCase):
         else:
             self.assertTrue(False, 'Expected exception!')
 
+    @pytest.mark.deprecated
     def test_parser_timeout(self):
         """
         Test to verify fix for https://github.com/andresriancho/w3af/issues/6723
@@ -114,6 +118,7 @@ class TestMPDocumentParser(unittest.TestCase):
             doc_parser = self.mpdoc.get_document_parser_for(http_resp)
             self.assertIsInstance(doc_parser._parser, HTMLParser)
 
+    @pytest.mark.slow
     def test_many_parsers_timing_out(self):
         """
         Received more reports of parsers timing out, and after that
@@ -251,6 +256,7 @@ class TestMPDocumentParser(unittest.TestCase):
                 parser = self.mpdoc.get_document_parser_for(http_resp)
                 self.assertIsInstance(parser._parser, HTMLParser)
 
+    @pytest.mark.deprecated
     def test_parser_memory_usage_exceeded(self):
         """
         This makes sure that we stop parsing a document that exceeds our memory
@@ -340,6 +346,7 @@ class TestMPDocumentParser(unittest.TestCase):
             self.assertTrue(False, 'daemonic processes are not allowed'
                                    ' to have children')
 
+    @pytest.mark.deprecated
     def test_dictproxy_pickle_8748(self):
         """
         MaybeEncodingError - PicklingError: Can't pickle dictproxy #8748
@@ -354,6 +361,7 @@ class TestMPDocumentParser(unittest.TestCase):
         parser = self.mpdoc.get_document_parser_for(resp)
         self.assertIsInstance(parser._parser, HTMLParser)
 
+    @pytest.mark.deprecated
     def test_get_tags_by_filter(self):
         body = '<html><a href="/abc">foo</a><b>bar</b></html>'
         url = URL('http://www.w3af.com/')
@@ -366,6 +374,7 @@ class TestMPDocumentParser(unittest.TestCase):
         self.assertEqual([Tag('a', {'href': '/abc'}, 'foo'),
                           Tag('b', {}, 'bar')], tags)
 
+    @pytest.mark.deprecated
     def test_get_tags_by_filter_empty_tag(self):
         body = '<html><script src="foo.js"></script></html>'
         url = URL('http://www.w3af.com/')

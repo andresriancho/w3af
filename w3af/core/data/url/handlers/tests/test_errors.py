@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import urllib2
 
@@ -38,6 +39,7 @@ class TestErrorHandler(unittest.TestCase):
         consecutive_number_generator.reset()
     
     @attr('moth')
+    @pytest.mark.deprecated
     def test_error_handler_id(self):
         """
         Verify that the error handler works as expected, in other words, do NOT

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 
 from nose.plugins.attrib import attr
@@ -43,6 +44,7 @@ class TestSSLCertificate(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_ssl_certificate_local(self):
         # Start the HTTPS server
         certfile = os.path.join(ROOT_PATH, 'plugins', 'tests', 'audit',
@@ -71,6 +73,7 @@ class TestSSLCertificate(PluginTest):
         self.assertEquals(self.local_target_url % port, str(vuln.get_url()))
 
     @attr('internet')
+    @pytest.mark.deprecated
     def test_ssl_certificate_yandex(self):
         cfg = self._run_configs['cfg']
         self._scan(self.remote_url, cfg['plugins'])
@@ -90,6 +93,7 @@ class TestSSLCertificate(PluginTest):
             self.assertIn(estring, info.get_desc())
 
     @attr('internet')
+    @pytest.mark.deprecated
     def test_ssl_certificate_api_mercadopago_com(self):
         api_url = 'https://api.mercadopago.com/'
 

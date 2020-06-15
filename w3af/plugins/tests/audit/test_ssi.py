@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import re
 import urllib
 from jinja2 import Template
@@ -55,6 +56,7 @@ class TestSSI(PluginTest):
     MOCK_RESPONSES = [SSIMockResponse(re.compile('.*'), body=None,
                                       method='GET', status=200)]
 
+    @pytest.mark.deprecated
     def test_found_ssi(self):
         self._scan(self.target_url, test_config)
         vulns = self.kb.get('ssi', 'ssi')
@@ -84,6 +86,7 @@ class TestJinja2SSI(PluginTest):
     MOCK_RESPONSES = [SSIMockResponse(re.compile('.*'), body=None,
                                       method='GET', status=200)]
 
+    @pytest.mark.deprecated
     def test_found_ssi(self):
         self._scan(self.target_url, test_config)
         vulns = self.kb.get('ssi', 'ssi')

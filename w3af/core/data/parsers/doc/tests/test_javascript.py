@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import os
 
@@ -46,6 +47,8 @@ class TestJavaScriptParser(unittest.TestCase):
         parser.parse()
         return parser
 
+    @pytest.mark.deprecated
+    @pytest.mark.slow
     def test_false_positives(self):
         for filename in ('jquery.js', 'angular.js', 'test_1.js', 'test_2.js',
                          'test_3.js'):

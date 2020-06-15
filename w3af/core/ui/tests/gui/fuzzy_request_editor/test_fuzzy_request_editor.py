@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 
 from w3af.core.data.parsers.doc.http_request_parser import http_request_parser
@@ -57,6 +58,7 @@ class TestFuzzyRequestEditor(XpresserUnittest):
         self.click('close-with-cross')
         XpresserUnittest.tearDown(self)
     
+    @pytest.mark.deprecated
     def test_offline_url(self):
         self.double_click('localhost')
         self.type('moth:8081', False)
@@ -68,6 +70,7 @@ class TestFuzzyRequestEditor(XpresserUnittest):
         self.type(['<Enter>',], False)
 
     
+    @pytest.mark.deprecated
     def test_invalid_request(self):
         self.double_click('localhost')
         self.type('moth:8081', False)
@@ -94,6 +97,7 @@ class TestFuzzyRequestEditor(XpresserUnittest):
         self.type(['<Enter>',], False)
 
     
+    @pytest.mark.deprecated
     def test_GET_request(self):
         self.http_daemon = HTTPDaemon()
         self.http_daemon.start()
@@ -133,6 +137,7 @@ class TestFuzzyRequestEditor(XpresserUnittest):
             
         self.http_daemon.shutdown()
     
+    @pytest.mark.deprecated
     def test_POST_request(self):
         self.http_daemon = HTTPDaemon()
         self.http_daemon.start()

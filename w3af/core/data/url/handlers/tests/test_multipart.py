@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import os
 import tempfile
 import unittest
@@ -58,6 +59,7 @@ class TestMultipartPostUpload(unittest.TestCase):
     def tearDown(self):
         self.opener.end()
 
+    @pytest.mark.deprecated
     def test_multipart_without_file(self):
         form_params = FormParameters()
         form_params.add_field_by_attr_items([('name', 'uploadedfile')])
@@ -73,6 +75,7 @@ class TestMultipartPostUpload(unittest.TestCase):
 
         self.assertNotIn('was successfully uploaded', resp.get_body())
 
+    @pytest.mark.deprecated
     def test_file_upload(self):
         temp = tempfile.mkstemp(suffix=".tmp")
         os.write(temp[0], 'file content')
@@ -80,6 +83,7 @@ class TestMultipartPostUpload(unittest.TestCase):
         _file = open(temp[1], "rb")
         self.upload_file(_file)
 
+    @pytest.mark.deprecated
     def test_stringio_upload(self):
         _file = NamedStringIO('file content', name='test.txt')
         self.upload_file(_file)
@@ -99,6 +103,7 @@ class TestMultipartPostUpload(unittest.TestCase):
 
         self.assertIn('was successfully uploaded', resp.get_body())
 
+    @pytest.mark.deprecated
     def test_upload_file_using_fuzzable_request(self):
         form_params = FormParameters()
         form_params.add_field_by_attr_items([('name', 'uploadedfile')])

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 
 import w3af.core.data.constants.severity as severity
@@ -53,6 +54,7 @@ class TestFindDVCS(PluginTest):
         # 'cvs'
     )
 
+    @pytest.mark.deprecated
     def test_dvcs(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -76,12 +78,14 @@ class TestFindDVCS(PluginTest):
             self.assertEqual(vuln_repo.get_name(), 'Source code repository')
             self.assertIn(repo, vuln_repo.get_desc().lower())
 
+    @pytest.mark.deprecated
     def test_ignore_file_blank(self):
         fdvcs = find_dvcs()
         files = fdvcs.ignore_file('')
 
         self.assertEqual(files, set())
 
+    @pytest.mark.deprecated
     def test_ignore_file_two_files_comment(self):
         fdvcs = find_dvcs()
         content = """# Ignore these files
@@ -116,6 +120,8 @@ class TestSVN(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
+    @pytest.mark.slow
     def test_wc_db(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -42,6 +43,7 @@ class test_wsdl_greper(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_wsdl_greper_empty(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
@@ -49,6 +51,7 @@ class test_wsdl_greper(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('wsdl_greper', 'wsdl')), 0)
 
+    @pytest.mark.deprecated
     def test_wsdl_greper_long(self):
         body = 'ABC ' * 10000
         headers = Headers([('content-type', 'text/html')])
@@ -56,6 +59,7 @@ class test_wsdl_greper(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('wsdl_greper', 'wsdl')), 0)
 
+    @pytest.mark.deprecated
     def test_wsdl_greper_positive(self):
         body = 'ABC ' * 100
         body += '/s:sequence'
@@ -65,6 +69,7 @@ class test_wsdl_greper(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('wsdl_greper', 'wsdl')), 1)
 
+    @pytest.mark.deprecated
     def test_wsdl_greper_positive_disco(self):
         body = 'ABC ' * 100
         body += 'disco:discovery '

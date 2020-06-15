@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import resource
 import time
@@ -44,6 +45,7 @@ class TestHTMLParserPerformance(unittest.TestCase):
                              'samples', 'django-500.html')
 
     @attr('ci_ignore')
+    @pytest.mark.slow
     def test_parse_html_performance(self):
         headers = Headers()
         headers['content-type'] = 'text/html'

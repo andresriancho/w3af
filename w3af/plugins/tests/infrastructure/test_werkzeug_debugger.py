@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import re
 
 from nose.plugins.skip import SkipTest
@@ -76,6 +77,7 @@ class TestWerkzeugDebuggerEnabled(PluginTest):
     MOCK_RESPONSES = [CustomMockResponse(re.compile('.*'), body=None,
                                          method='GET', status=200)]
 
+    @pytest.mark.deprecated
     def test_vulnerable_werkzeug(self):
         cfg = self._run_configs['cfg']
 
@@ -103,6 +105,7 @@ class TestWerkzeugDebuggerDisabled(PluginTest):
     MOCK_RESPONSES = [MockResponse(re.compile('.*'), body='Regular response',
                                    method='GET', status=200)]
 
+    @pytest.mark.deprecated
     def test_vulnerable_werkzeug(self):
         cfg = self._run_configs['cfg']
 
@@ -136,6 +139,7 @@ class TestWerkzeugDebuggerRealDebugger(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_vulnerable_werkzeug(self):
         raise SkipTest('Only run during dev phase!')
 

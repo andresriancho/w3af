@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import csv
 
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -34,6 +35,7 @@ class TestPhishtank(PluginTest):
     safe_url = get_moth_http()
     phish_detail = 'http://www.phishtank.com/phish_detail.php?phish_id='
 
+    @pytest.mark.deprecated
     def test_phishtank_no_match(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
@@ -59,10 +61,12 @@ class TestPhishtank(PluginTest):
 
         return phishing_url
 
+    @pytest.mark.deprecated
     def test_total_urls(self):
         total_lines = len(file(phishtank.PHISHTANK_DB).read().split('\n'))
         self.assertGreater(total_lines, 5000)
 
+    @pytest.mark.deprecated
     def test_phishtank_match_url(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
@@ -79,6 +83,7 @@ class TestPhishtank(PluginTest):
         self.assertEqual(vuln.get_severity(), MEDIUM)
         self.assertEqual(vuln.get_url().get_domain(), vuln_url.get_domain())
 
+    @pytest.mark.deprecated
     def test_phishtank_match_last_url(self):
         phishtank_inst = self.w3afcore.plugins.get_plugin_inst('crawl',
                                                                'phishtank')
@@ -95,6 +100,7 @@ class TestPhishtank(PluginTest):
         self.assertEqual(vuln.get_severity(), MEDIUM)
         self.assertEqual(vuln.get_url().get_domain(), vuln_url.get_domain())
 
+    @pytest.mark.deprecated
     def test_too_old_db(self):
         is_older = days_since_file_update(phishtank.PHISHTANK_DB, 30)
 

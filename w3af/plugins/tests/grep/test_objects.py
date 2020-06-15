@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -29,6 +30,7 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.dc.headers import Headers
 
 
+@pytest.mark.deprecated
 class test_objects(unittest.TestCase):
 
     def setUp(self):
@@ -56,6 +58,7 @@ class test_objects(unittest.TestCase):
         i = kb.kb.get('objects', 'object')[0]
         self.assertTrue('"object"' in i.get_desc())
 
+    @pytest.mark.deprecated
     def test_applet(self):
         body = """header
         <APPLET code="XYZApp.class" codebase="html/" align="baseline"
@@ -74,6 +77,7 @@ class test_objects(unittest.TestCase):
         i = kb.kb.get('objects', 'applet')[0]
         self.assertTrue('"applet"' in i.get_desc())
 
+    @pytest.mark.deprecated
     def test_none(self):
         body = '<an object="1"> <or applet=2> <apple>'
         url = URL('http://www.w3af.com/')

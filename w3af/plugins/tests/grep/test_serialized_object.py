@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import base64
 
@@ -55,6 +56,7 @@ class TestSerializedObject(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_php_serialized_objects_query_string(self):
 
         for i, obj in enumerate(SERIALIZED_PHP_OBJECTS):
@@ -70,6 +72,7 @@ class TestSerializedObject(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('serialized_object',
                                         'serialized_object')), 2)
 
+    @pytest.mark.deprecated
     def test_php_serialized_objects_query_string_b64(self):
         url = self.url.copy()
 
@@ -84,6 +87,7 @@ class TestSerializedObject(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('serialized_object',
                                         'serialized_object')), 1)
 
+    @pytest.mark.deprecated
     def test_php_serialized_objects_headers(self):
         headers = Headers([('X-API-Key', SERIALIZED_PHP_OBJECTS[0])])
         request = FuzzableRequest(self.url, headers=headers)
@@ -93,6 +97,7 @@ class TestSerializedObject(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('serialized_object',
                                         'serialized_object')), 1)
 
+    @pytest.mark.deprecated
     def test_php_serialized_objects_cookies(self):
         cookie_value = 'state=%s' % base64.b64encode(SERIALIZED_PHP_OBJECTS[0])
         headers = Headers([('Cookie', cookie_value)])
@@ -103,6 +108,7 @@ class TestSerializedObject(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('serialized_object',
                                         'serialized_object')), 1)
 
+    @pytest.mark.deprecated
     def test_php_serialized_objects_post_data(self):
         post_data = 'obj=%s' % base64.b64encode(SERIALIZED_PHP_OBJECTS[1])
         headers = Headers([('Content-Type', 'application/x-www-form-urlencoded')])
@@ -115,6 +121,7 @@ class TestSerializedObject(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('serialized_object',
                                         'serialized_object')), 1)
 
+    @pytest.mark.deprecated
     def test_not_php_serialized_objects(self):
         # Note that I'm sending the serialized object in reverse string order
         post_data = 'obj=%s' % base64.b64encode(SERIALIZED_PHP_OBJECTS[1][::-1])
@@ -128,6 +135,7 @@ class TestSerializedObject(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('serialized_object',
                                         'serialized_object')), 0)
 
+    @pytest.mark.deprecated
     def test_mutated_request(self):
         # Note that I'm sending the serialized object in reverse string order
         post_data = 'test=1&obj=%s' % base64.b64encode(SERIALIZED_PHP_OBJECTS[1])
@@ -176,6 +184,7 @@ class TestSerializedObjectIntegration(PluginTest):
                                    body='Ok',
                                    method='GET', status=200)]
 
+    @pytest.mark.slow
     def test_vuln_found(self):
         self._scan(self.target_url, RUN_CONFIGS['cfg']['plugins'])
 

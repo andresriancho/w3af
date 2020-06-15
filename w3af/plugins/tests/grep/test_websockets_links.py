@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -37,6 +38,7 @@ class TestWebsocketsLinks(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_sl_1(self, *args):
         """
         Static link 1, ws link in the second tag
@@ -54,6 +56,7 @@ class TestWebsocketsLinks(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('websockets_links',
                                        'websockets_links')), 1)
 
+    @pytest.mark.deprecated
     def test_sl_2(self, *args):
         """
         Static link 2, report two different InfoSets, one for each URL
@@ -72,6 +75,7 @@ class TestWebsocketsLinks(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('websockets_links',
                                        'websockets_links')), 2)
 
+    @pytest.mark.deprecated
     def test_sl_3(self, *args):
         """
         Static link 3, text/javascript
@@ -87,6 +91,7 @@ class TestWebsocketsLinks(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('websockets_links',
                                        'websockets_links')), 1)
 
+    @pytest.mark.deprecated
     def test_dl_1(self, *args):
         """
         ws link is dynamically created
@@ -106,6 +111,7 @@ class TestWebsocketsLinks(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('websockets_links',
                                        'websockets_links')), 0)
 
+    @pytest.mark.deprecated
     def test_fl_1(self, *args):
         """
         False links, must not be detected
@@ -123,6 +129,7 @@ class TestWebsocketsLinks(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('websockets_links',
                                        'websockets_links')), 0)
 
+    @pytest.mark.deprecated
     def test_no_link(self, *args):
         """
         No websockets link
@@ -136,6 +143,7 @@ class TestWebsocketsLinks(unittest.TestCase):
         self.assertEqual(len(kb.kb.get('websockets_links',
                                        'websockets_links')), 0)
 
+    @pytest.mark.deprecated
     def test_static_link_group_by_ws_url(self, *args):
         """
         Find the WS url, create an InfoSet and if others are found then add

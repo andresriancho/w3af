@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import copy
 import uuid
 import unittest
@@ -57,27 +58,33 @@ class TestKnowledgeBase(unittest.TestCase):
     def setUp(self):
         kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_basic(self):
         kb.raw_write('a', 'b', 'c')
         data = kb.raw_read('a', 'b')
         self.assertEqual(data, 'c')
 
+    @pytest.mark.deprecated
     def test_default_get(self):
         self.assertEqual(kb.get('a', 'b'), [])
     
+    @pytest.mark.deprecated
     def test_default_raw_read(self):
         self.assertEqual(kb.raw_read('a', 'b'), [])
 
+    @pytest.mark.deprecated
     def test_raw_read_error(self):
         kb.append('a', 'b', MockInfo())
         kb.append('a', 'b', MockInfo())
         self.assertRaises(RuntimeError, kb.raw_read,'a', 'b')
 
+    @pytest.mark.deprecated
     def test_default_first_saved(self):
         kb.raw_write('a', 'b', 'c')
         self.assertEqual(kb.get('a', 'not-exist'), [])
         self.assertEqual(kb.raw_read('a', 'not-exist'), [])
 
+    @pytest.mark.deprecated
     def test_return_all_for_plugin(self):
         i1 = MockInfo()
         i2 = MockInfo()
@@ -89,6 +96,7 @@ class TestKnowledgeBase(unittest.TestCase):
         
         self.assertEqual(kb.get('a', 'b'), [i1, i2, i3])
 
+    @pytest.mark.deprecated
     def test_append(self):
         i1 = MockInfo()
         i2 = MockInfo()
@@ -102,6 +110,7 @@ class TestKnowledgeBase(unittest.TestCase):
         
         self.assertEqual(kb.get('a', 'b'), [i1, i1, i1, i2, i3])
 
+    @pytest.mark.deprecated
     def test_append_uniq_var_default(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
@@ -117,6 +126,7 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i2)
         self.assertEqual(kb.get('a', 'b'), [i1, ])
 
+    @pytest.mark.deprecated
     def test_append_uniq_var_specific(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
@@ -132,6 +142,7 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i2, filter_by='VAR')
         self.assertEqual(kb.get('a', 'b'), [i1, ])
 
+    @pytest.mark.deprecated
     def test_append_uniq_var_bug_10Dec2012(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
@@ -147,6 +158,7 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i2)
         self.assertEqual(kb.get('a', 'b'), [i1, ])
         
+    @pytest.mark.deprecated
     def test_append_uniq_var_not_uniq_diff_url(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
@@ -162,6 +174,7 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i2)
         self.assertEqual(kb.get('a', 'b'), [i1, i2])
 
+    @pytest.mark.deprecated
     def test_append_uniq_var_not_uniq_diff_token_name(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1&foo=bar'))
@@ -179,6 +192,7 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i2)
         self.assertEqual(kb.get('a', 'b'), [i1, i2])
 
+    @pytest.mark.deprecated
     def test_append_uniq_var_not_uniq_diff_token_name_three(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1&foo=bar'))
@@ -204,6 +218,7 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i3)
         self.assertEqual(kb.get('a', 'b'), [i1, i2])
 
+    @pytest.mark.deprecated
     def test_append_uniq_var_diff_params(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
@@ -219,6 +234,7 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i2)
         self.assertEqual(kb.get('a', 'b'), [i1])
 
+    @pytest.mark.deprecated
     def test_append_uniq_url_uniq(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
@@ -234,6 +250,7 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i2, filter_by='URL')
         self.assertEqual(kb.get('a', 'b'), [i1])
 
+    @pytest.mark.deprecated
     def test_append_uniq_url_different(self):
         i1 = MockInfo()
         i1.set_uri(URL('http://moth/abc.html?id=1'))
@@ -249,6 +266,7 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.append_uniq('a', 'b', i2, filter_by='URL')
         self.assertEqual(kb.get('a', 'b'), [i1, i2])
         
+    @pytest.mark.deprecated
     def test_append_save(self):
         i1 = MockInfo()
         
@@ -257,6 +275,7 @@ class TestKnowledgeBase(unittest.TestCase):
         
         self.assertEqual(kb.raw_read('a', 'b'), 3)
 
+    @pytest.mark.deprecated
     def test_save_append(self):
         """
         Although calling raw_write and then append is highly discouraged,
@@ -272,14 +291,17 @@ class TestKnowledgeBase(unittest.TestCase):
         
         self.assertEqual(kb.get('a', 'b'), [i1, i2])
 
+    @pytest.mark.deprecated
     def test_all_of_klass(self):
         kb.raw_write('a', 'b', 1)
         self.assertEqual(kb.get_all_entries_of_class(int), [1])
 
+    @pytest.mark.deprecated
     def test_all_of_klass_str(self):
         kb.raw_write('a', 'b', 'abc')
         self.assertEqual(kb.get_all_entries_of_class(str), ['abc'])
 
+    @pytest.mark.deprecated
     def test_get_all_uniq_ids_iter(self):
         i1 = MockInfo()
         kb.append('a', 'b', i1)
@@ -288,6 +310,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         self.assertEqual(uniq_ids, [i1.get_uniq_id()])
 
+    @pytest.mark.deprecated
     def test_get_all_uniq_ids_iter_include_ids(self):
         i1 = MockInfo()
         kb.append('a', 'b', i1)
@@ -296,6 +319,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         self.assertEqual(uniq_ids, [i1.get_uniq_id()])
 
+    @pytest.mark.deprecated
     def test_get_all_uniq_ids_iter_include_ids_false(self):
         i1 = MockInfo()
         kb.append('a', 'b', i1)
@@ -304,6 +328,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         self.assertEqual(uniq_ids, [])
 
+    @pytest.mark.deprecated
     def test_all_of_info_vuln(self):
         i1 = MockInfo()
         i2 = MockInfo()
@@ -323,6 +348,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(kb.get_all_infos(), [i1, iset])
         self.assertEqual(kb.get_all_findings(), [i1, iset, v1, vset])
 
+    @pytest.mark.deprecated
     def test_all_of_info_exclude_ids(self):
         i1 = MockInfo()
         i2 = MockInfo()
@@ -346,14 +372,17 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(all_findings_except_v1, [i1, iset, vset])
         self.assertEqual(all_findings_except_v1_v2, [i1, iset])
 
+    @pytest.mark.deprecated
     def test_dump_empty(self):
         empty = kb.dump()
         self.assertEqual(empty, {})
 
+    @pytest.mark.deprecated
     def test_dump(self):
         kb.raw_write('a', 'b', 1)
         self.assertEqual(kb.dump(), {'a': {'b': [1]}})
 
+    @pytest.mark.deprecated
     def test_clear(self):
         kb.raw_write('a', 'b', 'abc')
         kb.raw_write('a', 'c', 'abc')
@@ -361,15 +390,18 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(kb.raw_read('a', 'b'), [])
         self.assertEqual(kb.raw_read('a', 'c'), 'abc')
 
+    @pytest.mark.deprecated
     def test_overwrite(self):
         kb.raw_write('a', 'b', 'abc')
         kb.raw_write('a', 'b', 'def')
         self.assertEqual(kb.raw_read('a', 'b'), 'def')
 
+    @pytest.mark.deprecated
     def test_raw_write_dict(self):
         kb.raw_write('a', 'b', {})
         self.assertEqual(kb.raw_read('a', 'b'), {})
 
+    @pytest.mark.deprecated
     def test_drop_table(self):
         kb = DBKnowledgeBase()
         kb.setup()
@@ -383,6 +415,7 @@ class TestKnowledgeBase(unittest.TestCase):
         
         self.assertFalse(db.table_exists(table_name))
 
+    @pytest.mark.deprecated
     def test_observer_append(self):
         observer1 = Mock()
         info = MockInfo()
@@ -393,6 +426,7 @@ class TestKnowledgeBase(unittest.TestCase):
         observer1.append.assert_called_once_with('a', 'b', info,
                                                  ignore_type=False)
 
+    @pytest.mark.deprecated
     def test_observer_update(self):
         observer1 = Mock()
         info = MockInfo()
@@ -405,6 +439,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         observer1.update.assert_called_once_with(old_info, info)
 
+    @pytest.mark.deprecated
     def test_observer_add_url(self):
         observer1 = Mock()
         url = URL('http://www.w3af.org/')
@@ -414,6 +449,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         observer1.add_url.assert_called_once_with(url)
 
+    @pytest.mark.deprecated
     def test_observer_multiple_observers(self):
         observer1 = Mock()
         observer2 = Mock()
@@ -425,6 +461,7 @@ class TestKnowledgeBase(unittest.TestCase):
         observer1.append.assert_called_once_with('a', 'b', 1, ignore_type=True)
         observer2.append.assert_called_once_with('a', 'b', 1, ignore_type=True)
         
+    @pytest.mark.deprecated
     def test_pickleable_info(self):
         original_info = MockInfo()
         
@@ -433,6 +470,7 @@ class TestKnowledgeBase(unittest.TestCase):
         
         self.assertEqual(original_info, unpickled_info)
 
+    @pytest.mark.deprecated
     def test_pickleable_vuln(self):
         original_vuln = MockVuln()
         
@@ -441,6 +479,7 @@ class TestKnowledgeBase(unittest.TestCase):
         
         self.assertEqual(original_vuln, unpickled_vuln)
         
+    @pytest.mark.deprecated
     def test_pickleable_shells(self):
         pool = Pool(1)
         xurllib = ExtendedUrllib()
@@ -458,6 +497,7 @@ class TestKnowledgeBase(unittest.TestCase):
         pool.join()
         xurllib.end()
         
+    @pytest.mark.deprecated
     def test_pickleable_shells_get_all(self):
         class FakeCore(object):
             worker_pool = Pool(1)
@@ -477,6 +517,7 @@ class TestKnowledgeBase(unittest.TestCase):
         core.worker_pool.join()
         core.uri_opener.end()
     
+    @pytest.mark.deprecated
     def test_get_by_uniq_id(self):
         i1 = MockInfo()
         kb.append('a', 'b', i1)
@@ -484,9 +525,11 @@ class TestKnowledgeBase(unittest.TestCase):
         i1_copy = kb.get_by_uniq_id(i1.get_uniq_id())
         self.assertEqual(i1_copy, i1)
     
+    @pytest.mark.deprecated
     def test_get_by_uniq_id_not_exists(self):
         self.assertIs(kb.get_by_uniq_id(hash('foo')), None)
         
+    @pytest.mark.deprecated
     def test_get_by_uniq_id_duplicated_ignores_second(self):
         """
         TODO: Analyze this case, i1 and i2 have both the same ID because they
@@ -503,6 +546,7 @@ class TestKnowledgeBase(unittest.TestCase):
         i1_copy = kb.get_by_uniq_id(i1.get_uniq_id())
         self.assertEqual(i1_copy, i1)
     
+    @pytest.mark.deprecated
     def test_raw_write_list(self):
         """
         Test for _get_uniq_id which needs to be able to hash any object type.
@@ -510,9 +554,11 @@ class TestKnowledgeBase(unittest.TestCase):
         kb.raw_write('a', 'b', [1, 2, 3])
         self.assertEqual(kb.raw_read('a', 'b'), [1, 2, 3])
     
+    @pytest.mark.deprecated
     def test_kb_list_shells_empty(self):
         self.assertEqual(kb.get_all_shells(), [])
 
+    @pytest.mark.deprecated
     def test_kb_list_shells_sqlmap_2181(self):
         """
         Also very related with test_pickleable_shells
@@ -538,6 +584,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
+    @pytest.mark.deprecated
     def test_kb_list_shells_dav_2181(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/2181
@@ -560,6 +607,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
+    @pytest.mark.deprecated
     def test_kb_list_shells_eval_2181(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/2181
@@ -585,6 +633,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
+    @pytest.mark.deprecated
     def test_kb_list_shells_file_upload_2181(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/2181
@@ -607,6 +656,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
+    @pytest.mark.deprecated
     def test_kb_list_shells_file_read_2181(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/2181
@@ -632,6 +682,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
+    @pytest.mark.deprecated
     def test_kb_list_shells_os_commanding_2181(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/2181
@@ -657,6 +708,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
+    @pytest.mark.deprecated
     def test_kb_list_shells_rfi_2181(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/2181
@@ -683,6 +735,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
+    @pytest.mark.deprecated
     def test_kb_list_shells_rfi_port_scan_2181(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/2181
@@ -709,6 +762,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
+    @pytest.mark.deprecated
     def test_kb_list_shells_xpath_2181(self):
         """
         :see: https://github.com/andresriancho/w3af/issues/2181
@@ -742,6 +796,7 @@ class TestKnowledgeBase(unittest.TestCase):
 
         w3af_core.quit()
 
+    @pytest.mark.deprecated
     def test_update_info(self):
         info = MockInfo()
         kb.append('a', 'b', info)
@@ -753,6 +808,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertNotEqual(update_info, info)
         self.assertEqual(update_info, kb.get_by_uniq_id(update_uniq_id))
 
+    @pytest.mark.deprecated
     def test_update_vuln(self):
         vuln = MockVuln()
         kb.append('a', 'b', vuln)
@@ -764,6 +820,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertNotEqual(update_vuln, vuln)
         self.assertEqual(update_vuln, kb.get_by_uniq_id(update_uniq_id))
 
+    @pytest.mark.deprecated
     def test_update_exception(self):
         vuln = MockVuln()
         kb.append('a', 'b', vuln)
@@ -777,6 +834,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertNotEqual(original_id, modified_id)
         self.assertRaises(DBException, kb.update, vuln, update_vuln)
 
+    @pytest.mark.deprecated
     def test_get_one(self):
         vuln = MockVuln()
         kb.append('a', 'b', vuln)
@@ -787,16 +845,19 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(kb_vuln, vuln)
         #pylint: enable=E1103
 
+    @pytest.mark.deprecated
     def test_get_one_none_found(self):
         empty_list = kb.get_one('a', 'b')
         self.assertEqual(empty_list, [])
 
+    @pytest.mark.deprecated
     def test_get_one_more_than_one_found(self):
         vuln = MockVuln()
         kb.append('a', 'b', vuln)
         kb.append('a', 'b', vuln)
         self.assertRaises(RuntimeError, kb.get_one, 'a', 'b')
 
+    @pytest.mark.deprecated
     def test_append_uniq_group_empty_address(self):
         vuln = MockVuln()
         info_set, created = kb.append_uniq_group('a', 'b', vuln)
@@ -808,6 +869,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(info_set.get_id(), vuln.get_id())
         self.assertEqual(info_set.get_plugin_name(), vuln.get_plugin_name())
 
+    @pytest.mark.deprecated
     def test_append_uniq_group_match_filter_func(self):
         vuln = MockVuln()
         kb.append_uniq_group('a', 'b', vuln, group_klass=MockInfoSetTrue)
@@ -818,6 +880,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertIsInstance(info_set, InfoSet)
         self.assertEqual(len(info_set.infos), 2)
 
+    @pytest.mark.deprecated
     def test_multiple_append_uniq_group(self):
         def multi_append():
             for i in xrange(InfoSet.MAX_INFO_INSTANCES * 2):
@@ -845,6 +908,7 @@ class TestKnowledgeBase(unittest.TestCase):
         pool.terminate()
         pool.join()
 
+    @pytest.mark.deprecated
     def test_info_set_keep_uniq_id(self):
         #
         # Create a new InfoSet, load it from the KB, confirm that it has
@@ -877,6 +941,8 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertNotEqual(info_set_a.get_uniq_id(),
                             info_set_b.get_uniq_id())
 
+    @pytest.mark.deprecated
+    @pytest.mark.slow
     def test_info_set_keep_uniq_id_after_max_info_instances(self):
         #
         # Create one InfoSet, add MAX_INFO_INSTANCES, assert that the ID is not
@@ -897,6 +963,7 @@ class TestKnowledgeBase(unittest.TestCase):
             self.assertEqual(info_set_before.get_uniq_id(),
                              info_set_after.get_uniq_id())
 
+    @pytest.mark.deprecated
     def test_append_uniq_group_no_match_filter_func(self):
         vuln1 = MockVuln(name='Foos')
         vuln2 = MockVuln(name='Bars')
@@ -916,6 +983,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(raw_data[0].first_info.get_name(), 'Foos')
         self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')
 
+    @pytest.mark.deprecated
     def test_append_uniq_group_filter_func_specific(self):
         vuln1 = MockVuln(name='Foos')
         vuln2 = MockVuln(name='Bars')
@@ -934,6 +1002,7 @@ class TestKnowledgeBase(unittest.TestCase):
         self.assertEqual(raw_data[0].infos[1].get_id(), [42])
         self.assertEqual(raw_data[1].first_info.get_name(), 'Bars')
 
+    @pytest.mark.deprecated
     def test_append_uniq_group_filter_func_attribute_match(self):
         vuln1 = MockVuln(name='Foos', _id=47)
         vuln1['tag'] = 'foo'

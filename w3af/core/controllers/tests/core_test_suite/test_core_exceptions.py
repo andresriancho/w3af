@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
 from mock import patch, call
@@ -69,6 +70,7 @@ class TestCoreExceptions(unittest.TestCase):
     def tearDown(self):
         self.w3afcore.quit()
                         
+    @pytest.mark.deprecated
     def test_stop_on_must_stop_exception(self):
         """
         Verify that the ScanMustStopException stops the scan.
@@ -82,6 +84,7 @@ class TestCoreExceptions(unittest.TestCase):
                      ' resolved:\nTest exception.\n')
             self.assertIn(call.error(error), om_mock.mock_calls)
 
+    @pytest.mark.deprecated
     def test_stop_unknown_exception(self):
         """
         Verify that the ScanMustStopByUnknownReasonExc stops the scan.
@@ -89,6 +92,7 @@ class TestCoreExceptions(unittest.TestCase):
         self.exception_plugin.exception_to_raise = ScanMustStopByUnknownReasonExc
         self.assertRaises(ScanMustStopByUnknownReasonExc, self.w3afcore.start)
                 
+    @pytest.mark.deprecated
     def test_stop_by_user_request(self):
         """
         Verify that the ScanMustStopByUserRequest stops the scan.

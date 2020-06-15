@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.plugins.tests.helper import PluginConfig, ExecExploitTest
@@ -43,6 +44,7 @@ class TestRFI(ExecExploitTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_found_exploit_rfi(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'] + '?file=abc.txt', cfg['plugins'])
@@ -58,6 +60,7 @@ class TestRFI(ExecExploitTest):
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'rfi')
     
+    @pytest.mark.deprecated
     def test_from_template(self):
         rfit = RFITemplate()
         

@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from nose.plugins.attrib import attr
@@ -30,6 +31,7 @@ from w3af.core.controllers.w3afCore import w3afCore
 class TestMangleHandler(unittest.TestCase):
 
     @attr('moth')
+    @pytest.mark.deprecated
     def test_mangle_handler_raw_request_1326(self):
         """
         Reproduces [0] to make sure we don't make that mistake again.

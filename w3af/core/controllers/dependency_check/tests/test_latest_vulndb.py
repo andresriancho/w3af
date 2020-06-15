@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import pkg_resources
 
@@ -34,6 +35,7 @@ MESSAGE = ('There is a new vulndb available at pypi! These are the steps'
 
 
 class TestLatestVulnDB(unittest.TestCase):
+    @pytest.mark.deprecated
     def test_latest_vulndb(self):
         pkg = 'vulndb'
         found = None

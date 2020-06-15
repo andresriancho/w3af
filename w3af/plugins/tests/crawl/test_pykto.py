@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 import re
 import os
@@ -51,6 +52,7 @@ class TestPykto(PluginTest):
     }
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_basic_pykto(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -157,6 +159,7 @@ class TestIsVulnerableHelper(unittest.TestCase):
 
 
 class TestNiktoTestParser(PluginTest):
+    @pytest.mark.deprecated
     def test_updated_scan_db(self):
         pykto_inst = self.w3afcore.plugins.get_plugin_inst('crawl', 'pykto')
 
@@ -172,6 +175,7 @@ class TestNiktoTestParser(PluginTest):
               'cd -'
         self.assertFalse(is_older, msg)
     
+    @pytest.mark.deprecated
     def test_not_too_many_ignores(self):
         config = Config(['/cgi-bin/'], [], [], [], [])
         url = URL('http://moth/')
@@ -184,6 +188,7 @@ class TestNiktoTestParser(PluginTest):
         
         self.assertLess(len(nikto_parser.ignored), 30, len(nikto_parser.ignored))
     
+    @pytest.mark.deprecated
     def test_parse_db_line_basic(self):
         """
         This test reads a line from the DB and parses it, it's objective is to
@@ -224,6 +229,7 @@ class TestNiktoTestParser(PluginTest):
         self.assertEqual(cart32_test_from_db.match_1, nikto_test.match_1)        
         self.assertEqual(cart32_test_from_db.message, nikto_test.message)
 
+    @pytest.mark.deprecated
     def test_parse_db_line_junk(self):
         config = Config(['/cgi-bin/'], [], [], [], [])
         url = URL('http://moth/')
@@ -241,6 +247,7 @@ class TestNiktoTestParser(PluginTest):
         self.assertIn('/docs/', nikto_test.uri.url_string)
         self.assertEqual(len('/docs/') + 5, len(nikto_test.uri.get_path()))
 
+    @pytest.mark.deprecated
     def test_parse_db_line_no_vars(self):
         config = Config([], [], [], [], [])
         url = URL('http://moth/')
@@ -257,6 +264,7 @@ class TestNiktoTestParser(PluginTest):
     
         self.assertEqual('/docs/', nikto_test.uri.get_path())
 
+    @pytest.mark.deprecated
     def test_parse_db_line_cgidirs(self):
         config = Config(['/cgi-bin/'], [], [], [], [])
         url = URL('http://moth/')
@@ -273,6 +281,7 @@ class TestNiktoTestParser(PluginTest):
     
         self.assertEqual('/cgi-bin/', nikto_test.uri.get_path())
         
+    @pytest.mark.deprecated
     def test_parse_db_line_admin_dirs(self):
         admin_dirs = ['/adm/', '/admin/']
         
@@ -290,6 +299,7 @@ class TestNiktoTestParser(PluginTest):
         self.assertEqual(admin_dirs,
                          [nt.uri.get_path() for nt in nikto_tests])
 
+    @pytest.mark.deprecated
     def test_parse_db_line_admin_users_two(self):
         admin_dirs = ['/adm/', '/admin/']
         users = ['sys', 'root']
@@ -308,6 +318,7 @@ class TestNiktoTestParser(PluginTest):
         self.assertEqual(['/adm/sys', '/adm/root', '/admin/sys', '/admin/root'],
                          [nt.uri.get_path() for nt in nikto_tests])
         
+    @pytest.mark.deprecated
     def test_parse_db_line_raw_bytes(self):
         config = Config(['/cgi-bin/'], [], [], [], [])
         url = URL('http://moth/')
@@ -323,6 +334,7 @@ class TestNiktoTestParser(PluginTest):
         else:
             self.assertTrue(False)
 
+    @pytest.mark.deprecated
     def test_parse_db_line_basic_w3af_scan_database(self):
         """
         This test reads a line from the w3af scan database and parses it, it's

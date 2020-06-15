@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import time
 import unittest
 
@@ -53,6 +54,7 @@ class TestWorkerPool(unittest.TestCase):
             # pylint: disable=E1101
             self.assertIn("raise TypeError('%s Boom!' % foo)", te.original_traceback_string)
 
+    @pytest.mark.deprecated
     def test_terminate_join_after_tasks(self):
         worker_pool = Pool(processes=4,
                            worker_names='WorkerThread',
@@ -78,6 +80,7 @@ class TestWorkerPool(unittest.TestCase):
 
         worker_pool.terminate_join()
 
+    @pytest.mark.deprecated
     def test_output_pool_size(self):
         worker_pool = Pool(processes=4,
                            worker_names='WorkerThread',
@@ -178,6 +181,7 @@ class TestWorkerPool(unittest.TestCase):
         self.assertIsNone(func_args)
         self.assertTrue(worker_pool._pool[0].worker.is_idle())
 
+    @pytest.mark.deprecated
     def test_worker_stats_not_idle(self):
         worker_pool = Pool(processes=1, worker_names='WorkerThread')
 
@@ -222,6 +226,7 @@ class TestWorkerPool(unittest.TestCase):
         self.assertEqual(worker_state['kwargs'], kwds)
         self.assertEqual(worker_state['idle'], False)
 
+    @pytest.mark.slow
     def test_max_queued_tasks(self):
         worker_pool = Pool(processes=1, max_queued_tasks=2)
 

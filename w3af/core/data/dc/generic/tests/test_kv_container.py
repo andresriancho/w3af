@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 import urllib
 import copy
@@ -196,6 +197,7 @@ class TestKeyValueContainer(unittest.TestCase):
 
         self.assertEqual(dc.get_short_printable_repr(), 'a=1&b=2&b=3')
 
+    @pytest.mark.deprecated
     def test_get_short_printable_repr_token_obj_reduce_printable(self):
         dc = KeyValueContainer([(u'a', ['1']), (u'b', ['2', '3'])])
         dc.MAX_PRINTABLE = 5

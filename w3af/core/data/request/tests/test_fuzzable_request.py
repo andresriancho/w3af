@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 import cPickle
 import copy
@@ -176,6 +177,7 @@ class TestFuzzableRequest(unittest.TestCase):
 
         self.assertEqual(repr(fr), '<fuzzable request | GET | %s>' % url)
 
+    @pytest.mark.deprecated
     def test_sent_url_unicode_decode_1(self):
         f = FuzzableRequest(URL('http://example.com/a%c3%83b'))
         self.assertTrue(f.sent('aÃb'))

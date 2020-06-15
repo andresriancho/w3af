@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -41,30 +42,35 @@ class TestStrangeReason(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_strange_reason_empty(self):
         response = HTTPResponse(200, '', self.headers, self.url, self.url,
                                 _id=1, msg='Ok')
         self.plugin.grep(self.request, response)
         self.assertEquals(len(kb.kb.get('strange_reason', 'strange_reason')), 0)
 
+    @pytest.mark.deprecated
     def test_strange_reason_large(self):
         response = HTTPResponse(300, 'A' * 4096, self.headers, self.url,
                                 self.url, _id=1, msg='Multiple Choices')
         self.plugin.grep(self.request, response)
         self.assertEquals(len(kb.kb.get('strange_reason', 'strange_reason')), 0)
 
+    @pytest.mark.deprecated
     def test_strange_reason_found_200(self):
         response = HTTPResponse(200, 'A' * 4096, self.headers, self.url,
                                 self.url, _id=1, msg='Foo!')
         self.plugin.grep(self.request, response)
         self.assertEquals(len(kb.kb.get('strange_reason', 'strange_reason')), 1)
 
+    @pytest.mark.deprecated
     def test_strange_reason_found_300(self):
         response = HTTPResponse(300, 'A' * 2 ** 10, self.headers,
                                 self.url, self.url, _id=1, msg='Multiple')
         self.plugin.grep(self.request, response)
         self.assertEquals(len(kb.kb.get('strange_reason', 'strange_reason')), 1)
 
+    @pytest.mark.deprecated
     def test_group_by_reason(self):
         response = HTTPResponse(200, '', self.headers, self.url, self.url,
                                 _id=1, msg='Foos')
@@ -86,6 +92,7 @@ class TestStrangeReason(unittest.TestCase):
         self.assertEqual(info_set.get_id(), [1, 3])
         self.assertEqual(info_set.get_desc(), expected_desc)
 
+    @pytest.mark.deprecated
     def test_no_group_by_different_reason(self):
         response = HTTPResponse(200, '', self.headers, self.url, self.url,
                                 _id=1, msg='Foo')

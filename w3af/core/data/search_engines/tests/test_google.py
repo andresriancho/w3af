@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import random
 import re
 import unittest
@@ -58,6 +59,7 @@ class TestGoogle(unittest.TestCase):
         opener = ExtendedUrllib()
         self.gse = google(opener)
 
+    @pytest.mark.slow
     def test_get_links_results_len(self):
         results = self.gse.get_n_results(self.query, self.limit)
 
@@ -71,6 +73,7 @@ class TestGoogle(unittest.TestCase):
         # URLs should be unique
         self.assertTrue(len(results) == len(set([r.URL for r in results])))
 
+    @pytest.mark.slow
     def test_page_body(self):
         responses = self.gse.get_n_result_pages(self.query, self.limit)
 
@@ -107,6 +110,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
         self.opener.end()
 
     @attr('fails')
+    @pytest.mark.deprecated
     def test_len_link_results(self):
         if self.GoogleApiSearcher is None:
             return
@@ -148,6 +152,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
         self.assertTrue(related > 5, related)
 
     @attr('fails')
+    @pytest.mark.deprecated
     def test_links_results_domain(self):
         if self.GoogleApiSearcher is None:
             return
@@ -179,6 +184,7 @@ class BaseGoogleAPISearch(unittest.TestCase):
 
 @attr('internet')
 @attr('fails')
+@pytest.mark.deprecated
 class TestGAjaxSearch(BaseGoogleAPISearch):
     GoogleApiSearcher = GAjaxSearch
 

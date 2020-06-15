@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 
 from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
@@ -28,6 +29,7 @@ class TestProfileLoading(XpresserUnittest):
     
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'profile_loading', 'images')
     
+    @pytest.mark.deprecated
     def test_profile_loading(self):
         """
         Tests that it is possible to change from one profile to the next

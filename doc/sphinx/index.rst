@@ -72,6 +72,7 @@ Contents
    exploitation
    advanced-exploitation
 
+   tests
    report-a-bug
    contribute
 

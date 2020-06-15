@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import unittest
 
 from nose.plugins.attrib import attr
@@ -65,6 +66,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         # TODO: Write this test
         pass
 
+    @pytest.mark.deprecated
     def test_http_port_specification_via_proxy(self):
         self.assertEqual(self._proxy.total_handled_requests, 0)
 
@@ -74,6 +76,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
         self.assertEqual(self._proxy.total_handled_requests, 1)
 
+    @pytest.mark.deprecated
     def test_https_via_proxy(self):
         self.assertEqual(self._proxy.total_handled_requests, 0)
 
@@ -83,6 +86,7 @@ class TestExtendedUrllibProxy(unittest.TestCase):
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
         self.assertEqual(self._proxy.total_handled_requests, 1)
 
+    @pytest.mark.deprecated
     def test_offline_port_via_proxy(self):
         url = URL('http://127.0.0.1:8181/')
         http_response = self.uri_opener.GET(url, cache=False)

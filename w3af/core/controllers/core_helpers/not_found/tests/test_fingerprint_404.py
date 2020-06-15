@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 from __future__ import division
+import pytest
 
 import re
 import os
@@ -91,6 +92,7 @@ class Test404Detection(Generic404Test):
 class Test404FalseNegative(Generic404Test):
 
     @httpretty.activate
+    @pytest.mark.deprecated
     def test_false_negative_with_500(self):
         server_error = ('500 error that does NOT\n'
                         'look like one\n'
@@ -129,6 +131,7 @@ class Test404FalsePositiveLargeResponsesRandomShort(Generic404Test):
         return self.get_body(unique_parts)
 
     @httpretty.activate
+    @pytest.mark.slow
     def test_page_found_with_large_response_random(self):
 
         httpretty.register_uri(httpretty.GET,
@@ -151,6 +154,7 @@ class Test404FalsePositiveLargeResponsesRandomShort(Generic404Test):
         self.assertFalse(self.fingerprint_404.is_404(success_200))
 
     @httpretty.activate
+    @pytest.mark.slow
     def test_page_marked_as_404_with_large_response_random(self):
 
         httpretty.register_uri(httpretty.GET,
@@ -192,6 +196,7 @@ class Test404With1ByteRandomShort(Generic404Test):
         return '\n'.join(parts)
 
     @httpretty.activate
+    @pytest.mark.deprecated
     def test_1byte_short_not_404(self):
 
         httpretty.register_uri(httpretty.GET,
@@ -238,6 +243,7 @@ class Test404With1ByteRandomLarge(Generic404Test):
         return '\n'.join(parts)
 
     @httpretty.activate
+    @pytest.mark.deprecated
     def test_1byte_large_is_404(self):
 
         httpretty.register_uri(httpretty.GET,
@@ -257,6 +263,7 @@ class Test404With1ByteRandomLarge(Generic404Test):
         self.assertTrue(self.fingerprint_404.is_404(not_found))
 
     @httpretty.activate
+    @pytest.mark.deprecated
     def test_1byte_large_is_200(self):
 
         httpretty.register_uri(httpretty.GET,
@@ -286,6 +293,7 @@ class Test404FalsePositiveLargeResponsesEqual404s(Generic404Test):
         return self.get_body(unique_parts)
 
     @httpretty.activate
+    @pytest.mark.slow
     def test_page_not_found_with_large_response(self):
 
         httpretty.register_uri(httpretty.GET,
@@ -308,6 +316,7 @@ class Test404FalsePositiveLargeResponsesEqual404s(Generic404Test):
         self.assertFalse(self.fingerprint_404.is_404(success_200))
 
     @httpretty.activate
+    @pytest.mark.slow
     def test_page_marked_as_404_with_large_response(self):
 
         httpretty.register_uri(httpretty.GET,
@@ -339,6 +348,7 @@ class Test404FalsePositiveLargeResponsesWithCSRFToken(Generic404Test):
         return 200, headers, body
 
     @httpretty.activate
+    @pytest.mark.slow
     def test_is_404_with_csrf_token(self):
 
         httpretty.register_uri(httpretty.GET,
@@ -360,6 +370,7 @@ class Test404FalsePositiveLargeResponsesWithCSRFToken(Generic404Test):
         self.assertTrue(self.fingerprint_404.is_404(not_found_404))
 
     @httpretty.activate
+    @pytest.mark.slow
     def test_exists_with_csrf_token_in_404_page(self):
 
         httpretty.register_uri(httpretty.GET,
@@ -396,6 +407,7 @@ class Test404FalsePositiveLargeResponsesWithCSRFTokenPartiallyEqual(Generic404Te
         return 200, headers, body
 
     @httpretty.activate
+    @pytest.mark.slow
     def test_false_positive(self):
 
         httpretty.register_uri(httpretty.GET,
@@ -547,6 +559,7 @@ class Test404HandleAllIs404(GenericIgnoredPartTest):
         return 200, headers, body
 
     @httpretty.activate
+    @pytest.mark.deprecated
     def test_handle_really_a_404(self):
 
         httpretty.register_uri(httpretty.GET,

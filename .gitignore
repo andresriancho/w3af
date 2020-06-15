@@ -1,5 +1,6 @@
 *.py[cod]
 *.py~
+__pycache__/
 *~
 *.swp
 
@@ -69,6 +70,7 @@ top-1m.csv.zip
 # To make testing easier
 test.w3af
 output-w3af.txt
+w3af-script-*
 
 # Ignore some profiling data
 *.dump

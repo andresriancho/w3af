@@ -1,4 +1,6 @@
 """
+@pytest.mark.deprecated
+@pytest.mark.deprecated
 test_blank_body.py
 
 Copyright 2012 Andres Riancho
@@ -19,6 +21,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -42,6 +45,7 @@ class test_blank_body(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_blank_body(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
@@ -49,6 +53,7 @@ class test_blank_body(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('blank_body', 'blank_body')), 1)
 
+    @pytest.mark.deprecated
     def test_blank_body_none(self):
         body = 'header body footer'
         headers = Headers([('content-type', 'text/html')])
@@ -56,6 +61,7 @@ class test_blank_body(unittest.TestCase):
         self.plugin.grep(self.request, response)
         self.assertEqual(len(kb.kb.get('ssn', 'ssn')), 0)
 
+    @pytest.mark.deprecated
     def test_blank_body_method(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])
@@ -64,6 +70,7 @@ class test_blank_body(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEqual(len(kb.kb.get('ssn', 'ssn')), 0)
 
+    @pytest.mark.deprecated
     def test_blank_body_code(self):
         body = ''
         headers = Headers([('content-type', 'text/html')])

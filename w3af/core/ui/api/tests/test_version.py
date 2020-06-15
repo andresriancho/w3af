@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import json
 
 from w3af.core.ui.api.tests.utils.api_unittest import APIUnitTest
@@ -26,6 +27,7 @@ from w3af.core.ui.api.tests.utils.api_unittest import APIUnitTest
 
 class VersionTest(APIUnitTest):
 
+    @pytest.mark.deprecated
     def test_get_version(self):
         #
         # Name filter

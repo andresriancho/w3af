@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import unittest
 
@@ -55,21 +56,25 @@ class PylintRunner(unittest.TestCase):
         lint.Run(pylint_args, reporter=TextReporter(pylint_output), exit=False)
         return pylint_output
     
+    @pytest.mark.slow
     def test_pylint_plugins(self):
         pylint_output = self.run_pylint('%s/plugins/' % ROOT_PATH)
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
+    @pytest.mark.slow
     def test_pylint_core_controllers(self):
         pylint_output = self.run_pylint('%s/core/controllers/' % ROOT_PATH)
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
+    @pytest.mark.slow
     def test_pylint_core_data(self):
         pylint_output = self.run_pylint('%s/core/data/' % ROOT_PATH)
         output = pylint_output.read()
         self.assertEqual(output, [], '\n'.join(output))
 
+    @pytest.mark.slow
     def test_pylint_core_ui(self):
         pylint_output = self.run_pylint('%s/core/ui/' % ROOT_PATH)
         output = pylint_output.read()

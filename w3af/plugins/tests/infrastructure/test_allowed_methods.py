@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.ci.moth import get_moth_http
@@ -41,6 +42,7 @@ class TestAllowedMethods(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_moth(self):
         """
         test_moth in test_allowed_methods, test the "default" configuration for
@@ -69,6 +71,7 @@ class TestAllowedMethods(PluginTest):
         self.assertEqual(len(infos), 0, infos)
 
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_modsecurity(self):
         """
         test_modsecurity in test_allowed_methods, test a different

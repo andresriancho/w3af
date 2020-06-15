@@ -19,6 +19,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import shutil
 
@@ -80,6 +81,7 @@ class TestCrawlExceptions(PluginTest):
 
         super(TestCrawlExceptions, self).tearDown()
 
+    @pytest.mark.deprecated
     def test_spider_found_urls(self):
         cfg = self._run_configs['cfg']
 

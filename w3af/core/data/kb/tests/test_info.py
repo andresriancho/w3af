@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import json
 import copy
 import cPickle
@@ -123,6 +124,7 @@ class TestInfo(unittest.TestCase):
         i.set_desc(desc)
         self.assertTrue(i.get_desc().startswith(desc))
 
+    @pytest.mark.deprecated
     def test_get_desc_new_line(self):
         """
         https://github.com/andresriancho/w3af/issues/12220

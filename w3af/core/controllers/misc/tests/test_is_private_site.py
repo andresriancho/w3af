@@ -19,15 +19,18 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from w3af.core.controllers.misc.is_private_site import is_private_site
 
 
 class TestIsPrivateSite(unittest.TestCase):
+    @pytest.mark.deprecated
     def test_is_private_site_true_case01(self):
         self.assertTrue(is_private_site('127.0.0.1'))
         
+    @pytest.mark.deprecated
     def test_is_private_site_true_case02(self):
         self.assertTrue(is_private_site('192.168.0.1'))
     

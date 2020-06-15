@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import threading
 import unittest
 import urllib2
@@ -68,6 +69,7 @@ class TestInterceptProxy(unittest.TestCase):
     def test_no_request(self):
         self.assertEqual(self._proxy.get_trapped_request(), None)
     
+    @pytest.mark.deprecated
     def test_no_trap(self):
         self._proxy.set_trap(False)
         response = self.proxy_opener.open(get_moth_http())
@@ -75,6 +77,7 @@ class TestInterceptProxy(unittest.TestCase):
         self.assertIn(self.MOTH_MESSAGE, response.read())
         self.assertEqual(response.code, 200)
 
+    @pytest.mark.deprecated
     def test_request_trapped_drop(self):
         def send_request(proxy_opener, result_queue):
             try:
@@ -104,6 +107,7 @@ class TestInterceptProxy(unittest.TestCase):
         self.assertEqual(response.code, 403)
         self.assertIn('HTTP request drop by user', response.read())
     
+    @pytest.mark.deprecated
     def test_request_trapped_send(self):
         def send_request(proxy_opener, result_queue):
             try:
@@ -137,6 +141,7 @@ class TestInterceptProxy(unittest.TestCase):
         self.assertEqual(response.code, 200)
         self.assertIn(self.MOTH_MESSAGE, response.read())
 
+    @pytest.mark.deprecated
     def test_trap_many(self):
         def send_request(_id, proxy_opener, results, exceptions):
             url = get_moth_http('/%s' % _id)

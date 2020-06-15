@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import unittest
 
@@ -41,12 +42,14 @@ class TestUnittestCoverage(unittest.TestCase):
     def test_attack(self):
         self._analyze_unittests('attack')
 
+    @pytest.mark.deprecated
     def test_output(self):
         self._analyze_unittests('output')
 
     def test_auth(self):
         self._analyze_unittests('auth')
 
+    @pytest.mark.deprecated
     def test_crawl(self):
         self._analyze_unittests('crawl')
 

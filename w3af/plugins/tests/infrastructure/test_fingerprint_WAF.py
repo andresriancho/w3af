@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 
 
@@ -39,6 +40,7 @@ class TestFingerprintWAFIBMWebSphere(WAFTest, PluginTest):
     MOCK_RESPONSES = [MockResponse(WAFTest.target_url, 'Hello world',
                                    headers={'Set-Cookie': IBM_WAF})]
 
+    @pytest.mark.deprecated
     def test_fingerprint_waf(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -61,6 +63,7 @@ class TestFingerprintWAFNone(WAFTest, PluginTest):
 
     MOCK_RESPONSES = [MockResponse(WAFTest.target_url, 'Hello world')]
 
+    @pytest.mark.deprecated
     def test_fingerprint_waf(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

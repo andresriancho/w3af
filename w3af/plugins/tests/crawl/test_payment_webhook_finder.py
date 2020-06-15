@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.core.data.parsers.doc.url import URL
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.plugins.crawl.payment_webhook_finder import payment_webhook_finder
@@ -62,6 +63,8 @@ class TestPaymentWebHookFinderGET(PluginTest):
         'plugins': {'crawl': (PluginConfig('payment_webhook_finder'),)}
     }
 
+    @pytest.mark.deprecated
+    @pytest.mark.slow
     def test_find_using_GET(self):
         fill_kb_with_cgi_urls(self.target_url, self.kb.add_url)
 
@@ -95,6 +98,8 @@ class TestPaymentWebHookFinderPOST(PluginTest):
         'plugins': {'crawl': (PluginConfig('payment_webhook_finder'),)}
     }
 
+    @pytest.mark.deprecated
+    @pytest.mark.slow
     def test_find_using_POST(self):
         fill_kb_with_cgi_urls(self.target_url, self.kb.add_url)
 

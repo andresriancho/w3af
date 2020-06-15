@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import re
 import json
@@ -70,6 +71,7 @@ class TestDeserializePickle(PluginTest):
     MOCK_RESPONSES = [DeserializeMockResponse(re.compile('.*'), body=None,
                                               method='GET', status=200)]
 
+    @pytest.mark.deprecated
     def test_found_deserialization_in_pickle(self):
         self._scan(self.target_url, test_config)
         vulns = self.kb.get('deserialization', 'deserialization')
@@ -104,6 +106,7 @@ class TestDeserializePickleNotBase64(PluginTest):
     MOCK_RESPONSES = [DeserializeMockResponse(re.compile('.*'), body=None,
                                               method='GET', status=200)]
 
+    @pytest.mark.deprecated
     def test_found_deserialization_in_pickle(self):
         self._scan(self.target_url, test_config)
         vulns = self.kb.get('deserialization', 'deserialization')
@@ -144,6 +147,7 @@ class TestShouldInjectIsCalled(PluginTest):
     MOCK_RESPONSES = [DeserializeMockResponse(re.compile('.*'), body=None,
                                               method='GET', status=200)]
 
+    @pytest.mark.deprecated
     def test_found_deserialization_in_pickle(self):
         self._scan(self.target_url, test_config)
         vulns = self.kb.get('deserialization', 'deserialization')

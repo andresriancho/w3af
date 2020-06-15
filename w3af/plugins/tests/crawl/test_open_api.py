@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import json
 import re
 
@@ -55,6 +56,7 @@ class TestOpenAPIFindAllEndpointsWithAuth(PluginTest):
                                    IntParamQueryString().get_specification(),
                                    content_type='application/json')]
 
+    @pytest.mark.deprecated
     def test_find_all_endpoints_with_auth(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -180,6 +182,7 @@ class TestOpenAPINestedModelSpec(PluginTest):
                                        method='GET',
                                        status=200)]
 
+    @pytest.mark.deprecated
     def test_find_all_endpoints_with_auth(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -244,6 +247,7 @@ class TestOpenAPIRaisesWarningIfNoAuth(PluginTest):
                                    NestedModel().get_specification(),
                                    content_type='application/json')]
 
+    @pytest.mark.deprecated
     def test_auth_warning_raised(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -275,6 +279,7 @@ class TestOpenAPIRaisesWarningIfParsingError(PluginTest):
                                    NestedModel().get_specification()[:-1],
                                    content_type='application/json')]
 
+    @pytest.mark.deprecated
     def test_parsing_error_raised(self):
         cfg = self._run_configs['cfg']
 
@@ -320,6 +325,7 @@ class TestOpenAPIFindsSpecInOtherDirectory(PluginTest):
                                    NestedModel().get_specification(),
                                    content_type='application/json')]
 
+    @pytest.mark.deprecated
     def test_auth_warning_raised(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -348,6 +354,7 @@ class TestOpenAPIFindsSpecInOtherDirectory2(PluginTest):
                                    NestedModel().get_specification(),
                                    content_type='application/json')]
 
+    @pytest.mark.deprecated
     def test_auth_warning_raised(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -413,6 +420,7 @@ class TestOpenAPIFuzzURLParts(PluginTest):
                                        status=200)
                       ]
 
+    @pytest.mark.deprecated
     def test_fuzzing_parameters_in_path(self):
         #
         # TODO: This unittest is failing because of basePath being ignored

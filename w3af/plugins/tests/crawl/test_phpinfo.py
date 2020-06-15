@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 
 from w3af import ROOT_PATH
@@ -45,6 +46,7 @@ class TestPHPInfo516(PluginTest):
         'plugins': {'crawl': (PluginConfig('phpinfo'),)}
     }
 
+    @pytest.mark.deprecated
     def test_phpinfo(self):
         self._scan(self._run_config['target'], self._run_config['plugins'])
 
@@ -70,13 +72,16 @@ class TestPHPInfo516(PluginTest):
             self.assertIn(expected_info, found_infos)
 
 
+@pytest.mark.deprecated
 class TestPHPInfo4311(TestPHPInfo516):
     PHPINFO = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'phpinfo', 'phpinfo-4.3.11.html')
 
 
+@pytest.mark.deprecated
 class TestPHPInfo513rc4dev(TestPHPInfo516):
     PHPINFO = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'phpinfo', 'phpinfo-5.1.3-rc4dev.html')
 
 
+@pytest.mark.deprecated
 class TestPHPInfo433(TestPHPInfo516):
     PHPINFO = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'phpinfo', 'phpinfo-4.3.3.html')

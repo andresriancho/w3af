@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 from functools import partial
 
@@ -58,32 +59,38 @@ class test_symfony(unittest.TestCase):
     def tearDown(self):
         self.plugin.end()
 
+    @pytest.mark.deprecated
     def test_symfony_positive(self):
         response = self.http_resp(
             read=self.EMPTY_BODY, headers=self.SYMFONY_HEADERS)
         self.assertTrue(self.plugin.symfony_detected(response))
 
+    @pytest.mark.deprecated
     def test_symfony_negative(self):
         response = self.http_resp(
             read=self.EMPTY_BODY, headers=self.NON_SYMFONY_HEADERS)
         self.assertFalse(self.plugin.symfony_detected(response))
 
+    @pytest.mark.deprecated
     def test_symfony_override(self):
         self.plugin._override = True
         response = self.http_resp(read=self.EMPTY_BODY,
                                   headers=self.SYMFONY_HEADERS)
         self.assertTrue(self.plugin.symfony_detected(response))
 
+    @pytest.mark.deprecated
     def test_symfony_csrf_positive(self):
         response = self.http_resp(read=self.PROTECTED_BODY,
                                   headers=self.SYMFONY_HEADERS)
         self.assertTrue(self.plugin.has_csrf_token(response))
 
+    @pytest.mark.deprecated
     def test_symfony_csrf_negative(self):
         response = self.http_resp(read=self.UNPROTECTED_BODY,
                                   headers=self.SYMFONY_HEADERS)
         self.assertFalse(self.plugin.has_csrf_token(response))
 
+    @pytest.mark.deprecated
     def test_symfony_protected(self):
         response = self.http_resp(
             read=self.PROTECTED_BODY, headers=self.SYMFONY_HEADERS)
@@ -91,6 +98,7 @@ class test_symfony(unittest.TestCase):
         self.plugin.grep(request, response)
         self.assertEquals(len(kb.kb.get('symfony', 'symfony')), 0)
 
+    @pytest.mark.deprecated
     def test_symfony_unprotected(self):
         request = FuzzableRequest(self.url, method='GET')
         response = self.http_resp(

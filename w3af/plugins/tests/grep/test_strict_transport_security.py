@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 import w3af.core.data.kb.knowledge_base as kb
@@ -40,6 +41,7 @@ class TestSTSSecurity(unittest.TestCase):
         self.plugin.end()
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_http_no_vuln(self):
         body = ''
         url = URL('http://www.w3af.com/')
@@ -51,6 +53,7 @@ class TestSTSSecurity(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('strict_transport_security',
                                         'strict_transport_security')), 0)
 
+    @pytest.mark.deprecated
     def test_https_with_sts(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -64,6 +67,7 @@ class TestSTSSecurity(unittest.TestCase):
         self.assertEquals(len(kb.kb.get('strict_transport_security',
                                         'strict_transport_security')), 0)
 
+    @pytest.mark.deprecated
     def test_https_without_sts(self):
         body = ''
         url = URL('https://www.w3af.com/')
@@ -88,6 +92,7 @@ class TestSTSSecurity(unittest.TestCase):
         self.assertEqual(info_set.get_name(),
                          'Missing Strict Transport Security header')
 
+    @pytest.mark.deprecated
     def test_https_without_sts_group_by_domain(self):
         body = ''
         url = URL('https://www.w3af.com/1')

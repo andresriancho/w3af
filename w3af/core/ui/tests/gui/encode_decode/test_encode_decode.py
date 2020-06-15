@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 
 from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
@@ -33,6 +34,7 @@ class TestEncodeDecode(XpresserUnittest):
         super(TestEncodeDecode, self).setUp()
         self.xp.load_images(self.EXTRA_IMAGES)
         
+    @pytest.mark.deprecated
     def test_encode_url_default(self):
         self.find('all-menu')
         self.click('encode-decode-icon')
@@ -45,6 +47,7 @@ class TestEncodeDecode(XpresserUnittest):
         
         self.click('close-with-cross')
 
+    @pytest.mark.deprecated
     def test_encode_md5(self):
         self.find('all-menu')
         self.click('encode-decode-icon')
@@ -60,6 +63,7 @@ class TestEncodeDecode(XpresserUnittest):
         
         self.click('close-with-cross')
     
+    @pytest.mark.deprecated
     def test_decode_url(self):
         self.find('all-menu')
         self.click('encode-decode-icon')

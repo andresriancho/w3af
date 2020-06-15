@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.core.controllers.ci.php_moth import get_php_moth_http
 from w3af.plugins.tests.helper import PluginConfig, ExecExploitTest
 from w3af.core.data.kb.vuln_templates.file_upload_template import FileUploadTemplate
@@ -45,6 +46,7 @@ class TestFileUploadShell(ExecExploitTest):
             }, }
     }
 
+    @pytest.mark.deprecated
     def test_found_exploit_file_upload(self):
         # Run the scan
         cfg = self._run_configs['cfg']
@@ -61,6 +63,7 @@ class TestFileUploadShell(ExecExploitTest):
         vuln_to_exploit_id = vuln.get_id()
         self._exploit_vuln(vuln_to_exploit_id, 'file_upload')
 
+    @pytest.mark.deprecated
     def test_from_template(self):
         fut = FileUploadTemplate()
 
@@ -80,6 +83,7 @@ class TestFileUploadShell(ExecExploitTest):
         
         self._exploit_vuln(vuln_to_exploit_id, 'file_upload')
 
+    @pytest.mark.deprecated
     def test_from_template_534(self):
         fut = FileUploadTemplate()
 

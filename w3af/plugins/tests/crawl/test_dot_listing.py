@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 
 from w3af import ROOT_PATH
@@ -43,6 +44,7 @@ class TestDotListing(PluginTest):
                       MockResponse('http://mock/wasadhiya-7.mp3', 'Secret file'),
                       MockResponse('http://mock/', 'Not here', status=404)]
 
+    @pytest.mark.deprecated
     def test_dot_listing(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -61,6 +63,7 @@ class TestDotListing(PluginTest):
             set((self.target_url + end) for end in expected_urls)
         )
 
+    @pytest.mark.deprecated
     def test_listing_extraction(self):
         listing_files_path = os.path.join(ROOT_PATH, 'plugins', 'tests', 'crawl', 'dot_listing')
         file_name_fmt = 'listing_test_%s.txt'

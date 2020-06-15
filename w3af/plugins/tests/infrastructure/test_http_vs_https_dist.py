@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import copy
 import unittest
 
@@ -48,6 +49,7 @@ class test_http_vs_https_dist(unittest.TestCase):
     def setUp(self):
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_discover_override_port(self):
         plugininst = hvshsdist.http_vs_https_dist()
         # pylint: disable=E0202
@@ -84,6 +86,7 @@ class test_http_vs_https_dist(unittest.TestCase):
                   '  TCP trace to host.tld:4444\n    0 192.168.1.1\n    1 200.115.195.33\n    2 207.46.47.14')
         om.out.information.assert_called_once_with(result)
 
+    @pytest.mark.deprecated
     def test_discover_eq_routes(self):
         plugininst = hvshsdist.http_vs_https_dist()
         plugininst._has_permission = MagicMock(return_value=True)
@@ -118,6 +121,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         self.assertEqual('HTTP traceroute', info.get_name())
         self.assertTrue('are the same' in info.get_desc())
 
+    @pytest.mark.deprecated
     def test_discover_diff_routes(self):
         plugininst = hvshsdist.http_vs_https_dist()
         plugininst._has_permission = MagicMock(return_value=True)
@@ -151,6 +155,7 @@ class test_http_vs_https_dist(unittest.TestCase):
                   '  TCP trace to host.tld:443\n    0 192.168.1.1\n    1 200.115.195.33\n    2 207.46.47.14')
         om.out.information.assert_called_once_with(result)
 
+    @pytest.mark.deprecated
     def test_discover_runonce(self):
         """ Discovery routine must be executed only once. Upcoming calls should
         fail"""
@@ -163,6 +168,7 @@ class test_http_vs_https_dist(unittest.TestCase):
         plugininst.discover(fuzz_req, None)
         self.assertRaises(RunOnce, plugininst.discover, fuzz_req)
 
+    @pytest.mark.deprecated
     def test_not_root_user(self):
         plugininst = hvshsdist.http_vs_https_dist()
 
@@ -187,6 +193,7 @@ class TestHTTPvsHTTPS(PluginTest):
 
     @onlyroot
     @attr('ci_fails')
+    @pytest.mark.deprecated
     def test_trace(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

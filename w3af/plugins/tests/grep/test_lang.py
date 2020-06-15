@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 
@@ -47,6 +48,7 @@ class TestLang(PluginTest):
         }
     }
 
+    @pytest.mark.deprecated
     def test_id_es(self):
         cfg = self._run_configs['direct']
         self._scan(self.langs_url % 'es', cfg['plugins'])
@@ -54,6 +56,7 @@ class TestLang(PluginTest):
         lang = self.kb.raw_read('lang', 'lang')
         self.assertEquals('es', lang)
 
+    @pytest.mark.deprecated
     def test_id_en(self):
         cfg = self._run_configs['direct']
         self._scan(self.langs_url % 'en', cfg['plugins'])
@@ -61,6 +64,7 @@ class TestLang(PluginTest):
         lang = self.kb.raw_read('lang', 'lang')
         self.assertEquals('en', lang)
 
+    @pytest.mark.deprecated
     def test_id_en_crawl(self):
         cfg = self._run_configs['crawl']
         self._scan(self.langs_url % 'en', cfg['plugins'])

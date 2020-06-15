@@ -18,6 +18,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import time
 import unittest
 
@@ -89,6 +90,7 @@ class TestDiskDict(unittest.TestCase):
 
         self.assertEqual(len(disk_dict), 1)
 
+    @pytest.mark.slow
     def test_len_performance(self):
         disk_dict = DiskDict()
 

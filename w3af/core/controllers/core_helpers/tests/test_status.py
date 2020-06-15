@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import unittest
 
 from mock import Mock
@@ -65,6 +66,7 @@ class TestStatus(unittest.TestCase):
         self.assertEqual(s.get_status(), STOPPED)
         self.assertFalse(s.is_running())
     
+    @pytest.mark.deprecated
     def test_queue_status_not_started(self):
         core = w3afCore()
         s = CoreStatus(core)

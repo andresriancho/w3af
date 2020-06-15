@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 
 from w3af.core.ui.tests.gui import GUI_TEST_ROOT_PATH
@@ -28,13 +29,16 @@ class TestMainWindow(XpresserUnittest):
     
     IMAGES = os.path.join(GUI_TEST_ROOT_PATH, 'main_window', 'images')
     
+    @pytest.mark.deprecated
     def test_main_menu(self):
         self.hover('main-window-title')
         self.find('main-window-menu')
 
+    @pytest.mark.deprecated
     def test_profiles_loaded(self):
         self.find('owasp_top_10_profile')
 
+    @pytest.mark.deprecated
     def test_plugins_loaded(self):
         self.find('audit_plugin_type')
         self.double_click('audit_plugin_type_text')
@@ -43,6 +47,7 @@ class TestMainWindow(XpresserUnittest):
         self.double_click('output_plugin_type_text')
         self.find('output_plugin_list')
     
+    @pytest.mark.deprecated
     def test_tab_navigation(self):
         self.sleep(1)
         self.click('log_tab')

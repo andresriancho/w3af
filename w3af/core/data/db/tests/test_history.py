@@ -18,6 +18,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import pytest
 import zipfile
 import random
 import unittest
@@ -52,11 +53,13 @@ class TestHistoryItem(unittest.TestCase):
         HistoryItem().clear()
         kb.kb.cleanup()
 
+    @pytest.mark.deprecated
     def test_single_db(self):
         h1 = HistoryItem()
         h2 = HistoryItem()
         self.assertEqual(h1._db, h2._db)
 
+    @pytest.mark.deprecated
     def test_find(self):
         find_id = random.randint(1, 499)
         url = URL('http://w3af.org/a/b/foobar.php?foo=123')
@@ -92,6 +95,7 @@ class TestHistoryItem(unittest.TestCase):
                        ('id', find_id - 1, ">")]
         self.assertEqual(len(h2.find(search_data)), 1)
 
+    @pytest.mark.deprecated
     def test_mark(self):
         mark_id = 3
         url = URL('http://w3af.org/a/b/c.php')
@@ -116,6 +120,7 @@ class TestHistoryItem(unittest.TestCase):
         h3.load(mark_id-1)
         self.assertFalse(h3.mark)
 
+    @pytest.mark.deprecated
     def test_save_load(self):
         i = random.randint(1, 499)
         url = URL('http://w3af.com/a/b/c.php')
@@ -136,10 +141,12 @@ class TestHistoryItem(unittest.TestCase):
         self.assertEqual(h1.request.to_dict(), h2.request.to_dict())
         self.assertEqual(h1.response.body, h2.response.body)
 
+    @pytest.mark.deprecated
     def test_load_not_exists(self):
         h = HistoryItem()
         self.assertRaises(DBException, h.load, 1)
 
+    @pytest.mark.deprecated
     def test_save_load_compressed(self):
         force_compression_count = HistoryItem._UNCOMPRESSED_FILES + HistoryItem._COMPRESSED_FILE_BATCH
         force_compression_count += 150
@@ -178,6 +185,7 @@ class TestHistoryItem(unittest.TestCase):
             self.assertEqual(h.response.get_headers(), headers)
             self.assertEqual(h.response.get_body(), body)
 
+    @pytest.mark.deprecated
     def test_delete(self):
         i = random.randint(1, 499)
         
@@ -200,6 +208,7 @@ class TestHistoryItem(unittest.TestCase):
         self.assertRaises(DBException, h1.read, i)
         self.assertFalse(os.path.exists(fname))
 
+    @pytest.mark.deprecated
     def test_clear(self):
         url = URL('http://w3af.com/a/b/c.php')
         request = HTTPRequest(url, data='a=1')
@@ -227,6 +236,7 @@ class TestHistoryItem(unittest.TestCase):
         # all rows from the table, not the table itself
         self.assertTrue(db.table_exists(table_name))        
 
+    @pytest.mark.deprecated
     def test_clear_clear(self):
         url = URL('http://w3af.com/a/b/c.php')
         request = HTTPRequest(url, data='a=1')
@@ -242,11 +252,13 @@ class TestHistoryItem(unittest.TestCase):
         h1.clear()
         h1.clear()
 
+    @pytest.mark.deprecated
     def test_init_init(self):
         # No exceptions should be raised
         HistoryItem().init()
         HistoryItem().init()
 
+    @pytest.mark.deprecated
     def test_tag(self):
         tag_id = random.randint(501, 999)
         tag_value = rand_alnum(10)
@@ -268,6 +280,7 @@ class TestHistoryItem(unittest.TestCase):
         h2.load(tag_id)
         self.assertEqual(h2.tag, tag_value)
 
+    @pytest.mark.deprecated
     def test_save_load_unicode_decode_error(self):
         url = URL('http://w3af.com/a/b/é.php?x=á')
         request = HTTPRequest(url, data='a=1')

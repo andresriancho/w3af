@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 import shutil
 import unittest
@@ -69,10 +70,12 @@ class TestSQLMapWrapper(unittest.TestCase):
         if os.path.exists(output_dir):
             shutil.rmtree(output_dir)
         
+    @pytest.mark.deprecated
     def test_verify_vulnerability(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
     
+    @pytest.mark.deprecated
     def test_verify_vulnerability_ssl(self):
         uri = URL(self.SSL_SQLI_GET)
         target = Target(uri)
@@ -94,6 +97,7 @@ class TestSQLMapWrapper(unittest.TestCase):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertFalse(vulnerable)
         
+    @pytest.mark.deprecated
     def test_verify_vulnerability_POST(self):
         target = Target(URL(self.SQLI_POST), self.DATA_POST)
         
@@ -121,12 +125,14 @@ class TestSQLMapWrapper(unittest.TestCase):
         
         self.assertIn('sqlmap.py', cmd)
         
+    @pytest.mark.deprecated
     def test_target_basic(self):
         target = Target(URL(self.SQLI_GET))
         params = target.to_params()
         
         self.assertEqual(params, ["--url=%s" % self.SQLI_GET])
     
+    @pytest.mark.deprecated
     def test_target_post_data(self):
         target = Target(URL(self.SQLI_GET), self.DATA_POST)
         params = target.to_params()
@@ -155,6 +161,7 @@ class TestSQLMapWrapper(unittest.TestCase):
         params = sqlmap.get_wrapper_params()
         self.assertNotIn('--disable-coloring', params)
         
+    @pytest.mark.deprecated
     def test_dbs(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
@@ -164,6 +171,7 @@ class TestSQLMapWrapper(unittest.TestCase):
         
         self.assertIn('on SQLite it is not possible to enumerate databases', output)
 
+    @pytest.mark.deprecated
     def test_tables(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
@@ -175,6 +183,7 @@ class TestSQLMapWrapper(unittest.TestCase):
         self.assertIn('Database: SQLite_masterdb', output)
         self.assertIn('django_content_type', output)
 
+    @pytest.mark.deprecated
     def test_users(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
@@ -185,6 +194,7 @@ class TestSQLMapWrapper(unittest.TestCase):
         self.assertIn('on SQLite it is not possible to enumerate the users',
                       output)
 
+    @pytest.mark.deprecated
     def test_dump(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable)
@@ -195,6 +205,7 @@ class TestSQLMapWrapper(unittest.TestCase):
         self.assertIn('django_session', output)
         self.assertIn('auth_user_user_permissions', output)
         
+    @pytest.mark.deprecated
     def test_sqlmap(self):
         vulnerable = self.sqlmap.is_vulnerable()
         self.assertTrue(vulnerable, self.sqlmap.last_stdout)

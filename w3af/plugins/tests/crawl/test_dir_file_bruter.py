@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 
 from w3af import ROOT_PATH
@@ -96,6 +97,7 @@ class TestDirFileBruter(PluginTest):
                                            ),)}
     }
 
+    @pytest.mark.deprecated
     def test_directories(self):
         self._scan(self._run_directories['target'],
                    self._run_directories['plugins'])
@@ -103,12 +105,14 @@ class TestDirFileBruter(PluginTest):
         expected_urls = ('/crawl/', '/portal/', '/')
         self.assertAllURLsFound(expected_urls)
 
+    @pytest.mark.deprecated
     def test_files(self):
         self._scan(self._run_files['target'], self._run_files['plugins'])
 
         expected_urls = ('/iamhidden.txt', '/')
         self.assertAllURLsFound(expected_urls)
     
+    @pytest.mark.deprecated
     def test_directories_files(self):
         self._scan(self._run_directory_files['target'],
                    self._run_directory_files['plugins'])
@@ -118,6 +122,7 @@ class TestDirFileBruter(PluginTest):
                          u'/crawl/dir_bruter/spameggs/')
         self.assertAllURLsFound(expected_urls)
 
+    @pytest.mark.deprecated
     def test_recursive(self):
         self._scan(self._run_recursive['target'],
                    self._run_recursive['plugins'])

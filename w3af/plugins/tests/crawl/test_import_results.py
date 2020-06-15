@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
 import os
 
 from w3af import ROOT_PATH
@@ -64,6 +65,7 @@ class TestImportResults(PluginTest):
 
     }
 
+    @pytest.mark.deprecated
     def test_base64(self):
         cfg = self._run_configs['w3af']
         self._scan(cfg['target'], cfg['plugins'])
@@ -120,6 +122,7 @@ class TestImportResults(PluginTest):
 
         self.assertEqual(set(urls), expected_urls)
 
+    @pytest.mark.deprecated
     def test_burp_b64(self):
         cfg = self._run_configs['burp64']
         self._scan(cfg['target'], cfg['plugins'])
@@ -182,6 +185,7 @@ class TestImportResults(PluginTest):
 
         self.assertEqual(set(urls), expected_urls)
 
+    @pytest.mark.deprecated
     def test_burp(self):
         cfg = self._run_configs['burp']
         self._scan(cfg['target'], cfg['plugins'])
