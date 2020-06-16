@@ -59,6 +59,7 @@ class TestProxy(unittest.TestCase):
         # Shutdown the proxy server
         self._proxy.stop()
 
+    @pytest.mark.deprecated
     def test_do_req_through_proxy(self):
         resp_body = self.proxy_opener.open(self.HTTP_URL).read()
 

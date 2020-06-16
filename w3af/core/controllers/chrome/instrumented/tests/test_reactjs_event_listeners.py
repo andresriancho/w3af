@@ -20,10 +20,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 from __future__ import print_function
 
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.chrome.instrumented.tests.base import BaseEventListenerCountTest
 from w3af.core.controllers.chrome.instrumented.event_listener import EventListener
+
+
+pytestmark = pytest.mark.deprecated
 
 
 @attr('internet')

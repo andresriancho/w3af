@@ -23,6 +23,8 @@ import os
 from urlparse import urlparse
 from urlparse import parse_qs
 
+import pytest
+
 from w3af import ROOT_PATH
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
@@ -40,6 +42,9 @@ VANILLA_JS_LOGIN_3 = file(VANILLA_JS_LOGIN_3).read()
 
 USER = 'user@mail.com'
 PASS = 'passw0rd'
+
+
+pytestmark = pytest.mark.deprecated
 
 
 class BasicLoginRequestHandler(ExtendedHttpRequestHandler):

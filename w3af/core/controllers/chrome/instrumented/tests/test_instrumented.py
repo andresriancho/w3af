@@ -22,6 +22,7 @@ import os
 
 from urlparse import urlparse
 
+import pytest
 from websocket import WebSocketConnectionClosedException
 
 from w3af import ROOT_PATH
@@ -39,6 +40,7 @@ class TestInstrumentedChrome(BaseInstrumentedUnittest):
         self._unittest_setup(ExtendedHttpRequestHandler)
         self.ic.terminate()
 
+    @pytest.mark.deprecated
     def test_start_and_load_http(self):
         self._unittest_setup(ExtendedHttpRequestHandler, load_url=False)
 
@@ -58,22 +60,26 @@ class TestInstrumentedChrome(BaseInstrumentedUnittest):
         self.assertEqual(response.get_body(), ExtendedHttpRequestHandler.RESPONSE_BODY)
         self.assertIn('Mozilla/', request.get_headers().get('User-agent'))
 
+    @pytest.mark.deprecated
     def test_load_about_blank(self):
         self._unittest_setup(ExtendedHttpRequestHandler, load_url=False)
         self.ic.load_about_blank()
         self.assertEqual(self.http_traffic_queue.qsize(), 0)
 
+    @pytest.mark.deprecated
     def test_get_pid(self):
         self._unittest_setup(ExtendedHttpRequestHandler)
         pid = self.ic.get_pid()
         self.assertIsInstance(pid, (int, long))
 
+    @pytest.mark.deprecated
     def test_get_memory_usage(self):
         self._unittest_setup(ExtendedHttpRequestHandler)
         private, shared = self.ic.get_memory_usage()
         self.assertIsInstance(private, int)
         self.assertIsInstance(shared, int)
 
+    @pytest.mark.deprecated
     def test_start_and_load_https_self_signed(self):
         # Define the HTTP response
         http_response = ('HTTP/1.1 200 Ok\r\n'
@@ -113,6 +119,7 @@ class TestInstrumentedChrome(BaseInstrumentedUnittest):
 
         s.stop()
 
+    @pytest.mark.deprecated
     def test_initial_connection_to_chrome_fails(self):
         self._unittest_setup(ExtendedHttpRequestHandler)
         self.ic.chrome_process.get_devtools_port = lambda: 1
@@ -131,6 +138,7 @@ class TestInstrumentedChrome(BaseInstrumentedUnittest):
         # Trigger it here
         self.assertRaises(WebSocketConnectionClosedException, self.ic.load_url, url)
 
+    @pytest.mark.deprecated
     def test_proxy_dies(self):
         self._unittest_setup(ExtendedHttpRequestHandler)
 
@@ -141,6 +149,7 @@ class TestInstrumentedChrome(BaseInstrumentedUnittest):
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
         self.assertRaises(ChromeInterfaceException, self.ic.load_url, url)
 
+    @pytest.mark.deprecated
     def test_exception_handling_in_custom_handlers(self):
         self._unittest_setup(ExtendedHttpRequestHandler)
 
@@ -163,6 +172,7 @@ class TestInstrumentedChrome(BaseInstrumentedUnittest):
         self.ic.wait_for_load()
         self.assertEqual(self.ic.get_dom(), ExtendedHttpRequestHandler.RESPONSE_BODY)
 
+    @pytest.mark.deprecated
     def test_websocket_call_triggers_error_in_chrome(self):
         self._unittest_setup(ExtendedHttpRequestHandler)
 
@@ -172,6 +182,7 @@ class TestInstrumentedChrome(BaseInstrumentedUnittest):
 
 class TestInstrumentedChromeWithDialogDismiss(BaseInstrumentedUnittest):
 
+    @pytest.mark.deprecated
     def test_load_page_with_alert(self):
         self._unittest_setup(CreateAlertHandler)
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
@@ -208,6 +219,7 @@ class TestInstrumentedChromeWithDialogDismiss(BaseInstrumentedUnittest):
 
 class TestInstrumentedChromeWith401(BaseInstrumentedUnittest):
 
+    @pytest.mark.deprecated
     def test_load_page_with_401(self):
         # It is possible to load a URL that returns a 401 and then load
         # any other URL in the same browser instance
@@ -243,6 +255,7 @@ class TestInstrumentedChromeWith401(BaseInstrumentedUnittest):
 
 class TestInstrumentedChromeWith301Redirect(BaseInstrumentedUnittest):
 
+    @pytest.mark.deprecated
     def test_load_page_with_redirect_301(self):
         self._unittest_setup(RedirectRequestHandler, load_url=False)
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)
@@ -257,6 +270,7 @@ class TestInstrumentedChromeWith301Redirect(BaseInstrumentedUnittest):
 
 class TestInstrumentedChromeReadJSVariables(BaseInstrumentedUnittest):
 
+    @pytest.mark.deprecated
     def test_load_page_read_js_variable(self):
         self._unittest_setup(JSVariablesHandler)
         url = 'http://%s:%s/' % (self.SERVER_HOST, self.server_port)

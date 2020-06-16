@@ -22,8 +22,13 @@ import time
 
 from urlparse import urlparse
 
+import pytest
+
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.chrome.tests.base import BaseInstrumentedUnittest
+
+
+pytestmark = pytest.mark.deprecated
 
 
 class TestInstrumentedChromeOneIframe(BaseInstrumentedUnittest):

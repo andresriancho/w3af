@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
+
 from w3af.core.controllers.chrome.crawler.tests.base import BaseChromeCrawlerTest
 
 
@@ -49,6 +51,7 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         found, not_found = self._log_contains(expected_messages)
         self.assertEqual(not_found, [])
 
+    @pytest.mark.deprecated
     def test_react_autosuggest(self):
         url = 'https://dist-usikpayhrn.now.sh/'
         found_uris = self._crawl(url)
@@ -75,6 +78,7 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         found, not_found = self._log_contains(expected_messages)
         self.assertEqual(not_found, [])
 
+    @pytest.mark.slow
     def test_react_icons_menu(self):
         url = 'https://react-icons-kit.now.sh/'
         found_uris = self._crawl(url)
@@ -100,6 +104,7 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         found, not_found = self._log_contains(expected_messages)
         self.assertEqual(not_found, [])
 
+    @pytest.mark.deprecated
     def test_react_button(self):
         url = 'https://84ol32ono9.csb.app/'
         found_uris = self._crawl(url)
@@ -134,6 +139,7 @@ class ReactBasicTest(BaseChromeCrawlerTest):
         found, not_found = self._log_contains(expected_messages)
         self.assertEqual(not_found, [])
 
+    @pytest.mark.deprecated
     def test_react_cart(self):
         #
         # Source code for this application lives at:

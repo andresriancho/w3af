@@ -21,6 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import time
 import unittest
 
+import pytest
+
 import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.output_manager import manager
@@ -112,6 +114,7 @@ class TestChromeCrawlerWithWebSpider(unittest.TestCase):
         self.pool.terminate()
         self.pool.join()
 
+    @pytest.mark.deprecated
     def test_parse_dom(self):
         t, s, p = start_webserver_any_free_port(self.SERVER_HOST,
                                                 webroot=self.SERVER_ROOT_PATH,

@@ -18,6 +18,8 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
+
 from w3af.core.controllers.chrome.crawler.tests.base import BaseChromeCrawlerTest
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 from w3af.core.controllers.chrome.crawler.strategies.js import ChromeCrawlerJS
@@ -40,6 +42,7 @@ class TestStateAcrossPages(BaseChromeCrawlerTest):
 
         return fuzzable_request, http_response
 
+    @pytest.mark.slow
     def test_crawl_pages_with_same_footer(self):
         self._unittest_setup(MultiplePagesWithSameFooter)
 

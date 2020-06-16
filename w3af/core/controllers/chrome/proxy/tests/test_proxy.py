@@ -30,8 +30,13 @@ from multiprocessing import Process
 from multiprocessing import Queue as MultiprocessingQueue
 from multiprocessing.pool import ThreadPool
 
+import pytest
+
 from w3af.core.controllers.chrome.proxy.main import LoggingProxy
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
+
+
+pytestmarks = pytest.mark.deprecated
 
 
 class TestProxy(unittest.TestCase):

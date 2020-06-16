@@ -25,6 +25,8 @@ import unittest
 import pprint
 
 from collections import OrderedDict
+
+import pytest
 from nose.plugins.attrib import attr
 
 from w3af.core.controllers.chrome.crawler.main import ChromeCrawler
@@ -37,6 +39,7 @@ from w3af.core.data.dc.headers import Headers
 
 
 @attr('internet')
+@pytest.mark.deprecated
 class TestChromeCrawlerInternetPages(unittest.TestCase):
     """
     This test is the result of debugging and experimenting how the crawler will

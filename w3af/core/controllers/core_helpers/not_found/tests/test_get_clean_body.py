@@ -24,6 +24,8 @@ from __future__ import division
 
 import unittest
 
+import pytest
+
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
@@ -32,6 +34,7 @@ from w3af.core.controllers.core_helpers.not_found.get_clean_body import get_clea
 
 class TestGetCleanBody(unittest.TestCase):
 
+    @pytest.mark.deprecated
     def test_get_clean_body_14955(self):
         """
         Trying to fix issue 14955
@@ -53,6 +56,7 @@ class TestGetCleanBody(unittest.TestCase):
                  '<a HREF="/">here</a></body>')
         self.assertEqual(clean_body, ebody)
 
+    @pytest.mark.deprecated
     def test_get_clean_body_14956(self):
         """
         Trying to fix issue 14956

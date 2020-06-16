@@ -18,10 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
+
 from w3af.core.controllers.chrome.tests.base import BaseInstrumentedUnittest
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 
 
+@pytest.mark.deprecated
 class TestChromeCrawlerGetEventListeners(BaseInstrumentedUnittest):
     def test_no_event_handlers_empty(self):
         self._unittest_setup(EmptyRequestHandler)
