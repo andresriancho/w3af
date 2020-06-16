@@ -9,7 +9,7 @@ on:
     branches: [ master, develop ]
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-18.04
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
@@ -21,13 +21,7 @@ jobs:
         cp ./extras/docker/.dockerignore ./
 
     - name: build Docker image
-      run: docker build -t andresriancho/w3af:test-action
-
-
-  test:
-    runs-on: ubuntu-18.04
-    steps:
-    - uses: actions/checkout@v2
+      run: docker build -t andresriancho/w3af:test-action .
 
     - name: run w3af tests
-      run: docker run -it andresriancho/w3af:test-action pytest
+      run: docker run andresriancho/w3af:test-action pytest
