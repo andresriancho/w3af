@@ -27,7 +27,6 @@ import sys
 import glob
 import time
 import socket
-import select
 
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
@@ -35,6 +34,7 @@ import w3af.core.controllers.output_manager as om
 from w3af import ROOT_PATH
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.threads.threadpool import Pool
+from w3af.core.controllers.misc.poll import poll
 
 
 class request(object):
@@ -121,7 +121,7 @@ class request(object):
             # Receive the HTTP response from the server
             try:
                 while True:
-                    readable, writable, exceptional = select.select([s], [], [], 10)
+                    readable, writable, exceptional = poll([s], [], [], 10)
                     if not readable:
                         break
 

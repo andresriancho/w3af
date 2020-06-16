@@ -30,7 +30,6 @@ class Ubuntu1404(Ubuntu1204):
     CORE_SYSTEM_PACKAGES = Ubuntu1204.CORE_SYSTEM_PACKAGES[:]
     CORE_SYSTEM_PACKAGES.append('libjpeg-dev')
 
-    @staticmethod
-    def is_current_platform():
+    def is_current_platform(self):
         return 'Ubuntu' in platform.dist() and '14.04' in platform.dist()
 

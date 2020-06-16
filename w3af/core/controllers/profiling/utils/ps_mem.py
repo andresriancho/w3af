@@ -365,11 +365,13 @@ def show_shared_val_accuracy( possible_inacc, only_total=False ):
     if only_total and possible_inacc != 2:
         sys.exit(1)
 
-def get_memory_usage( pids_to_show, split_args, include_self=False, only_self=False ):
+
+def get_memory_usage(pids_to_show, split_args, include_self=False, only_self=False):
     cmds = {}
     shareds = {}
     mem_ids = {}
     count = {}
+
     for pid in os.listdir(proc.path('')):
         if not pid.isdigit():
             continue
@@ -395,7 +397,8 @@ def get_memory_usage( pids_to_show, split_args, include_self=False, only_self=Fa
         try:
             private, shared, mem_id = getMemStats(pid)
         except (RuntimeError, OSError):
-            continue #process gone
+            # process gone
+            continue
         if shareds.get(cmd):
             if have_pss: #add shared portion of PSS together
                 shareds[cmd] += shared
@@ -462,6 +465,7 @@ def verify_environment():
             sys.exit(2)
         else:
             raise
+
 
 if __name__ == '__main__':
     split_args, pids_to_show, watch, only_total = parse_options()

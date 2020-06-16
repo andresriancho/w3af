@@ -1,0 +1,24 @@
+<html>
+
+    <form action="javascript:submit();" id="some_form">
+        <div>
+            <input type="text" name="username" /> <br />
+            <input type="password" name="password" /> <br />
+            <input type="submit" name="button" />
+        </div>
+    </form>
+
+    <script>
+        function submit() {
+            let form = document.getElementById("some_form");
+
+            form.action = '/login_post.py';
+            form.method = 'GET';
+
+            form.submit();
+
+            console.log("sent!");
+        }
+    </script>
+
+</html>

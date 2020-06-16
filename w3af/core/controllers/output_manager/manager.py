@@ -185,7 +185,7 @@ class OutputManager(Process):
             # we flush the output (if needed)
             self.flush_plugin_output()
 
-    def flush_plugin_output(self):
+    def flush_plugin_output(self, force=False):
         """
         Call flush() on all plugins so they write their data to the external
         file(s) / socket(s) if they want to. This is useful when the scan
@@ -200,7 +200,7 @@ class OutputManager(Process):
         :see: https://github.com/andresriancho/w3af/issues/6726
         :return: None
         """
-        if not self.should_flush():
+        if not force and not self.should_flush():
             return
 
         pool = self._worker_pool
@@ -210,8 +210,17 @@ class OutputManager(Process):
         self.update_last_output_flush()
 
         for o_plugin in self._output_plugin_instances:
-            pool.apply_async(func=self.__inner_flush_plugin_output,
-                             args=(o_plugin,))
+            result = pool.apply_async(func=self.__inner_flush_plugin_output,
+                                      args=(o_plugin,))
+
+            #
+            # This forces the method to wait for each plugin.flush()
+            #
+            # Should be used with care because some plugins take considerable
+            # time to flush their ouput
+            #
+            if force:
+                result.get()
 
     def __inner_flush_plugin_output(self, o_plugin):
         """
@@ -314,6 +323,16 @@ class OutputManager(Process):
 
         # Now call end() on all plugins
         self.__end_output_plugins_impl()
+
+    def terminate(self):
+        while self.in_queue.qsize():
+            try:
+                self.in_queue.get_nowait()
+            except:
+                continue
+
+        self._worker_pool.close()
+        self._worker_pool.terminate()
 
     @start_thread_on_demand
     def process_all_messages(self):

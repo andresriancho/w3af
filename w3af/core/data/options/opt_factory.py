@@ -44,7 +44,7 @@ from w3af.core.data.options.option_types import (
     OUTPUT_FILE, PORT, IP, URL_LIST, FORM_ID_LIST)
 
 
-def opt_factory(name, default_value, desc, _type, help='', tabid=''):
+def opt_factory(name, default_value, desc, _type, help='', tabid='', options=None):
     """
     A factory function which will generate one of the Option objects based
     on the _type passed as parameter.
@@ -70,5 +70,9 @@ def opt_factory(name, default_value, desc, _type, help='', tabid=''):
         FORM_ID_LIST: FormIDListOption,
     }
 
-    return option_klasses[_type](name, default_value, desc, _help=help,
-                                 tabid=tabid)
+    return option_klasses[_type](name,
+                                 default_value,
+                                 desc,
+                                 _help=help,
+                                 tabid=tabid,
+                                 options=options)

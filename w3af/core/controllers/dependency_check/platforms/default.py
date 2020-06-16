@@ -32,10 +32,8 @@ class DefaultPlatform(Platform):
     SYSTEM_PACKAGES = {CORE: [],
                        GUI: []}
 
-    @staticmethod
-    def is_current_platform():
+    def is_current_platform(self):
         return True
 
-    @staticmethod
-    def os_package_is_installed(package_name):
+    def os_package_is_installed(self, package_name):
         return False

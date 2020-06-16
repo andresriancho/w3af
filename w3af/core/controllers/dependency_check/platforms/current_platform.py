@@ -38,30 +38,34 @@ from .suse import SuSE
 from .elementaryOS02 import ElementaryOS02
 from .default import DefaultPlatform
 
-KNOWN_PLATFORMS = [
-                   CentOS65,
-                   CentOS,
-                   Debian76,
+KNOWN_PLATFORMS = [Debian76,
                    Debian78,
                    Debian80,
-                   ElementaryOS02,
+                   Ubuntu1204,
+                   Ubuntu1404,
+                   Ubuntu1410,
+                   Ubuntu1604,
+                   Ubuntu1804,
+                   CentOS65,
+                   CentOS,
                    Fedora,
                    Kali,
                    Kali2,
                    MacOSX,
                    OpenBSD5,
                    SuSE,
-                   Ubuntu1204,
-                   Ubuntu1404,
-                   Ubuntu1410,
-                   Ubuntu1604,
-                   Ubuntu1804
-]
+                   ElementaryOS02]
 
 
 def get_current_platform(known_platforms=KNOWN_PLATFORMS):
-    for known_platform in known_platforms:
+    for known_platform_klass in known_platforms:
+
+        known_platform = known_platform_klass()
+
         if known_platform.is_current_platform():
-            return known_platform()
+            return known_platform
     else:
         return DefaultPlatform()
+
+
+

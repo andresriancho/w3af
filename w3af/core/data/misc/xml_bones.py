@@ -61,7 +61,7 @@ def get_xml_bones(document):
     etree.parse(StringIO(document), parser)
 
     # pylint: disable=E1101
-    return ''.join(parser.target.bones)
+    return '\n'.join(parser.target.bones)
 
 
 class BoneCollector(object):

@@ -28,7 +28,7 @@ from ..base_platform import CORE, GUI
 class TestAllPlatforms(unittest.TestCase):
     def test_os_detection(self):
         # I really need those platform detection functions to be specific!
-        results = [p.is_current_platform() for p in KNOWN_PLATFORMS]
+        results = [p().is_current_platform() for p in KNOWN_PLATFORMS]
         self.assertEqual(1, results.count(True), results)
 
     def test_attributes(self):
@@ -57,8 +57,8 @@ class TestAllPlatforms(unittest.TestCase):
 
     def test_os_package_is_installed(self):
         # Just looking for exceptions
-        [p.os_package_is_installed('foo') for p in KNOWN_PLATFORMS]
+        [p().os_package_is_installed('foo') for p in KNOWN_PLATFORMS]
 
     def test_after_hook(self):
         # Just looking for exceptions
-        [p.after_hook() for p in KNOWN_PLATFORMS]
+        [p().after_hook() for p in KNOWN_PLATFORMS]

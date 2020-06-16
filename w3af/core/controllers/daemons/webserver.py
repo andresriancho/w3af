@@ -22,12 +22,13 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import os
 import time
 import socket
-import select
 import threading
 import mimetypes
 import BaseHTTPServer
 
 import w3af.core.controllers.output_manager as om
+
+from w3af.core.controllers.misc.poll import poll
 
 # Created servers
 _servers = {}
@@ -52,12 +53,9 @@ def _get_inst(ip, port):
 
 
 class HTTPServer(BaseHTTPServer.HTTPServer):
-    """
-    Most of the behavior added here is included in
-    """
-
     def __init__(self, server_address, webroot, RequestHandlerClass):
-        BaseHTTPServer.HTTPServer.__init__(self, server_address,
+        BaseHTTPServer.HTTPServer.__init__(self,
+                                           server_address,
                                            RequestHandlerClass)
         self.webroot = webroot
         self.__is_shut_down = threading.Event()
@@ -67,7 +65,8 @@ class HTTPServer(BaseHTTPServer.HTTPServer):
         return self.__is_shut_down.is_set()
 
     def serve_forever(self, poll_interval=0.5):
-        """Handle one request at a time until shutdown.
+        """
+        Handle one request at a time until shutdown.
 
         Polls for shutdown every poll_interval seconds. Ignores
         self.timeout. If you need to do periodic tasks, do them in
@@ -78,16 +77,17 @@ class HTTPServer(BaseHTTPServer.HTTPServer):
             while not self.__shutdown_request:
                 self.handle_request(poll_interval=poll_interval)
         finally:
+            self.server_close()
             self.__shutdown_request = False
             self.__is_shut_down.set()
 
     def handle_request(self, poll_interval=0.5):
-        """Handle one request, possibly blocking."""
+        """
+        Handle one request, possibly blocking.
+        """
+        read, write, error = poll([self], [], [], poll_interval)
 
-        fd_sets = select.select([self], [], [], poll_interval)
-        if not fd_sets[0]:
-            self.server_close()
-            self.__shutdown_request = True
+        if not read:
             return
 
         try:
@@ -115,6 +115,17 @@ class HTTPServer(BaseHTTPServer.HTTPServer):
     def wait_for_start(self):
         while self.get_port() is None:
             time.sleep(0.5)
+
+    def shutdown(self):
+        """
+        Stops the serve_forever loop.
+
+        Blocks until the loop has finished. This must be called while
+        serve_forever() is running in another thread, or it will
+        deadlock.
+        """
+        self.__shutdown_request = True
+        self.__is_shut_down.wait()
 
 
 class WebHandler(BaseHTTPServer.BaseHTTPRequestHandler):
@@ -189,7 +200,8 @@ def start_webserver(ip, port, webroot, handler=WebHandler):
 
 
 def start_webserver_any_free_port(ip, webroot, handler=WebHandler):
-    """Create a http server daemon in any free port available.
+    """
+    Create an http server daemon in any free port.
 
     :param ip: IP address where to bind
     :param webroot: web server's root directory
@@ -205,4 +217,4 @@ def start_webserver_any_free_port(ip, webroot, handler=WebHandler):
 
     web_server.wait_for_start()
 
-    return server_thread, web_server.get_port()
+    return server_thread, web_server, web_server.get_port()

@@ -42,7 +42,7 @@ class TestHeaderURLGenerator(unittest.TestCase):
 
     def get_urls(self, headers):
         http_response = build_http_response(headers)
-        return [u for u, _, _, _ in headers_url_generator(http_response, None)]
+        return [u for u, _, _, _ in headers_url_generator(None, http_response)]
 
     def test_simple(self):
         self.assertEqual(self.get_urls([('Location', '/abc')]),

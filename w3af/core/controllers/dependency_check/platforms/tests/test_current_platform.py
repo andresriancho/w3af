@@ -41,12 +41,12 @@ class TestCurrentPlatform(unittest.TestCase):
 
 
 class ChooseMe(Platform):
-    @staticmethod
-    def is_current_platform():
+
+    def is_current_platform(self):
         return True
 
 
 class NotMe(Platform):
-    @staticmethod
-    def is_current_platform():
+
+    def is_current_platform(self):
         return False

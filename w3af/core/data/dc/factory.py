@@ -58,8 +58,11 @@ def dc_from_hdrs_post(headers, post_data):
             pass
     else:
         content_type, _ = headers.iget('content-type', 'None')
-        msg = 'Unknown post-data. Content-type: "%s" and/or post-data "%s"'
-        om.out.debug(msg % (content_type, post_data[:50]))
+        msg = ('Unknown post-data, failed to create a data container.'
+               ' Content-type: "%s" and / or post-data "%s..." is not'
+               ' supported.')
+        args = (content_type, post_data[:50])
+        om.out.debug(msg % args)
 
         return PlainContainer.from_postdata(headers, post_data)
 

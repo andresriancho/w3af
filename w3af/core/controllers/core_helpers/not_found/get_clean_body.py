@@ -58,7 +58,7 @@ def get_clean_body_from_parts(body, uri, doc_type):
     The same works with file names.
     All of them, are removed url-decoded and "as is".
 
-    :return: A string that represents the "cleaned" response body of the
+    :return: A string that represents the "clean" response body of the
              response.
     """
     if not doc_type == HTTPResponse.DOC_TYPE_TEXT_OR_HTML:

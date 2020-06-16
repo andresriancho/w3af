@@ -4,6 +4,23 @@ Due to the multiple configuration settings the framework has it's sometimes diff
 to find how to perform a specific task, this page explains how to perform some common
 use cases using w3af.
 
+The JavaScript crawler
+----------------------
+`w3af` implements JavaScript crawling in the `crawl.web_spider` plugin. The JS crawler
+is enabled by default and can be disabled (not recommended if you want to achieve high
+test coverage) using the plugin's configuration.
+
+The JS crawler uses either Google Chrome or Chromium to load the target pages and
+interact with them.
+
+.. warning::
+
+   Google Chrome is recommended over Chromium. Performance tests indicate that Chromium
+   is a bit slower.
+
+The JS crawler is fully automated and does not require any configuration,
+just enable `crawl.web_spider`!
+
 Scanning only one directory
 ---------------------------
 When auditing a site it's common to be interested in scanning only the URLs inside a

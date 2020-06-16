@@ -21,7 +21,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import difflib
 
-from w3af.core.controllers.misc.diff import split_by_sep
+from w3af.core.controllers.diff.diff import split_by_sep
+from w3af.core.controllers.diff.sequence_matcher import TimeoutSequenceMatcher
 
 #
 # Some sites have really large headers and footers which they
@@ -52,7 +53,7 @@ from w3af.core.controllers.misc.diff import split_by_sep
 MAX_FUZZY_LENGTH = 1024 * 4
 
 
-def fuzzy_equal(a_str, b_str, threshold=0.6):
+def fuzzy_equal(a_str, b_str, threshold=0.6, timeout=None):
     """
     Indicates if the strings to compare are similar enough. This (optimized)
     function is equivalent to the expression:
@@ -61,6 +62,7 @@ def fuzzy_equal(a_str, b_str, threshold=0.6):
 
     :param a_str: A string instance
     :param b_str: A string instance
+    :param timeout: The max amount of seconds to run the diff function
     :param threshold: Float value indicating the expected "similarity". Must be
                       0 <= threshold <= 1.0
     :return: A boolean value
@@ -71,7 +73,7 @@ def fuzzy_equal(a_str, b_str, threshold=0.6):
         return optimization_result
 
     # Bad, we can't optimize anything better, just calculate the relative distance
-    distance = relative_distance(a_str, b_str)
+    distance = relative_distance(a_str, b_str, timeout=timeout)
     return distance > threshold
 
 
@@ -151,7 +153,7 @@ def fuzzy_not_equal(a_str, b_str, threshold=0.6):
     return not fuzzy_equal(a_str, b_str, threshold)
 
 
-def relative_distance(a_str, b_str):
+def relative_distance(a_str, b_str, timeout=None):
     """
     Measures the "similarity" of two strings.
 
@@ -160,12 +162,16 @@ def relative_distance(a_str, b_str):
 
     :param a_str: A string object
     :param b_str: A string object
+    :param timeout: The max amount of seconds to run the diff function
+
     :return: A float with the distance
     """
     a_split = split_by_sep(a_str)
     b_split = split_by_sep(b_str)
 
-    return difflib.SequenceMatcher(None,
-                                   a_split,
-                                   b_split).quick_ratio()
+    seq_matcher = TimeoutSequenceMatcher(None,
+                                         a_split,
+                                         b_split,
+                                         timeout=timeout)
 
+    return seq_matcher.quick_ratio()

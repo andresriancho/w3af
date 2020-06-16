@@ -1,0 +1,23 @@
+<html>
+
+    <div id="fake_form">
+        <div>
+            <input type="text" name="username" id="username" onkeydown="return (event.keyCode!=13);" /> <br />
+            <input type="password" name="password" id="password" onkeydown="return (event.keyCode!=13);" /> <br />
+        </div>
+
+        <button onclick="javascript:submit();">Login</button>
+    </div>
+
+    <script>
+        function submit() {
+            let username = document.getElementById("username").value;
+            let password = document.getElementById("password").value;
+
+            console.log("sent!");
+
+            document.location = "/login_post.py?username=" + username + "&password=" + password;
+        }
+    </script>
+
+</html>

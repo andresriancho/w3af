@@ -76,12 +76,12 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.plugin, 'plugin')
         self.assertEquals(edata.phase, 'phase')
         self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
-        self.assertEquals(edata.filename, 'test_exception_handler.py')
+        self.assertEquals(edata.filename, __file__)
         self.assertEquals(edata.exception_msg, str(e))
         self.assertEquals(edata.exception_class, e.__class__.__name__)
         # This is very very very dependant on changes to this file, but it was
         # the only way to do it without much effort
-        self.assertEquals(edata.lineno, 50)
+        self.assertEquals(edata.lineno, 56)
 
     @attr('smoke')
     def test_handle_multiple(self):
@@ -108,7 +108,7 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.plugin, 'plugin')
         self.assertEquals(edata.phase, 'phase')
         self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
-        self.assertEquals(edata.filename, 'test_exception_handler.py')
+        self.assertEquals(edata.filename, __file__)
 
     def test_get_unique_exceptions(self):
 
@@ -135,7 +135,7 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.plugin, 'plugin')
         self.assertEquals(edata.phase, 'phase')
         self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
-        self.assertEquals(edata.filename, 'test_exception_handler.py')
+        self.assertEquals(edata.filename, __file__)
 
     def test_handle_threads_calls(self):
         
@@ -165,10 +165,10 @@ class TestExceptionHandler(unittest.TestCase):
         self.assertEquals(edata.plugin, 'plugin')
         self.assertEquals(edata.phase, 'phase')
         self.assertEquals(edata.fuzzable_request, 'http://www.w3af.org/')
-        self.assertEquals(edata.filename, 'test_exception_handler.py')
+        self.assertEquals(edata.filename, __file__)
         # This is very very very dependant on changes to this file, but it was
         # the only way to do it without much effort
-        self.assertEquals(edata.lineno, 137)
+        self.assertEquals(edata.lineno, 143)
 
     def test_handle_multi_calls(self):
 
@@ -195,7 +195,7 @@ class TestExceptionHandler(unittest.TestCase):
 
         # This is very very very dependant on changes to this file, but it was
         # the only way to do it without much effort
-        self.assertEquals(edata.lineno, 170)
+        self.assertEquals(edata.lineno, 176)
 
 
 class FakeStatus(CoreStatus):

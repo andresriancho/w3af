@@ -269,7 +269,8 @@ class retirejs(GrepPlugin):
 
         process = subprocess.Popen(shlex.split(cmd),
                                    stdout=subprocess.DEVNULL,
-                                   stderr=subprocess.DEVNULL)
+                                   stderr=subprocess.DEVNULL,
+                                   close_fds=True)
 
         process.wait()
 
@@ -356,7 +357,7 @@ class retirejs(GrepPlugin):
                                          timeout=self.RETIRE_TIMEOUT)
         except subprocess.TimeoutExpired:
             # The process timed out and the returncode was never set
-            om.out.debug('The retirejs process for batch %s timeout out' % batch)
+            om.out.debug('The retirejs process for batch %s timed out' % batch)
             return dict()
 
         # retirejs will return code != 0 when a vulnerability is found

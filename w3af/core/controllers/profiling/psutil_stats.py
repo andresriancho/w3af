@@ -23,8 +23,9 @@ import os
 import sys
 import json
 
-from .utils.ps_mem import get_memory_usage, cmd_with_count
-from .utils import get_filename_fmt, dump_data_every_thread, cancel_thread
+from w3af.core.controllers.profiling.utils.ps_mem import get_memory_usage, cmd_with_count
+from w3af.core.controllers.profiling.utils import get_filename_fmt, dump_data_every_thread, cancel_thread
+from w3af.core.controllers.threads.is_main_process import is_main_process
 
 
 PROFILING_OUTPUT_FMT = '/tmp/w3af-%s-%s.psutil'
@@ -102,9 +103,15 @@ def dump_psutil():
     # Get the memory usage from ps_mem
     pids_to_show = []
     for pid, pinfo in process_info.iteritems():
-        exe = str(pinfo['exe'])
-        if 'python' in exe and 'w3af' in exe:
+        cmd = ' '.join(pinfo['cmdline'])
+
+        if 'python' in cmd and 'w3af' in cmd:
             pids_to_show.append(pid)
+            continue
+
+        if 'headless' in cmd and 'chrom' in cmd:
+            pids_to_show.append(pid)
+            continue
 
     ps_mem_data = ps_mem_to_json(*get_memory_usage(pids_to_show, True))
 
@@ -123,7 +130,8 @@ def dump_psutil():
                    'ps_mem': ps_mem_data,
                    'Disk IO counters': psutil.disk_io_counters(),
                    'Disk usage': disk_usage,
-                   'Thread CPU usage': get_threads_cpu_percent()}
+                   'Thread CPU usage': get_threads_cpu_percent(),
+                   'Main Process': is_main_process()}
     
     json.dump(psutil_data, file(output_file, 'w'), indent=4, sort_keys=True)
 
@@ -150,14 +158,14 @@ def get_threads_cpu_percent(interval=0.1):
 
     # pylint: disable=E1101
     # https://circleci.com/gh/andresriancho/w3af/1927
-    total_percent = proc.get_cpu_percent(interval=interval)
+    total_percent = proc.cpu_percent(interval=interval)
     # pylint: enable=E1101
 
     total_time = sum(proc.cpu_times())
 
     result = {}
     # pylint: disable=E1101
-    for thread in proc.get_threads():
+    for thread in proc.threads():
         thread_time = thread.system_time + thread.user_time
         thread_percent = total_percent * (thread_time/total_time)
         result[thread.id] = {'Thread total time': thread_time,
