@@ -53,7 +53,8 @@ stop_on_first_exception = False
 max_discovery_time = 120
 interface = wlan1
 local_ip_address = 10.1.2.24
-non_targets =
+blacklist_http_request =
+blacklist_audit = 
 msf_location = /opt/metasploit3/bin/
 
 [http-settings]
@@ -116,7 +117,8 @@ stop_on_first_exception = False
 max_discovery_time = 120
 interface = wlan1
 local_ip_address = 10.1.2.24
-non_targets =
+blacklist_http_request =
+blacklist_audit = 
 msf_location = /opt/metasploit3/bin/
 
 [http-settings]

@@ -21,7 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import w3af.core.data.parsers.parser_cache as parser_cache
 
-from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
+from w3af.core.controllers.plugins.auth_session_plugin import AuthSessionPlugin
 from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
@@ -31,13 +31,13 @@ from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
-class autocomplete(AuthPlugin):
+class autocomplete(AuthSessionPlugin):
     """
     Fill and submit login forms
     """
 
     def __init__(self):
-        AuthPlugin.__init__(self)
+        AuthSessionPlugin.__init__(self)
 
         # User configured settings
         self.username = ''
@@ -46,10 +46,7 @@ class autocomplete(AuthPlugin):
         self.check_url = URL('http://host.tld/check')
         self.check_string = ''
 
-        # Internal attributes
-        self._attempt_login = True
-
-    def login(self):
+    def login(self, debugging_id=None):
         """
         Login to the application:
             * HTTP GET `login_form_url`
@@ -66,7 +63,7 @@ class autocomplete(AuthPlugin):
             return False
 
         # Create a new debugging ID for each login() run
-        self._new_debugging_id()
+        self._set_debugging_id(debugging_id)
         self._clear_log()
 
         msg = 'Logging into the application with user: %s' % self.username
@@ -80,6 +77,7 @@ class autocomplete(AuthPlugin):
         form = self._get_login_form()
 
         if not form:
+            self._handle_authentication_failure()
             return False
 
         #
@@ -88,60 +86,35 @@ class autocomplete(AuthPlugin):
         form_submitted = self._submit_form(form)
 
         if not form_submitted:
-            self._log_info_to_kb()
+            self._handle_authentication_failure()
             return False
 
-        if not self.has_active_session():
-            self._log_info_to_kb()
-            return False
+        #
+        # Check if we're logged in
+        #
+        if self.has_active_session(debugging_id=debugging_id):
+            self._handle_authentication_success(form)
+            return True
 
-        self._log_debug('Login success for user %s' % self.username)
-        return True
-
-    def has_active_session(self):
-        """
-        Check user session.
-        """
-        # Create a new debugging ID for each has_active_session() run
-        self._new_debugging_id()
-
-        msg = 'Checking if session for user %s is active'
-        self._log_debug(msg % self.username)
-
-        try:
-            http_response = self._uri_opener.GET(self.check_url,
-                                                 grep=False,
-                                                 cache=False,
-                                                 follow_redirects=True,
-                                                 debugging_id=self._debugging_id)
-        except Exception, e:
-            msg = 'Failed to check if session is active because of exception: %s'
-            self._log_debug(msg % e)
-            return False
-
-        self._log_http_response(http_response)
-
-        body = http_response.get_body()
-        logged_in = self.check_string in body
-
-        msg_yes = 'User "%s" is currently logged into the application'
-        msg_yes %= (self.username,)
-
-        msg_no = ('User "%s" is NOT logged into the application, the'
-                  ' `check_string` was not found in the HTTP response'
-                  ' with ID %s.')
-        msg_no %= (self.username, http_response.id)
-
-        msg = msg_yes if logged_in else msg_no
-        self._log_debug(msg)
-
-        return logged_in
+        self._handle_authentication_failure()
+        return False
 
     def logout(self):
         """
         User logout
         """
         return None
+
+    def _handle_authentication_success(self, form):
+        super(autocomplete, self)._handle_authentication_success()
+
+        form_url = form.get_action().uri2url()
+
+        args = (self.username, form_url)
+        msg = 'Login success for username %s with form action %s'
+        self._log_debug(msg % args)
+
+        self._configure_audit_blacklist(form_url)
 
     def _submit_form(self, form_params):
         """
@@ -253,14 +226,21 @@ class autocomplete(AuthPlugin):
             self._log_error(msg % args)
 
             #
-            # Set the attempt_login to false, in order to prevent the plugin from
-            # running again.
+            # We get here when:
             #
-            # This is done in this case because we can't recover from it: got the
-            # HTML and it has no login forms. Other cases such as HTTP timeouts
-            # in the request to get the HTML might work in a retry
+            #   * The user configured the login form URL incorrectly
             #
-            self._attempt_login = False
+            #   * There is an error in the HTTP request, and the HTTP response
+            #     does NOT contain the login form.
+            #
+            # It is impossible to know in which case we are in, so we just return
+            # None and wait for the next call to login(). The next call will act
+            # as the retry strategy for the potential HTTP request / response error
+            #
+            # In the past we were setting self._attempt_login = False here, but
+            # any errors (timeouts!) in the HTTP request to get the form ended
+            # up in an ugly situation where the plugin was disabled
+            #
             return None
 
         msg = 'Login form with action %s found in HTTP response with ID %s'
@@ -325,8 +305,8 @@ class autocomplete(AuthPlugin):
                 missing_options.append(o.get_name())
 
         if missing_options:
-            msg = ("All parameters are required and can't be empty."
-                   " The missing parameters are %s")
+            msg = ('All plugin configuration parameters are required.'
+                   ' The missing parameters are: %s')
             raise BaseFrameworkException(msg % ', '.join(missing_options))
 
     def get_long_desc(self):

@@ -598,7 +598,7 @@ class TestOpenAPIMain(unittest.TestCase):
         self.assertTrue(OpenAPI.is_valid_json_or_yaml(http_resp))
 
         http_resp = self.generate_response('', 'application/yaml')
-        self.assertTrue(OpenAPI.is_valid_json_or_yaml(http_resp))
+        self.assertFalse(OpenAPI.is_valid_json_or_yaml(http_resp))
 
     def test_is_valid_json_or_yaml_false(self):
         http_resp = self.generate_response('"', 'image/jpeg')

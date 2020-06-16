@@ -109,11 +109,25 @@ class web_spider(CrawlPlugin):
             return
 
         # And we don't trust what comes from the core, check if 404
+        # the only exception is for fuzzable requests which were set by the
+        # user in the configuration
+        #
+        # There are some rare cases where the application will answer with
+        # the same HTTP response body for `/` and `/foobar`. This triggers an
+        # issue in is_404() where `/` is marked as a 404...
         if is_404(resp):
-            return
+            if not self._is_target(fuzzable_request):
+                return
 
         self._extract_html_forms(resp, fuzzable_request)
         self._extract_links_and_verify(resp, fuzzable_request)
+
+    def _is_target(self, fuzzable_request):
+        """
+        :param fuzzable_request: The fuzzable_request to query if is in the target
+        :return: True if the URI for the fuzzable_request was set by the user as target
+        """
+        return fuzzable_request.get_uri() in cf.cf.get('targets')
 
     def _extract_html_forms(self, resp, fuzzable_req):
         """
@@ -153,17 +167,18 @@ class web_spider(CrawlPlugin):
         if not self._first_run:
             return
 
+        self._first_run = False
+
         # I have to set some variables, in order to be able to code
         # the "only_forward" feature
-        self._first_run = False
         self._target_urls = [i.uri2url() for i in cf.cf.get('targets')]
 
         # The following line triggered lots of bugs when the "stop" button
         # was pressed and the core did this: "cf.cf.save('targets', [])"
         #
-        #self._target_domain = cf.cf.get('targets')[0].get_domain()
+        #     self._target_domain = cf.cf.get('targets')[0].get_domain()
         #
-        #    Changing it to something awful but bug-free.
+        # Changing it to something awful but bug-free.
         targets = cf.cf.get('targets')
         if not targets:
             return
@@ -278,11 +293,12 @@ class web_spider(CrawlPlugin):
             om.out.debug(msg % args)
             return False
 
-        if self._compiled_ignore_re.match(ref.url_string):
-            msg = 'web_spider will ignore %s (match ignore regex)'
-            args = (ref.url_string,)
-            om.out.debug(msg % args)
-            return False
+        if self._compiled_ignore_re is not None:
+            if self._compiled_ignore_re.match(ref.url_string):
+                msg = 'web_spider will ignore %s (match ignore regex)'
+                args = (ref.url_string,)
+                om.out.debug(msg % args)
+                return False
 
         if self._has_ignored_extension(ref):
             msg = 'web_spider will ignore %s (match ignore extensions)'
@@ -474,18 +490,22 @@ class web_spider(CrawlPlugin):
         """
         ol = OptionList()
 
-        d = 'Only crawl links to paths inside the URL given as target.'
-        o = opt_factory('only_forward', self._only_forward, d, BOOL)
+        d = 'Only crawl links inside the target URL'
+        h = ('For example, when the target URL is set to http://abc/def/'
+             ' and only_forward is set, http://abc/def/123 will be crawled'
+             ' but http://abc/xyz/ will not. When only_forward is disabled'
+             ' both links will be crawled.')
+        o = opt_factory('only_forward', self._only_forward, d, BOOL, help=h)
         ol.add(o)
 
-        d = ('Only crawl links that match this regular expression.'
-             ' Note that ignore_regex has precedence over follow_regex.')
-        o = opt_factory('follow_regex', self._follow_regex, d, REGEX)
+        d = 'Only crawl links that match this regular expression'
+        h = 'The ignore_regex configuration parameter has precedence over follow_regex'
+        o = opt_factory('follow_regex', self._follow_regex, d, REGEX, help=h)
         ol.add(o)
 
-        d = ('DO NOT crawl links that match this regular expression.'
-             ' Note that ignore_regex has precedence over follow_regex.')
-        o = opt_factory('ignore_regex', self._ignore_regex, d, REGEX)
+        d = 'DO NOT crawl links that match this regular expression'
+        h = 'The ignore_regex configuration parameter has precedence over follow_regex'
+        o = opt_factory('ignore_regex', self._ignore_regex, d, REGEX, help=h)
         ol.add(o)
 
         d = 'DO NOT crawl links that use these extensions.'
@@ -512,6 +532,7 @@ class web_spider(CrawlPlugin):
         self._ignore_regex = options_list['ignore_regex'].get_value()
         self._follow_regex = options_list['follow_regex'].get_value()
         self._compile_re()
+        self._save_ignore_regex_to_config()
 
         self._ignore_extensions = options_list['ignore_extensions'].get_value()
         self._ignore_extensions = [ext.lower() for ext in self._ignore_extensions]
@@ -526,15 +547,36 @@ class web_spider(CrawlPlugin):
             # verified as valid at regex_option.py: see REGEX in get_options()
             self._compiled_ignore_re = re.compile(self._ignore_regex)
         else:
-            # If the self._ignore_regex is empty then I don't have to ignore
-            # anything. To be able to do that, I simply compile an re with "abc"
-            # as the pattern, which won't match any URL since they will all
-            # start with http:// or https://
-            self._compiled_ignore_re = re.compile('abc')
+            self._compiled_ignore_re = None
 
         # Compilation of this regex can't fail because it was already
         # verified as valid at regex_option.py: see REGEX in get_options()
         self._compiled_follow_re = re.compile(self._follow_regex)
+
+    def _save_ignore_regex_to_config(self):
+        """
+        This code works together with blacklist.py, where the regular expression
+        is applied to outgoing HTTP request URLs and some requests are dropped.
+
+        The problem I'm trying to solve with this code is:
+
+            * User configures web_spider to ignore a set of URLs
+
+            * crawl.web_spider ignores these URLs: it knows about and respects
+              the ignore_regex configuration setting
+
+            * crawl.foobar sends requests to any URLs: it is unaware of the
+              web_spider configuration or how to use it
+
+        A potential solution to this problem was to add a new exclusion setting
+        to misc_settings.py, something similar to blacklist_http_request or
+        blacklist_audit. The problem with that alternative is that I was
+        duplicating configuration settings: web_spider had one exclusion regex
+        and misc-settings had another.
+
+        :return: None
+        """
+        cf.cf.save('ignore_regex', self._compiled_ignore_re)
 
     def get_long_desc(self):
         """
@@ -552,7 +594,7 @@ class web_spider(CrawlPlugin):
 
         ignore_regex and follow_regex are commonly used to configure the
         web_spider to crawl all URLs except "/logout" or some more
-        exciting link like "Reboot Appliance" that would greatly reduce
+        exciting link like "Reboot appliance" that would greatly reduce
         the scan test coverage.
 
         By default ignore_regex is an empty string (nothing is ignored) and
@@ -561,5 +603,5 @@ class web_spider(CrawlPlugin):
         string included).
         
         The ignore_extensions configuration parameter is commonly used to ignore
-        static files such as zip, jpeg, pdf, etc.
+        static files such as zip, jpeg and pdf.
         """

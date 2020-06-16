@@ -132,15 +132,20 @@ class VariantDB(object):
                  False if NO more variants are required for this fuzzable
                  request.
         """
+        request_hash = fuzzable_request.get_request_hash(self.HASH_IGNORE_HEADERS)
+
         with self._db_lock:
-            if self._seen_exactly_the_same(fuzzable_request):
+            if self._seen_exactly_the_same(fuzzable_request, request_hash):
+                self._log_return_false(fuzzable_request, 'seen_exactly_the_same')
                 return False
 
             if self._has_form(fuzzable_request):
                 if not self._need_more_variants_for_form(fuzzable_request):
+                    self._log_return_false(fuzzable_request, 'need_more_variants_for_form')
                     return False
 
             if not self._need_more_variants_for_uri(fuzzable_request):
+                self._log_return_false(fuzzable_request, 'need_more_variants_for_uri')
                 return False
 
             # Yes, please give me more variants of fuzzable_request
@@ -183,11 +188,10 @@ class VariantDB(object):
         self._variants[clean_dict_key] = count + 1
         return True
 
-    def _seen_exactly_the_same(self, fuzzable_request):
+    def _seen_exactly_the_same(self, fuzzable_request, request_hash):
         #
         # Is the fuzzable request already known to us? (exactly the same)
         #
-        request_hash = fuzzable_request.get_request_hash(self.HASH_IGNORE_HEADERS)
         if request_hash in self._variants_eq:
             return True
 

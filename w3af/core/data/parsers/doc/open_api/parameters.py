@@ -475,7 +475,7 @@ class ParameterHandler(object):
         """
         return self._get_object_definition_impl(param_spec)
 
-    def _merge_all_parts(self, all_parts):
+    def _merge_all_parts(self, all_parts, already_defined_objects=None):
         """
         https://swagger.io/docs/specification/data-models/oneof-anyof-allof-not/
 
@@ -494,12 +494,22 @@ class ParameterHandler(object):
         :param all_parts: A list containing the `allOf`
         :return: The definition as shown above
         """
+        already_defined_objects = already_defined_objects or []
+
         merged = {'required': [],
                   'properties': {},
                   'type': 'object'}
 
         for part in all_parts:
-            object_definition = self._get_object_definition_impl(part)
+
+            # The following lines prevent infinite recursion when there are model
+            # definition loops like the one seen in `nested_loop_model.json`
+            if part in already_defined_objects:
+                continue
+
+            already_defined_objects.append(part)
+
+            object_definition = self._get_object_definition_impl(part, already_defined_objects)
 
             if 'required' in object_definition:
                 for required in object_definition['required']:
@@ -511,18 +521,20 @@ class ParameterHandler(object):
 
         return merged
 
-    def _get_object_definition_impl(self, param_spec):
+    def _get_object_definition_impl(self, param_spec, already_defined_objects=None):
         """
         :param param_spec: The parameter specification instance
         :return: The object definition which needs to be created
         """
+        already_defined_objects = already_defined_objects or []
+
         if '$ref' in param_spec:
             ref = {'$ref': param_spec['$ref']}
             param_spec = self.spec.deref(ref)
 
         if 'allOf' in param_spec:
             all_parts = param_spec['allOf']
-            param_spec = self._merge_all_parts(all_parts)
+            param_spec = self._merge_all_parts(all_parts, already_defined_objects)
 
         if 'schema' in param_spec:
             if '$ref' in param_spec['schema']:

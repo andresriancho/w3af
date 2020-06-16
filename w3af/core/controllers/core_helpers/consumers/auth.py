@@ -25,6 +25,7 @@ import w3af.core.controllers.output_manager as om
 
 from .base_consumer import BaseConsumer, task_decorator
 from .constants import POISON_PILL, FORCE_LOGIN
+from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.profiling.took_helper import TookLine
 
 
@@ -101,16 +102,21 @@ class auth(BaseConsumer):
         """
         for plugin in self._consumer_plugins:
 
-            args = (plugin.get_name(), plugin.get_name())
-            om.out.debug('%s.has_active_session() and %s.login()' % args)
+            debugging_id = rand_alnum(8)
+            args = (plugin.get_name(), plugin.get_name(), debugging_id)
+            msg = 'auth consumer is calling %s.has_active_session() and %s.login() (did:%s)'
+
+            om.out.debug(msg % args)
+
             took_line = TookLine(self._w3af_core,
-                                 plugin.get_name(),
-                                 '_login')
+                                 'auth',
+                                 '_login',
+                                 debugging_id=debugging_id)
 
             try:
-                if not plugin.has_active_session():
-                    plugin.login()
-            except Exception, e:
+                if not plugin.has_active_session(debugging_id=debugging_id):
+                    plugin.login(debugging_id=debugging_id)
+            except Exception as e:
                 self.handle_exception('auth', plugin.get_name(), None, e)
 
             took_line.send()

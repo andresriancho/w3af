@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# This script builds and officially releases Docker image from source. Use it only
+# if you're project maintainer.
+
 set -x
 set -e
 
@@ -12,7 +15,7 @@ cd ../../
 if [ $# -eq 1 ]; then
     ENV=$1
 else
-    echo "Build environment name argument is required (./docker-build.sh develop)"
+    echo "Build environment name argument is required (./docker-build-release.sh develop)"
     exit 1
 fi
 

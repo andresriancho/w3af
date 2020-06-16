@@ -27,7 +27,7 @@ GUI = 2
 
 CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('github', 'PyGithub', '1.21.0'),
-                     PIPDependency('git.util', 'GitPython', '2.1.3'),
+                     PIPDependency('git.util', 'GitPython', '2.1.15'),
                      PIPDependency('pybloomfilter', 'pybloomfiltermmap', '0.3.14'),
                      PIPDependency('phply', 'phply', '0.9.1'),
                      PIPDependency('nltk', 'nltk', '3.0.1'),
@@ -92,7 +92,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('diff_match_patch', 'diff-match-patch', '20121119'),
 
                      # OpenAPI documentation parser
-                     PIPDependency('bravado_core', 'bravado-core', '5.12.1'),
+                     PIPDependency('bravado_core', 'bravado-core', '5.15.0'),
 
                      # Fast compression library
                      PIPDependency('lz4', 'lz4', '1.1.0'),

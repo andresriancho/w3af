@@ -99,7 +99,12 @@ class Fingerprint404(object):
         :param http_response: The HTTP response
         :return: True if the HTTP response is a 404
         """
-        if self._is_404_basic(http_response):
+        domain_path = http_response.get_url().get_domain_path()
+
+        if self._is_never_404(domain_path):
+            return False
+
+        if self._is_404_basic(http_response, domain_path):
             return True
 
         if self._is_404_complex(http_response):
@@ -107,24 +112,26 @@ class Fingerprint404(object):
 
         return False
 
-    def _is_404_basic(self, http_response):
+    def _is_never_404(self, domain_path):
+        if domain_path in cf.cf.get('never_404'):
+            return True
+
+        return False
+
+    def _is_404_basic(self, http_response, domain_path):
         """
         Verifies if the response is a 404 by checking the user's configuration
         and applying very basic algorithms.
 
         :param http_response: The HTTP response
+        :param domain_path: The HTTP response domain and path
         :return: True if the HTTP response is a 404
         """
-        domain_path = http_response.get_url().get_domain_path()
-
         #
         # First we handle the user configured exceptions:
         #
         if domain_path in cf.cf.get('always_404'):
             return True
-
-        if domain_path in cf.cf.get('never_404'):
-            return False
 
         #
         # The user configured setting. "If this string is in the response,
@@ -186,8 +193,8 @@ class Fingerprint404(object):
         server.
 
         :param http_response: The HTTP response
-        :param query: The HTTP response in FourOhFourResponse form (normalized
-                      URL, clean body, etc.)
+        :param query: The HTTP response in FourOhFourResponse format
+                      (normalized URL, clean body, etc.)
         :return: True if the HTTP response is a 404
         """
         response_did = http_response.get_debugging_id()

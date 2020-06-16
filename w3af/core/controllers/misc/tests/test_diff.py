@@ -127,6 +127,19 @@ class TestDiffDMP(unittest.TestCase):
 
 
 class TestSplitBySep(unittest.TestCase):
+    def test_split_by_sep_1(self):
+        result = split_by_sep('hello world<bye bye!')
+        self.assertEqual(result, ['hello world', 'bye bye!'])
+
+    def test_split_by_sep_2(self):
+        result = split_by_sep('hello world<bye\nbye!')
+        self.assertEqual(result, ['hello world', 'bye', 'bye!'])
+
+    def test_split_by_sep_utf8(self):
+        sequence = u'ąęż'
+        # this shouldn't rise UnicodeDecodeError
+        split_by_sep(sequence)
+
     def test_split_by_sep_perf(self):
         loops = 1000
         inputs = [unittest.__doc__,

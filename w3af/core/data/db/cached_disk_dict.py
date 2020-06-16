@@ -19,6 +19,8 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from collections import Counter
+
 from w3af.core.data.db.disk_dict import DiskDict
 from w3af.core.data.fuzzer.utils import rand_alpha
 
@@ -43,7 +45,7 @@ class CachedDiskDict(object):
         self._max_in_memory = max_in_memory
         self._disk_dict = DiskDict(table_prefix=table_prefix)
         self._in_memory = dict()
-        self._access_count = dict()
+        self._access_count = Counter()
 
     def cleanup(self):
         self._disk_dict.cleanup()
@@ -89,78 +91,71 @@ class CachedDiskDict(object):
 
                 Then the method will generate [1, 2].
         """
-        items = self._access_count.items()
-        items.sort(sort_by_value)
-
-        iterator = min(self._max_in_memory, len(items))
-
-        for i in xrange(iterator):
-            yield items[i][0]
-
-    def _belongs_in_memory(self, key):
-        """
-        :param key: A key
-        :return: True if the key should be stored in memory
-        """
-        if key in self._get_keys_for_memory():
-            return True
-
-        return False
+        return [k for k, v in self._access_count.most_common(self._max_in_memory)]
 
     def _increase_access_count(self, key):
-        access_count = self._access_count.get(key, 0)
-        access_count += 1
-        self._access_count[key] = access_count
+        self._access_count.update([key])
 
-        self._move_key_to_disk_if_needed(key)
-        self._move_key_to_memory_if_needed(key)
+        keys_for_memory = self._get_keys_for_memory()
 
-    def _move_key_to_disk_if_needed(self, key):
+        self._move_key_to_disk_if_needed(keys_for_memory)
+        self._move_key_to_memory_if_needed(key, keys_for_memory)
+
+    def _move_key_to_disk_if_needed(self, keys_for_memory):
         """
         Analyzes the current access count for the last accessed key and
         checks if any if the keys in memory should be moved to disk.
 
-        :param key: The key that was last accessed
+        :param keys_for_memory: The keys that should be in memory
         :return: The name of the key that was moved to disk, or None if
                  all the keys are still in memory.
         """
-        for key in self._in_memory.keys():
-            if not self._belongs_in_memory(key):
-                try:
-                    value = self._in_memory[key]
-                except KeyError:
-                    return None
-                else:
-                    self._disk_dict[key] = value
-                    self._in_memory.pop(key, None)
-                    return key
+        for key in self._in_memory:
 
-    def _move_key_to_memory_if_needed(self, key):
+            if key in keys_for_memory:
+                continue
+
+            try:
+                value = self._in_memory.pop(key)
+            except KeyError:
+                return
+            else:
+                self._disk_dict[key] = value
+                return key
+
+    def _move_key_to_memory_if_needed(self, key, keys_for_memory):
         """
         Analyzes the current access count for the last accessed key and
         checks if any if the keys in disk should be moved to memory.
 
         :param key: The key that was last accessed
+        :param keys_for_memory: The keys that should be in memory
         :return: The name of the key that was moved to memory, or None if
                  all the keys are still on disk.
         """
-        key_belongs_in_memory = self._belongs_in_memory(key)
+        # The key is already in memory, nothing to do here
+        if key in self._in_memory:
+            return
 
-        if not key_belongs_in_memory:
-            return None
+        # The key must not be in memory, nothing to do here
+        if key not in keys_for_memory:
+            return
 
         try:
-            value = self._disk_dict[key]
+            value = self._disk_dict.pop(key)
         except KeyError:
-            return None
+            return
         else:
             self._in_memory[key] = value
-            self._disk_dict.pop(key, None)
             return key
 
     def __setitem__(self, key, value):
-        if len(self._in_memory) < self._max_in_memory:
+        if key in self._in_memory:
             self._in_memory[key] = value
+
+        elif len(self._in_memory) < self._max_in_memory:
+            self._in_memory[key] = value
+
         else:
             self._disk_dict[key] = value
 
@@ -205,6 +200,9 @@ class CachedDiskDict(object):
         for key in self._disk_dict:
             yield key
 
+    def iteritems(self):
+        for key, value in self._in_memory.iteritems():
+            yield key, value
 
-def sort_by_value(a, b):
-    return cmp(b[1], a[1])
+        for key, value in self._disk_dict.iteritems():
+            yield key, value

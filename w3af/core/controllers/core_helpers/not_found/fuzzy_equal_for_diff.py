@@ -24,13 +24,36 @@ from w3af.core.controllers.misc.diff import split_by_sep
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 
 
-NOT_HASH = {'\t', '\n', '\r', ' ',
-            '!', '"', '#', '$', "'",
-            '(', ')', '*', ',', '.',
-            '/', ':', ';', '<',
-            '=', '>', '?', '@',
-            '[', '\\', ']', '^',
-            '`', '{', '|', '}',
+NOT_HASH = {'\t',
+            '\n',
+            '\r',
+            ' ',
+            '!',
+            '"',
+            '#',
+            '$',
+            "'",
+            '(',
+            ')',
+            '*',
+            ',',
+            '.',
+            '/',
+            ':',
+            ';',
+            '<',
+            '=',
+            '>',
+            '?',
+            '@',
+            '[',
+            '\\',
+            ']',
+            '^',
+            '`',
+            '{',
+            '|',
+            '}',
             '~'}
 
 
@@ -52,6 +75,9 @@ def fuzzy_equal_for_diff(diff_x, diff_y, is_equal_ratio):
     :return: True if the two results of applying the diff() function are
              fuzzy equal (applying split_by_sep technique)
     """
+    if diff_x == diff_y:
+        return True
+
     split_x = split_by_sep(diff_x)
     split_y = split_by_sep(diff_y)
 

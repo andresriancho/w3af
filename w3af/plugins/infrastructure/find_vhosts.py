@@ -32,6 +32,7 @@ from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.controllers.threads.threadpool import return_args, one_to_many
 from w3af.core.controllers.misc.is_ip_address import is_ip_address
 from w3af.core.controllers.misc.is_private_site import is_private_site
+from w3af.core.data.url.helpers import is_no_content_response
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.data.bloomfilter.scalable_bloom import ScalableBloomFilter
 from w3af.core.data.dc.headers import Headers
@@ -97,6 +98,7 @@ class find_vhosts(InfrastructurePlugin):
             # Failed to find a suitable parser for the document
             return
 
+        #
         # Note:
         #
         # - With parsed_references I'm 100% that it's really something in the
@@ -107,6 +109,7 @@ class find_vhosts(InfrastructurePlugin):
         #
         # In this case, and because I'm only going to use the domain name of the
         # URL I'm going to trust the re_references also.
+        #
         parsed_references, re_references = dp.get_references()
         parsed_references.extend(re_references)
 
@@ -181,6 +184,9 @@ class find_vhosts(InfrastructurePlugin):
                                        that do not exist in the remote server
         :return: True if vhost_response is different from orig_resp_body and non_existent_responses
         """
+        if is_no_content_response(vhost_response):
+            return False
+
         if fuzzy_equal(vhost_response.get_body(), orig_resp_body, 0.35):
             return False
 

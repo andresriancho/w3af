@@ -19,6 +19,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import string
 import difflib
 import diff_match_patch as dmp_module
 
@@ -28,6 +29,16 @@ from w3af.core.data.misc.encoding import smart_str_ignore
 # about the `diff_match_patch` library is that even when the timeout
 # is reached, a (partial) result is returned
 MAX_DIFF_TIME = 20
+
+#
+# Translation table to split strings by multiple chars
+#
+# The only issue with this method is that it will yield "false positives" when
+# the string to split has null bytes, but that is acceptable due to the performance
+# improvement gains
+#
+TRANSLATION_TABLE = string.maketrans('\n\t\r"\'<',
+                                     '\0\0\0\0\0\0')
 
 
 def diff_dmp(a, b):
@@ -132,7 +143,7 @@ def chunked_diff(a, b):
     return ''.join(a_chunks), ''.join(b_chunks)
 
 
-def split_by_sep(seq):
+def split_by_sep(sequence):
     """
     This method will split the HTTP response body by various separators,
     such as new lines, tabs, <, double and single quotes.
@@ -167,22 +178,25 @@ def split_by_sep(seq):
     chunks without much meaning and reduce the performance improvement we
     have achieved.
 
-    :param seq: A string
+    :param sequence: A string which we will split
     :return: A list of strings (chunks) for the input string
     """
-    chunk = []
-    chunks = []
-    append = chunks.append
-    empty_string_join = ''.join
-    separators = {'\n', '\t', '\r', '"', "'", '<'}
-
-    for c in seq:
-        if c in separators:
-            append(empty_string_join(chunk))
-            chunk = []
-        else:
-            chunk.append(c)
-
-    append(empty_string_join(chunk))
-
-    return chunks
+    #
+    # There was a previous version of this algorithm which used python code
+    # and a few performance tricks [0], but this is MUCH faster and easier to
+    # read.
+    #
+    # This code with translate and split runs 1000 loops of test_split_by_sep_perf
+    # in 0.17 seconds, while the older code [0] run the same test in 4.5 seconds.
+    #
+    # Just when you think it is impossible to improve the performance of a simple
+    # algorithm... a new idea appears and reduces the time from 4.5 to 0.17...
+    # amazing!
+    #
+    # [0] https://github.com/andresriancho/w3af/blob/2ded693c959c91dc3e4daca276460d6c64ada479/w3af/core/controllers/misc/diff.py#L173
+    #
+    try:
+        translated_seq = string.translate(sequence, TRANSLATION_TABLE)
+    except UnicodeDecodeError:
+        translated_seq = string.translate(sequence.encode('utf-8'), TRANSLATION_TABLE)
+    return translated_seq.split('\0')

@@ -674,7 +674,7 @@ class ExtendedUrllib(object):
 
         return res
 
-    def GET(self, uri, data=None, headers=Headers(), cache=False,
+    def GET(self, uri, data=None, headers=None, cache=False,
             grep=True, cookies=True, session=None,
             respect_size_limit=True, new_connection=False,
             error_handling=True, timeout=None, follow_redirects=False,
@@ -702,6 +702,8 @@ class ExtendedUrllib(object):
 
         :return: An HTTPResponse object.
         """
+        headers = headers or Headers()
+
         if not isinstance(uri, URL):
             raise TypeError('The uri parameter of ExtendedUrllib.GET() must be'
                             ' of url.URL type.')
@@ -730,7 +732,7 @@ class ExtendedUrllib(object):
         with raise_size_limit(respect_size_limit):
             return self.send(req, grep=grep)
 
-    def POST(self, uri, data='', headers=Headers(), grep=True, cache=False,
+    def POST(self, uri, data='', headers=None, grep=True, cache=False,
              cookies=True, session=None, error_handling=True, timeout=None,
              follow_redirects=None, use_basic_auth=True, use_proxy=True,
              debugging_id=None, new_connection=False,
@@ -747,6 +749,8 @@ class ExtendedUrllib(object):
         :see: The GET() for documentation on the other parameters
         :return: An HTTPResponse object.
         """
+        headers = headers or Headers()
+
         if not isinstance(uri, URL):
             raise TypeError('The uri parameter of ExtendedUrllib.POST() must'
                             ' be of url.URL type. Got %s instead.' % type(uri))
@@ -827,7 +831,7 @@ class ExtendedUrllib(object):
         :param method_name: The name of the method being called:
         xurllib_instance.OPTIONS will make method_name == 'OPTIONS'.
         """
-        def any_method(uri_opener, method, uri, data=None, headers=Headers(),
+        def any_method(uri_opener, method, uri, data=None, headers=None,
                        cache=False, grep=True, cookies=True, session=None,
                        error_handling=True, timeout=None, use_basic_auth=True,
                        use_proxy=True,
@@ -840,6 +844,8 @@ class ExtendedUrllib(object):
             :return: An HTTPResponse object that's the result of sending
                      the request with a method different from GET or POST.
             """
+            headers = headers or Headers()
+
             if not isinstance(uri, URL):
                 raise TypeError('The uri parameter of any_method must be'
                                 ' of url.URL type.')
@@ -907,10 +913,12 @@ class ExtendedUrllib(object):
 
         return self._rtt_sum_debugging_id.get(debugging_id, default=None)
 
-    def add_headers(self, req, headers=Headers()):
+    def add_headers(self, req, headers=None):
         """
         Add all custom Headers() if they exist
         """
+        headers = headers or Headers()
+
         for h, v in self.settings.header_list:
             req.add_header(h, v)
 
@@ -1126,25 +1134,34 @@ class ExtendedUrllib(object):
         
         :return: An HTTPResponse object.
         """
+        #
         # Everything went well!
+        #
+
         rdata = req.get_data()
+
         if not rdata:
-            msg = ('%s %s returned HTTP code "%s"' %
-                   (req.get_method(),
+            args = (req.get_method(),
                     urllib.unquote_plus(original_url),
-                    res.code))
+                    res.code)
+
+            msg = '%s %s returned HTTP code "%s"'
+            msg %= args
+
         else:
             printable_data = urllib.unquote_plus(rdata)
             if len(rdata) > 75:
                 printable_data = '%s...' % printable_data[:75]
                 printable_data = printable_data.replace('\n', ' ')
                 printable_data = printable_data.replace('\r', ' ')
-                
-            msg = ('%s %s with data: "%s" returned HTTP code "%s"'
-                   % (req.get_method(),
-                      original_url,
-                      printable_data,
-                      res.code))
+
+            args = (req.get_method(),
+                    original_url,
+                    printable_data,
+                    res.code)
+
+            msg = '%s %s with data: "%s" returned HTTP code "%s"'
+            msg %= args
 
         from_cache = hasattr(res, 'from_cache') and res.from_cache
 
@@ -1155,8 +1172,14 @@ class ExtendedUrllib(object):
         http_resp.set_from_cache(from_cache)
         http_resp.set_debugging_id(req.debugging_id)
 
-        args = (res.id, from_cache, grep, http_resp.get_wait_time(), req.debugging_id)
-        flags = ' (id=%s,from_cache=%i,grep=%i,rtt=%.2f,did=%s)' % args
+        args = (res.id,
+                from_cache,
+                grep,
+                http_resp.get_wait_time(),
+                http_resp.get_body_length(),
+                req.debugging_id)
+        flags = ' (id:%s, from_cache:%i, grep:%i, rtt:%.2f, body:%s, did:%s)'
+        flags %= args
 
         msg += flags
         om.out.debug(msg)
@@ -1182,10 +1205,24 @@ class ExtendedUrllib(object):
             args = (req, req.debugging_id, url_error)
             om.out.debug(msg % args)
 
+            #
             # Before sending it again we update the timeout, which could have
             # changed because of the error we just found
+            #
             host = req.get_host()
             req.set_timeout(self.get_timeout(host))
+
+            #
+            # And for retries we force a new connection to be used to increase
+            # the chances of successfully retrieving a response
+            #
+            # TCP/IP connections are closed every time they receive an error and
+            # shouldn't be used anymore to send any HTTP requests. That is
+            # responsibility of the keepalive.handler code. So it should never
+            # happen, even without the next line of code, that a connection that
+            # triggered a timeout is re-used. The next line is to be 100% sure
+            #
+            req.set_new_connection(True)
 
             return self.send(req, grep=grep)
         

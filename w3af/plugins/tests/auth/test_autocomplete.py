@@ -18,11 +18,15 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import unittest
+
 from httpretty import httpretty
+from mock import Mock
 
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
+from w3af.plugins.auth.autocomplete import autocomplete
 from w3af.core.data.parsers.doc.url import URL
 
 USER = 'user@mail.com'
@@ -203,17 +207,85 @@ class TestAutocompleteInvalidCredentials(PluginTest):
         info = infos[0]
 
         expected_desc = (
-            'The authentication plugin failed to get a valid application session using the user-provided configuration settings.\n'
+            'The `autocomplete` authentication plugin was never able to authenticate and get a valid application session using the user-provided configuration settings\n'
             '\n'
-            'The plugin generated the following log messages:\n'
+            'The following are the last log messages from the authentication plugin:\n'
             '\n'
-            'Logging into the application with user: user@mail.com\n'
-            'Login form with action http://w3af.org/login_post.py found in HTTP response with ID 21\n'
-            'Login form sent to http://w3af.org/login_post.py in HTTP request ID 22\n'
-            'Checking if session for user user@mail.com is active\n'
-            'User "user@mail.com" is NOT logged into the application, the `check_string` was not found in the HTTP response with ID 23.'
+            ' - Logging into the application with user: user@mail.com\n'
+            ' - Login form with action http://w3af.org/login_post.py found in HTTP response with ID 21\n'
+            ' - Login form sent to http://w3af.org/login_post.py in HTTP request ID 22\n'
+            ' - Checking if session for user user@mail.com is active\n'
+            ' - User "user@mail.com" is NOT logged into the application, the `check_string` was not found in the HTTP response with ID 23.'
         )
 
         self.assertEqual(info.get_name(), 'Authentication failure')
         self.assertEqual(info.get_desc(with_id=False), expected_desc)
         self.assertEqual(info.get_id(), [21, 22, 23])
+
+
+class TestAutocompleteAuthenticationFailure(unittest.TestCase):
+    def test_consecutive_authentication_failure(self):
+        plugin = autocomplete()
+        kb.kb.cleanup()
+
+        for i in xrange(autocomplete.MAX_CONSECUTIVE_FAILED_LOGIN_COUNT - 1):
+            plugin._log_debug(str(i))
+            plugin._handle_authentication_failure()
+
+            infos = kb.kb.get('authentication', 'error')
+            self.assertEqual(len(infos), 0)
+
+        plugin._handle_authentication_failure()
+
+        infos = kb.kb.get('authentication', 'error')
+        self.assertEqual(len(infos), 1)
+        info = infos[0]
+
+        expected_desc = ('The authentication plugin failed 3 consecutive times to get a valid application session using the user-provided configuration settings.\n'
+                         '\n'
+                         'The `autocomplete` authentication plugin will be disabled.\n'
+                         '\n'
+                         'The following are the last log messages from the authentication plugin:\n'
+                         '\n'
+                         ' - 0\n'
+                         ' - 1')
+
+        self.assertEqual(info.get_name(), 'Authentication failure')
+        self.assertEqual(info.get_desc(with_id=False), expected_desc)
+        self.assertEqual(info.get_id(), [])
+
+    def test_mixed_authentication_results(self):
+        plugin = autocomplete()
+        kb.kb.cleanup()
+
+        for i in xrange(autocomplete.MAX_CONSECUTIVE_FAILED_LOGIN_COUNT):
+            plugin._log_debug(str(i))
+            plugin._handle_authentication_failure()
+            plugin._handle_authentication_success(Mock())
+
+            infos = kb.kb.get('authentication', 'error')
+            self.assertEqual(len(infos), 0)
+
+        plugin._handle_authentication_failure()
+
+        infos = kb.kb.get('authentication', 'error')
+        self.assertEqual(len(infos), 0)
+
+    def test_mixed_authentication_results_fail_fail_success(self):
+        plugin = autocomplete()
+        kb.kb.cleanup()
+
+        for i in xrange(autocomplete.MAX_CONSECUTIVE_FAILED_LOGIN_COUNT):
+            plugin._log_debug(str(i))
+
+            plugin._handle_authentication_failure()
+            plugin._handle_authentication_failure()
+            plugin._handle_authentication_success(Mock())
+
+            infos = kb.kb.get('authentication', 'error')
+            self.assertEqual(len(infos), 0)
+
+        plugin._handle_authentication_failure()
+
+        infos = kb.kb.get('authentication', 'error')
+        self.assertEqual(len(infos), 0)

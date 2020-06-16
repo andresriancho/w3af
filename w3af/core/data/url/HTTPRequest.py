@@ -148,6 +148,12 @@ class HTTPRequest(RequestMixIn, urllib2.Request):
     def set_timeout(self, timeout):
         self.timeout = timeout
 
+    def set_new_connection(self, new_connection):
+        self.new_connection = new_connection
+
+    def get_new_connection(self):
+        return self.new_connection
+
     def to_dict(self):
         serializable_dict = {}
         sdict = serializable_dict

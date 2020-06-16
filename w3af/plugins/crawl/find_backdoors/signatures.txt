@@ -7,8 +7,11 @@ JspWebshell
 PHPShell
 phpRemoteView
 JspSpy
+jspspy
+<title>jspx</title>
 <title>Mini Php Shell
 <title>r57Shell
+<title>r57shell
 Simple CGI backdoor by DK
 JFolder
 NIX REMOTE WEB-SHELL
@@ -31,6 +34,7 @@ MyShell
 fuckjp
 yoco
 backdoor\.jsp
+<input type="TEXT" name="cmd" id="cmd" size="80"
 <input type=text name=".CMD" size=45 value=
 <title>ZoRBaCK Connect</title>
 hkmjj
@@ -81,3 +85,230 @@ lpl38
 <FORM METHOD=GET ACTION='cmdjsp\.jsp'>
 jsp web shell
 Cod3rZ
+
+# Auto scrapped from https://github.com/tennc/webshell at 05.02.2020
+<title>xynu\-Normal University</title>
+<title>CGI\-Telnet Version 1\.0</title>
+<title>PPS 3\.5</title>
+<title>PPS 3\.0</title>
+<title>PPS 4\.0</title>
+<title>PPS 1\.0</title>
+<title>shell\.cgi
+<title>Gamma Web Shell</title>
+<title>Silic Group Hacker Army \- BlackBap\.Org</title>
+<title>::Network Security Team::</title>
+<title>ASPXspy by NightRunner</title>
+<title>Web Manager</title>
+<title>Antak Webshell</title>
+<title>command</title>
+<title>Command</title>
+<title>filesystembrowser</title>
+<title>ASPXspy</title>
+<title>xxooxx</title>
+<title>"\&nkw\&" \- "\&jmc\&" </title>
+<title>ASPYDrvsInfo</title>
+<title>ASPyQAnalyser</title>
+<title>"\&mNametitle\&" \- "\&ServerIP\&" </title>
+<title>WwW\.SaNaLTeRoR\.OrG \- inDEXER And ReaDer</title>
+<title>"\&nimajb\&" \- "\&nimajbm\&" </title>
+<title>"\&mNametitle\&" \- "\&ServerIP\&"</title>
+<title>" \& aspTitle \& "</title>
+<title><%=xacj%></title>
+<title>Welcome To AK Team</title>
+<title>I\.N\.F HACKING CENTER \- <%=\#@\~\^CAAAAA==2MWm\	ls\+UQMAAA==\^\#\~@%> \- www\.infilak\.tr\.cx</title>
+<title><%=\#@\~\^CAAAAA==2MWm\	ls\+UQMAAA==\^\#\~@%></title>
+<title>Authentication</title>
+<title>\[ Directory Listing \]</title>
+<title><%= GetFirstWord\(sCmd\) %></title>
+<title>\[ Server Info For: <%= WNetwork\.ComputerName %> \]</title>
+<title>\[ Registry Editor \]</title>
+<title><%=mvvi%></title>
+<title>"\&mmname\&" \- "\&ServerIP\&"\-\-Soft \- "\&serversoft\&"</title>
+<title>JspSpy</title>
+<title>jspspy</title>
+<title>\.:: RHTOOLS 1\.5 BETA\(PVT\) ::\.</title>
+<title>zehir3 \-\-> powered by zehir \&lt;zehirhacker@hotmail\.com\&gt;</title>
+<title>Kacak FSO 1\.0 \| Terrorist Crew \- Saldiri\.Org</title>
+<title>\|\[NTDaddy v1\.9 \- obzerve \| fux0r inc\.\]</title>
+<title>\|\[NTDaddy v1\.9 \| anon email\]</title>
+<title>Remote Explorer</title>
+<title>Aventis KlasVayv 1\.0</title>
+<title>Deface Keeper 0\.2</title>
+<title>pang0</title>
+<title>SimAttacker \- Vrsion : 1\.0\.0 \- priv8 4 My friend </title>
+<title>Treeview</title>
+<title>r57shell</title>
+<title> nShell v1\.0</title>
+<title>SimShell \- Simorgh Security MGZ</title>
+<title>Simple PHP Mysql client</title>
+<title>LOTFREE PHP Backdoor v1\.5</title>
+<title>\-:\[GreenwooD\]:\- WinX Shell</title>
+<title> Matamu Mat </title>
+<title>Command Shell \~
+<title>shell@
+<title>iMHaBiRLiGi PhpFtp</title>
+<title>KA_uShell 0\.1\.6</title>
+<title>NetworkFileManagerPHP</title>
+<title>:: phpHS :: PHP HVA Shell Script ::</title>
+<title>webadmin\.php</title>
+<title>phpRemoteView: \$d\$f</title>
+<title>SnIpEr_SA shell</title>
+<title>Small Web Shell by ZaCo</title>
+\-\-= DxShell 1\.0 \- by o_O Tync =\-\- ::
+<title>MySQL Web Interface</title>
+<title>shell</title>
+c99madshell</title>
+<title>h4ntu shell \[powered by tsoi\]</title>
+<title>NIX REMOTE WEB\-SHELL v\.1\.0</title>
+<title>PHVayv 1\.0</title>
+<title>s72 Shell v1\.0 Codinf by Cr@zy_King</title>
+<title>\|\| \.::News Remote PHP Shell Injection::\. \|\|   </title>
+<title>GFS web\-shell ver 3\.1\.7</title>
+phpshell</title>
+<title>W3D Shell // By: Warpboy \\\\\\ SQL Shell</title>
+<title>Dive Shell \- Emperor Hacking Team</title>
+<title> Exploit: error_log\(\) By \* Super\-Crystal  \* </title>
+phpShell by
+<title>lama's'hell v\. 3\.0</title>
+<title>nsTView
+<title>nsT View
+FaTaL Shell v1\.0</title>
+<title>Ayyildiz Tim  \| AYT \| Shell v 2\.1 Biz B\&uuml;y\&uuml;k T\&uuml;rk Milletinin Hizmetindeyiz\.\.\.</title>
+<title>Ayyildiz\-Tim Shell
+<title>'\.getenv\("HTTP_HOST"\)\.' \- Antichat Shell</title>
+<title>Webcommander at
+Locus7Shell</title>
+<title>AK\-74 Security Team Web Shell</title>
+Storm7Shell</title>
+<title>\[  CL SQL Client  \]</title>
+<title>\.::Predator::\.</title>
+<title>Safe Mode Shell</title>
+Shell I</title>
+<title>CasuS 1\.5 by MafiABoY</title>
+<title>azrail 1\.0 by C\-W\-M</title>
+<title>Mysql interface</title>
+<title>NIX REMOTE WEB\-SHELL v\.0\.5 alpha Lite Public Version </title>
+<title>Ru24PostWebShell
+<title>  STNC WebShell
+<title>G\-Security Webshell</title>
+<title>PHPJackal</title>
+<title>GO\.cgi</title>
+<title>',\$Yh,'</title>
+Perl Web Shell by RST/GHC</title>
+<title>ZehirIV \-\-> Powered By Zehir \&lt;zehirhacker@hotmail\.com\&gt;</title>
+<title>\[AhmetDeniz\.Org\] ZehirIV \-\-> powered by zehir \&lt;zehirhacker@hotmail\.com\&gt;</title>
+<title>\.:: 3fexe Shell ::\.</title>
+<title>::: ELMALISEKER :::</title>
+<title>:::: DESERTSUN SERVER CRASHER ::::</title>
+<title>by EJDER</title>
+<title>EFSO 2\.0 For SaVSaK\.CoM </title>
+<title>Indonesian Defacer</title>
+<title>RHTOOLS 1\.5 BETA\(PVT\) Edited By KingDefacer</title>
+<title>\|\[NTDaddy  v1\.9  \-  obzerve  \|  fux0r  inc\.\]</title>
+<title>\|\[NTDaddy  v1\.9  \|  anon  email\]</title>
+<title>MOHAJER22</title>
+<title>SyRiAn Sh3ll \~ V7\~ \[ B3 Cr34T!V3 Or D!3 TRy!nG \]</title>
+<title>nsTView \- Edited By KingDefacer</title>
+<title>g00nshell
+404 Not Found Shell
+<title>r57Shell Edited By KingDefacer</title>
+Locus7Shell \- Edited By KingDefacer</title>
+<title>"\.getcwd\(\)\."</title>
+<title>:: C37 Shell v1\.1 \- ',\$_SERVER\['SERVER_NAME'\],' ::</title>
+<title>PhpShell 2\.0</title>
+<title>johnnyM@r00t \~</title>
+<title>\.::CBFTEAM SHELL::
+<title>EgY_SpIdEr ShElL</title>
+<title>EgY SpIdEr ShElL</title>
+<title>OverclockiX Shell\-Connector
+<title> CIH\.\[ms\] WebShell </title>
+<title>Ernealizm \- Edited By KingDefacer</title>
+<title> Exploit: error_log\(\) By \* erne   \* </title>
+<title>:: The r57 shell with modified by iFX :: listening L\\'Arc\~en\~Ciel \- MilkyWay::</title>
+<title>PHPJackal
+<title>BLaSTER</title>
+<title>HackArt EngShell
+<title>ex0shell Shell \& Edited By KingDefacer</title>
+<title>Mini Php Shell 27\.9 V2</title>
+<title>MulCiShell v2\.0 \- Edited By KingDefacer</title>
+<title>lostDC
+::: Balcan Crew ::: </title>
+<title> Exploit: error_log\(\) By \* StresBypass  \* </title>
+<title>Ani\-Shell \| India</title>
+<title>:: www\.h4ckcity\.org :: Coded By 2MzRp \& LocalMan ::</title>
+<title>powered by => IRC\.ASCNET\.BIZ <= \& => www\.asc\.sh <= </title>
+<title>www\.securedeath\.com</title>
+<title>Sosyete Safe Mode Bypass Shell \- Edited By KingDefacer</title>
+<title>Small Shell \- Edited By KingDefacer</title>
+<title>r57 bypass Shell Antichat Edition</title>
+<title>PhpSpy Ver 1\.5</title>
+<title>SimAttacker \- Version : 1\.0\.0 \- Edited By KingDefacer</title>
+<title>Lolipop\.php \- Edited By KingDefacer
+<title>Aria cPanel cracker version 1\.0 \- Edited By KingDefacer</title>
+<title>Php Backdoor v 1\.0 by \^Jerem</title>
+<title>PHP Shell
+N3t</title>
+<title>SoldiersofAllah Private Shell \| Edited By KingDefacer
+<title>\.:NCC:\. Shell v1\.0\.0</title>
+<title>Upload \- Shell/Datei</title>
+<title>\*  Hkrkoz  \* </title>
+<title> Exploit: error_log\(\) By \* TrYaG Team  \* </title>
+<title>GNY\.Shel! Encoded v1\.1  edited B\.Y \$c0rPi0n</title>
+<title>\*\*Coppermine Photo Gallery <= 1\.4\.3 remote cmmnds xctn
+
+<title>r57 shell</title>
+<title>Launch commands in
+<title>ASPXSpy1\.0 \-> Bin:\)</title>
+<title>ASP\.NET Web BackDoor</title>
+<title>:: WebAdmin 2\.X Final ::</title>
+<title>ScanWrtieable</title>
+<title>Chinese Hackers' Chating Room</title>
+<title>CFM shell</title>
+<title>H4x0r's cfmshell</title>
+<title>jshell ver 0\.1</title>
+<title>JspSpy Codz By \- Ninty</title>
+<title>::Silic Group::</title>
+<title>JFoler 0\.9 \-\-\-A jsp based web folder management tool by Steven Cee</title>
+<title>index</title>
+<title>JFoler 1\.0 \-\-\-A jsp based web folder management tool by Steven Cee</title>
+<title>IIS SPY</title>
+<title> r00ts Security Team New PHP Shell 2012\-2013 </title>
+<title>Dhanush : By Arjun</title>
+<title>=\[ 1n73ct10n privat shell \]=</title>
+<title>BukaLapak Account Checker </title>
+<title>Spammer's Mail \(Private\)</title>
+<title>',\$oh,'</title>
+<title>Pro Mailer V2</title>
+<title>Not Pound</title>
+<title>cor0\.id</title>
+<title>thecompanyart\.com \- c99madshell</title>
+<title>PHP Shell 2\.1</title>
+<title>Password Hasher for PHP Shell 2\.1</title>
+<title>WwW\.SeCuReDeAtH\.cOm</title>
+<title>INDRAJITH SHELL</title>
+<title>\{title\}</title>
+<title>\{\$Server_IP\} \- Silic Group php Webshell version 4</title>
+<title>INDRAJITH SHELL v\.2\.0</title>
+PoisonShell</title>
+<title>Gh0st1\.0</title>
+<title>\#Domains \& Users</title>
+<title>12309 '\.\$ver\.'</title>
+<title>PhpSpy Ver 2005</title>
+<title>PhpSpy Ver 2006</title>
+<title>Win MOF Shell</title>
+<title>Signin</title>
+<title>',\$Nf,'</title>
+<title>Weakerthan PHP Exec Shell \- 2015 WeakNet Labs</title>
+<title>Silic Group php Webshell version 4</title>
+<title>XXOO</title>
+<title>JspDo Code By Xiao\.3</title>
+<title>jquery esayui</title>
+<title>Powered By SJavaWebManage</title>
+<title>JspSpy Private Codz By \- Ninty</title>
+<title>JFoler 1\.0 </title>
+<title>Just For Fun</title>
+<title>hahahaha</title>
+<title>Upload</title>
+<title>pwnshell \- an interactive jsp shell</title>
+<title>xxx</title>
+<title>JspSpy Private Codz By \- Yu\-brother</title>

@@ -467,9 +467,18 @@ class TestSpecification(unittest.TestCase):
 
         data = [d for d in handler.get_api_information()]
 
-        # `_parse_spec_from_dict` raises max recursion while trying to resolve
-        # references for this (broken) model.
-        self.assertEqual(len(data), 0)
+        self.assertEqual(len(data), 1, data)
+
+        #
+        # Assertions on call #1
+        #
+        spec, api_resource_name, resource, operation_name, operation, parameters = data[0]
+
+        self.assertEqual(api_resource_name, 'pets')
+        self.assertEqual(operation_name, 'findPets')
+        self.assertEqual(operation.consumes, [u'application/json'])
+        self.assertEqual(operation.produces, [u'application/json', u'application/xml', u'text/xml', u'text/html'])
+        self.assertEqual(operation.path_name, '/pets')
 
     def test_dereferenced_pet_store(self):
         # See: dereferenced_pet_store.json , which was generated using

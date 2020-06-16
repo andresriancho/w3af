@@ -5,8 +5,8 @@ fuzzable_headers =
 fuzz_form_files = True
 fuzz_url_filenames = False
 max_discovery_time = 120
-
-non_targets = 
+blacklist_http_request = 
+blacklist_audit =
 local_ip_address = 127.0.0.1
 
 [target]
