@@ -19,12 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from w3af.core.controllers.chrome.login.find_form.strategies.base_find_form_strategy import \
+    BaseFindFormStrategy
 
 
-class FormTagStrategy(object):
-    def __init__(self, chrome, debugging_id):
-        self.chrome = chrome
-        self.debugging_id = debugging_id
+class FormTagStrategy(BaseFindFormStrategy):
 
     def find_forms(self):
         """
@@ -37,7 +36,7 @@ class FormTagStrategy(object):
         """
         :return: Yield forms that have username, password and submit inputs
         """
-        for login_form in self.chrome.get_login_forms():
+        for login_form in self.chrome.get_login_forms(self.exact_css_selectors):
             yield login_form
 
     @staticmethod

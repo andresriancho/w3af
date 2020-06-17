@@ -20,7 +20,10 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import Queue
+from copy import deepcopy
 
+from w3af.core.data.options.opt_factory import opt_factory
+from w3af.core.data.options.option_types import STRING
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.controllers.chrome.instrumented.main import InstrumentedChrome
 from w3af.core.controllers.chrome.login.find_form.main import FormFinder
@@ -35,6 +38,11 @@ class autocomplete_js(autocomplete):
 
     def __init__(self):
         autocomplete.__init__(self)
+
+        # default values for autocomplete_js options
+        self.username_field_css_selector = ''
+        self.login_button_css_selector = ''
+        self.login_form_activator_css_selector = ''
 
         self._login_form = None
         self._http_traffic_queue = None
@@ -81,6 +89,7 @@ class autocomplete_js(autocomplete):
         return True
 
     def _handle_authentication_success(self):
+        self._login_result_log.append(True)
         #
         # Logging
         #
@@ -129,7 +138,12 @@ class autocomplete_js(autocomplete):
         :param chrome: The chrome instance to use during login
         :return: True if login was successful
         """
-        raise NotImplementedError
+        form_submit_strategy = self._find_form_submit_strategy(chrome, self._login_form)
+        if form_submit_strategy is None:
+            return False
+        self._login_form.set_submit_strategy(form_submit_strategy)
+        self._log_debug('Identified valid login form: %s' % self._login_form)
+        return True
 
     def _login_and_save_form(self, chrome):
         """
@@ -207,8 +221,13 @@ class autocomplete_js(autocomplete):
          * Use the FormFinder class to yield all existing forms
         """
         form_finder = FormFinder(chrome, self._debugging_id)
+        css_selectors = {
+            'username_input': self.username_field_css_selector,
+            'login_button': self.login_button_css_selector,
+            'form_activator': self.login_form_activator_css_selector,
+        }
 
-        for form in form_finder.find_forms():
+        for form in form_finder.find_forms(css_selectors):
 
             msg = 'Found potential login form: %s'
             args = (form,)
@@ -239,7 +258,10 @@ class autocomplete_js(autocomplete):
 
         for form_submit_strategy in form_submitter.submit_form():
 
-            if not self.has_active_session(debugging_id=self._debugging_id):
+            if not self.has_active_session(debugging_id=self._debugging_id, chrome=chrome):
+                msg = '%s is invalid form submit strategy for %s'
+                args = (form_submit_strategy.get_name(), form)
+                self._log_debug(msg % args)
                 # No need to set the state of the chrome browser back to the
                 # login page, that is performed inside the FormSubmitter
                 continue
@@ -256,21 +278,88 @@ class autocomplete_js(autocomplete):
 
         return None
 
-    def has_active_session(self, debugging_id=None):
+    def has_active_session(self, debugging_id=None, chrome=None):
         """
         Check user session with chrome
+        :param str debugging_id: string representing debugging id.
+        :param InstrumentedChrome chrome: chrome instance passed from outer scope
+        to reuse. EDGE CASE EXAMPLE:
+        Sometimes we don't want to create new chrome instance. For example
+        when we login for the first time to webapp and in _find_form_submit_strategy()
+        we just pressed enter in login form. Browser may take some actions under
+        the hood like sending XHR to backend API and after receiving response
+        setting API token at localStorage. Before token will be saved to localStorage
+        it may exist only in webapp's code, so using the same chrome will prevent
+        us from performing check without credentials.
         """
         has_active_session = False
+        is_new_chrome_instance_created = False
         self._set_debugging_id(debugging_id)
-        chrome = self._get_chrome_instance(load_url=False)
+        if not chrome or not chrome.chrome_conn:
+            chrome = self._get_chrome_instance(load_url=False)
+            is_new_chrome_instance_created = True
 
         try:
             chrome.load_url(self.check_url)
             chrome.wait_for_load()
             has_active_session = self.check_string in chrome.get_dom()
         finally:
-            chrome.terminate()
+            if is_new_chrome_instance_created:
+                chrome.terminate()
             return has_active_session
+
+    def get_options(self):
+        """
+        :returns OptionList: list of option objects for plugin
+        """
+        option_list = super(autocomplete_js, self).get_options()
+        autocomplete_js_options = [
+            (
+                'username_field_css_selector',
+                self.username_field_css_selector,
+                STRING,
+                "(Optional) Exact CSS selector which will be used to retrieve "
+                "the username input field. When provided the scanner is not going"
+                " to try to detect the input field in an automated way"
+            ),
+            (
+                'login_button_css_selector',
+                self.login_button_css_selector,
+                STRING,
+                "(Optional) Exact CSS selector which will be used to retrieve "
+                "the login button field. When provided the scanner is not going "
+                "to try to detect the login button in an automated way"
+            ),
+            (
+                'login_form_activator_css_selector',
+                self.login_form_activator_css_selector,
+                STRING,
+                "(Optional) Exact CSS selector for the element which needs to be "
+                "clicked to show login form."
+            )
+        ]
+        for option in autocomplete_js_options:
+            option_list.add(opt_factory(
+                option[0],
+                option[1],
+                option[3],
+                option[2],
+                help=option[3],
+            ))
+        return option_list
+
+    def set_options(self, options_list):
+        options_list_copy = deepcopy(options_list)  # we don't want to touch real option_list
+        self.username_field_css_selector = options_list_copy.pop(
+            'username_field_css_selector'
+        ).get_value()
+        self.login_button_css_selector = options_list_copy.pop(
+            'login_button_css_selector'
+        ).get_value()
+        self.login_form_activator_css_selector = options_list_copy.pop(
+            'login_form_activator_css_selector'
+        ).get_value()
+        super(autocomplete_js, self).set_options(options_list_copy)
 
     def get_long_desc(self):
         """
@@ -283,7 +372,15 @@ class autocomplete_js(autocomplete):
         
         The plugin loads the `login_form_url` to obtain the login form, automatically
         identifies the inputs where the `username` and `password` should be entered,
-        and then submits the form by clicking on the login button.
+        and then submits the form by clicking on the login button. You can specify
+        the exact CSS selectors (like ".login > input #password") in
+        `username_filed_css_selector` and `login_button_css_selector` to force
+        plugin to use those selectors in case when it can't find username field
+        or login button automatically.
+
+        If the page requires to click on something to show the login form you
+        can set `login_form_activator_css_selector` and scanner will use it
+        find and click on element
 
         The following configurable parameters exist:
             - username
@@ -291,4 +388,7 @@ class autocomplete_js(autocomplete):
             - login_form_url
             - check_url
             - check_string
+            - username_field_css_selector
+            - login_button_css_selector
+            - login_form_activator_css_selector
         """
