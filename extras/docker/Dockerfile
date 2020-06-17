@@ -79,6 +79,9 @@ RUN sed 's/apt-get/apt-get -y/g' -i /tmp/w3af_dependency_install.sh
 RUN sed 's/pip install/pip install --upgrade/g' -i /tmp/w3af_dependency_install.sh
 RUN /tmp/w3af_dependency_install.sh
 
+# install test dependencies
+RUN pip install -r w3af/tests/requirements.txt
+
 # Compile the py files into pyc in order to speed-up w3af's start
 RUN python -m compileall -q .
 
