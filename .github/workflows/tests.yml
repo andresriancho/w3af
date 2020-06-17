@@ -24,4 +24,4 @@ jobs:
       run: docker build -t andresriancho/w3af:test-action .
 
     - name: run w3af tests
-      run: docker run andresriancho/w3af:test-action pytest
+      run: docker run andresriancho/w3af:test-action pytest --ignore=w3af/core/ui/ --ignore=src/
