@@ -11,6 +11,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-18.04
+    timeout-minutes: 60
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
@@ -22,6 +23,8 @@ jobs:
 
     - name: build Docker image
       run: docker build -t andresriancho/w3af:test-action .
+      timeout-minutes: 10
 
     - name: run w3af tests
       run: docker run andresriancho/w3af:test-action pytest --ignore=w3af/core/ui/ --ignore=src/
+      timeout-minutes: 15
