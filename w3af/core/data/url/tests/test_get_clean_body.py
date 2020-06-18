@@ -23,6 +23,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import unittest
 import urllib
 
+import pytest
+
 from w3af.core.data.url.helpers import get_clean_body, apply_multi_escape_table
 from w3af.core.data.misc.web_encodings import SPECIAL_CHARS
 from w3af.core.data.parsers.doc.url import URL
@@ -32,6 +34,7 @@ from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.fuzzer.mutants.tests.test_mutant import FakeMutant
 
 
+@pytest.mark.deprecated
 class TestGetCleanBody(unittest.TestCase):
     def test_get_clean_body_simple(self):
         payload = 'payload'

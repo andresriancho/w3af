@@ -21,5 +21,9 @@ def watch(scan_log_filename, scan, function_name):
             if output is not None:
                 output.to_console()
 
-            time.sleep(5)
+            try:
+                time.sleep(5)
+            except KeyboardInterrupt:
+                sys.exit(0)
+
             clear_screen()

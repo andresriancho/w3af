@@ -84,6 +84,27 @@ class CacheHandler(urllib2.BaseHandler):
     def http_response(self, request, response):
         # Set unique numeric identifier
         request.id = response.id = core_num_gen.inc()
+
+        #
+        # TODO: CacheHandler must be refactored. This class is doing two
+        #       related but different tasks:
+        #
+        #           1- Storing HTTP requests and responses in a DB
+        #
+        #           2- Answering HTTP requests by querying the DB (caching)
+        #
+        #       The problem is that all HTTP responses need to be stored in the
+        #       database, but only a few of those (the ones with the proper headers)
+        #       need to be answered by default_open()
+        #
+        #       Maybe when storing the HTTP request and response we could inspect
+        #       the HTTP response headers for cache indicators, and store the
+        #       "can be returned from cache" boolean in a DB column
+        #
+        #       The new DB column would then be used by `exists_in_cache` (see
+        #       above) to decide if the response should be returned from the
+        #       cache
+        #
         CacheClass.store_in_cache(request, response)
         return response
 

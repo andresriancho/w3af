@@ -35,7 +35,8 @@ from w3af.core.data.fuzzer.mutants.querystring_mutant import QSMutant
 from w3af.core.data.fuzzer.mutants.postdata_mutant import PostDataMutant
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.kb.vuln import Vuln
-from w3af.core.controllers.misc.diff import chunked_diff
+from w3af.core.controllers.diff.diff import chunked_diff
+from w3af.core.controllers.diff.sequence_matcher import SequenceMatcherTimeoutException
 from w3af.core.controllers.misc.epoch_to_string import epoch_to_string
 from w3af.core.controllers.plugins.bruteforce_plugin import BruteforcePlugin
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
@@ -524,9 +525,17 @@ class FailedLoginPage(object):
             return False
 
         if self.diff_a_b is None:
-            self.diff_a_b, _ = chunked_diff(self.body_a, self.body_b)
+            try:
+                self.diff_a_b, _ = chunked_diff(self.body_a, self.body_b)
+            except SequenceMatcherTimeoutException:
+                om.out.debug('FailedLoginPage.matches() timed out at chunked_diff()')
+                return False
 
-        _, diff_query_a = chunked_diff(self.body_a, query)
+        try:
+            _, diff_query_a = chunked_diff(self.body_a, query)
+        except SequenceMatcherTimeoutException:
+            om.out.debug('FailedLoginPage.matches() timed out at chunked_diff()')
+            return False
 
         # Had to add this in order to prevent issues with CSRF tokens, which
         # might be part of the HTTP response body, are random (not removed by

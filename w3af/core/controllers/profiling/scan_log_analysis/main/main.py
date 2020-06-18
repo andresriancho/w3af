@@ -7,6 +7,7 @@ from data.errors import get_errors
 from data.consumer_join_times import get_consumer_join_times
 from data.scan_finished_in import get_scan_finished_in
 from data.crawling_stats import get_crawling_stats
+from data.js_crawling_stats import get_js_crawling_stats
 from data.bruteforce import get_bruteforce_data
 from data.http_requests import get_total_http_requests
 from data.http_errors import get_http_errors
@@ -33,6 +34,7 @@ from graphs.should_grep_stats import draw_should_grep, get_should_grep_data
 from graphs.not_found_requests import get_not_found_requests_over_time_data, draw_not_found_requests_over_time
 from graphs.not_found_cache_rate import get_not_found_cache_rate_data, draw_not_found_cache_rate_over_time
 from graphs.progress_delta import show_progress_delta
+from graphs.not_found_timeouts import draw_not_found_timeouts, get_not_found_timeouts_summary
 from graphs.crawl_queue_size import draw_queue_size_crawl, get_queue_size_crawl_data
 from graphs.grep_queue_size import draw_queue_size_grep, get_queue_size_grep_data
 from graphs.audit_queue_size import draw_queue_size_audit, get_queue_size_audit_data
@@ -60,10 +62,12 @@ def get_console_functions():
         get_not_found_requests,
         draw_not_found_requests_over_time,
         draw_not_found_cache_rate_over_time,
+        draw_not_found_timeouts,
         get_time_waited_by_workers,
         draw_connection_pool_wait,
         draw_http_requests_over_time,
         get_crawling_stats,
+        get_js_crawling_stats,
         #generate_crawl_graph,                  ######
         draw_should_grep,
         draw_queue_size_grep,
@@ -105,10 +109,12 @@ def get_json_functions():
         get_not_found_requests,
         get_not_found_requests_over_time_data,
         get_not_found_cache_rate_data,
+        get_not_found_timeouts_summary,
         get_connection_pool_wait_data,
         get_time_waited_by_workers,
         get_http_requests_over_time_data,
         get_crawling_stats,
+        get_js_crawling_stats,
         #generate_crawl_graph,      ######
         get_should_grep_data,
         get_queue_size_grep_data,

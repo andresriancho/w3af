@@ -330,9 +330,6 @@ class FuzzableRequest(RequestMixIn, DiskItem):
         """
         :return: A string representation of this fuzzable request.
         """
-        short_fmt = u'Method: %s | %s'
-        long_fmt = u'Method: %s | %s | %s: (%s)'
-
         if self.get_raw_data():
             parameters = self.get_raw_data().get_param_names()
             dc_type = self.get_raw_data().get_type()
@@ -341,11 +338,17 @@ class FuzzableRequest(RequestMixIn, DiskItem):
             dc_type = self.get_uri().querystring.get_type()
 
         if not parameters:
-            output = short_fmt % (self.get_method(), self.get_url())
+            fmt = u'Method: %s | %s'
+            args = (self.get_method(), self.get_url())
+            output = fmt % args
         else:
+            fmt = u'Method: %s | %s | %s: (%s)'
             jparams = u', '.join(parameters)
-            output = long_fmt % (self.get_method(), self.get_url(),
-                                 dc_type, jparams)
+            args = (self.get_method(),
+                    self.get_url(),
+                    dc_type,
+                    jparams)
+            output = fmt % args
 
         return output.encode(DEFAULT_ENCODING)
 

@@ -23,8 +23,10 @@ from collections import namedtuple
 from functools import partial
 
 import w3af.core.data.constants.severity as severity
+import w3af.core.controllers.output_manager as om
 
-from w3af.core.controllers.misc.diff import chunked_diff
+from w3af.core.controllers.diff.diff import chunked_diff
+from w3af.core.controllers.diff.sequence_matcher import SequenceMatcherTimeoutException
 from w3af.core.controllers.plugins.audit_plugin import AuditPlugin
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_equal
 from w3af.core.controllers.exceptions import HTTPRequestException
@@ -95,7 +97,9 @@ class memcachei(AuditPlugin):
 
         compare_diff = False
 
-        if self.equal_with_limit(orig_body, body_error_1_response):
+        if self.equal_with_limit(orig_body,
+                                 body_error_1_response,
+                                 debugging_id=debugging_id):
             #
             # if we manage to break execution flow with the invalid memcache
             # syntax, there is a potential injection otherwise - no injection!
@@ -109,7 +113,8 @@ class memcachei(AuditPlugin):
 
         if self.equal_with_limit(body_error_1_response,
                                  body_ok_response,
-                                 compare_diff=compare_diff):
+                                 compare_diff=compare_diff,
+                                 debugging_id=debugging_id):
             #
             # The "OK" and "ERROR_1" responses are equal, this means that
             # we're not in a memcached injection
@@ -122,7 +127,8 @@ class memcachei(AuditPlugin):
 
         if self.equal_with_limit(orig_body,
                                  body_error_2_response,
-                                 compare_diff=compare_diff):
+                                 compare_diff=compare_diff,
+                                 debugging_id=debugging_id):
             #
             # now requests should be different again, otherwise injection
             # is not confirmed
@@ -132,7 +138,8 @@ class memcachei(AuditPlugin):
         # The two errors should look very similar for a memcache inj to exist
         if not self.equal_with_limit(body_error_1_response,
                                      body_error_2_response,
-                                     compare_diff=compare_diff):
+                                     compare_diff=compare_diff,
+                                     debugging_id=debugging_id):
             return
 
         response_ids = [error_1_response.id,
@@ -151,13 +158,18 @@ class memcachei(AuditPlugin):
 
         self.kb_append_uniq(self, 'memcachei', v)
 
-    def equal_with_limit(self, body1, body2, compare_diff=False):
+    def equal_with_limit(self, body1, body2, compare_diff=False, debugging_id=None):
         """
         Determines if two pages are equal using a ratio, if compare_diff is set
         then we just compare the parts of the response bodies which are different.
         """
         if compare_diff:
-            body1, body2 = chunked_diff(body1, body2)
+            try:
+                body1, body2 = chunked_diff(body1, body2)
+            except SequenceMatcherTimeoutException:
+                msg = 'equal_with_limit() timed out at chunked_diff() (did: %s)'
+                om.out.debug(msg % debugging_id)
+                return False
 
         cmp_res = fuzzy_equal(body1, body2, self._eq_limit)
         return cmp_res

@@ -40,7 +40,23 @@ class IntegerOption(BaseOption):
 
     def validate(self, value):
         try:
-            return int(value)
+            integer_value = int(value)
         except:
             msg = 'Invalid integer option value "%s".' % value
             raise BaseFrameworkException(msg)
+
+        # If there are any options, we need to validate them now
+        _min = self.get_options().get('min')
+        _max = self.get_options().get('max')
+
+        if _min is not None:
+            if integer_value < _min:
+                msg = 'Expected a value greater than %s.' % _min
+                raise BaseFrameworkException(msg)
+
+        if _max is not None:
+            if integer_value > _max:
+                msg = 'Expected a value lower than %s.' % _max
+                raise BaseFrameworkException(msg)
+
+        return integer_value

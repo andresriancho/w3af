@@ -455,7 +455,15 @@ class PluginTest(unittest.TestCase):
         default_opts['http_output_file'].set_value(http_output)
         default_opts['verbose'].set_value(True)
 
-        print('Logging to %s' % text_output)
+        print('')
+        print('    Logging to %s' % text_output)
+
+        latest_output = os.path.join(tempfile.gettempdir(), 'latest-w3af-output.txt')
+        if os.path.exists(latest_output):
+            os.remove(latest_output)
+
+        os.symlink(text_output, latest_output)
+        print('    Symlink to log file created at %s' % latest_output)
 
         self.w3afcore.plugins.set_plugin_options(ptype, pname, default_opts)
 

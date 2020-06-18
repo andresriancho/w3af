@@ -27,7 +27,7 @@ from w3af.core.controllers.dependency_check.platforms.mac import MacOSX
 from w3af.core.data.bloomfilter.seekfile_bloom import FileSeekBloomFilter\
     as FileSeekFilter
 
-if MacOSX.is_current_platform():
+if MacOSX().is_current_platform():
     # Awful workaround for Mac OS X:
     # https://github.com/andresriancho/w3af/issues/485
     WrappedBloomFilter = FileSeekFilter

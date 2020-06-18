@@ -10,6 +10,7 @@ from utils.utils import (get_first_timestamp,
 
 SHOULD_GREP_STATS = re.compile("Grep consumer should_grep\\(\\) stats: (.*)$")
 
+
 def to_dict(match_data):
     match_data = match_data.replace("'", '"')
     return json.loads(match_data)

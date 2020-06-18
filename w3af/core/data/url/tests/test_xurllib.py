@@ -74,6 +74,18 @@ class TestXUrllib(unittest.TestCase):
         self.assertGreaterEqual(http_response.id, 1)
         self.assertNotEqual(http_response.id, None)
 
+    @httpretty.activate
+    def test_redir_content_length_zero(self):
+        httpretty.register_uri(httpretty.GET, self.MOCK_URL,
+                               body='', status=301,
+                               adding_headers={'content-length': 0,
+                                               'location': self.MOCK_URL,
+                                               'connection': 'keep-alive'})
+
+        url = URL(self.MOCK_URL)
+        http_response = self.uri_opener.GET(url, cache=False)
+        self.assertEqual(http_response.get_code(), 301)
+
     @pytest.mark.deprecated
     def test_basic_ssl(self):
         url = URL(get_moth_https())
@@ -454,15 +466,13 @@ class TestXUrllib(unittest.TestCase):
         body = 'abc'
         mock_url = 'https://localhost:%s/' % port
         url = URL(mock_url)
-        http_response = self.uri_opener.GET(url, cache=False)
+
+        try:
+            http_response = self.uri_opener.GET(url, cache=False)
+        finally:
+            s.stop()
 
         self.assertEqual(body, http_response.body)
-        s.stop()
-
-        # This error is expected, it's generated when the xurllib negotiates
-        # the different SSL protocols with the server
-        self.assertEqual(set([e.strerror for e in s.errors]),
-                         {'Bad file descriptor'})
 
     def test_rate_limit_high(self):
         self.rate_limit_generic(500, 0.009, 0.4)

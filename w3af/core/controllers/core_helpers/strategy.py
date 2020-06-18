@@ -164,6 +164,7 @@ class CoreStrategy(object):
             self._teardown_observers()
 
     def stop(self):
+        om.out.debug('Called strategy.stop()')
         self.terminate()
         om.out.debug('strategy.stop() completed')
         
@@ -177,6 +178,8 @@ class CoreStrategy(object):
         Consume (without processing) all queues with data which are in
         the consumers and then send a poison-pill to that queue.
         """
+        om.out.debug('Called strategy.terminate()')
+
         consumers = ['discovery', 'audit', 'auth', 'bruteforce', 'grep']
 
         for consumer in consumers:
@@ -397,6 +400,7 @@ class CoreStrategy(object):
 
                 elif isinstance(result_item, ExceptionData):
                     self._handle_consumer_exception(result_item)
+
                 else:
                     _, _, fuzzable_request_inst = result_item
 

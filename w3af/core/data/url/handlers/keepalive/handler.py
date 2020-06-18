@@ -38,8 +38,10 @@ from httplib import _is_legal_header_name, _is_illegal_header_value
 
 from .utils import debug, error, to_utf8_raw
 from .connection_manager import ConnectionManager
-from .connections import (ProxyHTTPConnection, ProxyHTTPSConnection,
-                          HTTPConnection, HTTPSConnection)
+from .connections import (ProxyHTTPConnection,
+                          ProxyHTTPSConnection,
+                          HTTPConnection,
+                          HTTPSConnection)
 from w3af.core.controllers.exceptions import (BaseFrameworkException,
                                               HTTPRequestException,
                                               ConnectionPoolException)
@@ -94,8 +96,13 @@ class KeepAliveHandler(object):
         host is the host:port spec, as in 'www.cnn.com:8080' as passed in.
         no error occurs if there is no connection to that host.
         """
+        closed_connections = 0
+
         for conn in self._cm.get_all(host):
             self._cm.remove_connection(conn, reason='close connection')
+            closed_connections += 1
+
+        return closed_connections
 
     def close_all(self):
         """

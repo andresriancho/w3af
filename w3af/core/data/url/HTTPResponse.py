@@ -80,12 +80,14 @@ class HTTPResponse(DiskItem):
                  '_alias',
                  '_doc_type',
                  '_body_lock',
-                 '_debugging_id')
+                 '_debugging_id',
+                 '_warned_no_content_type',
+                 '_force_parsing')
 
     def __init__(self, code, read, headers, geturl, original_url,
                  msg='OK', _id=None, time=DEFAULT_WAIT_TIME, alias=None,
                  charset=None, binary_response=False, set_body=False,
-                 debugging_id=None):
+                 debugging_id=None, force_parsing=False):
         """
         :param code: HTTP code
         :param read: HTTP body text; typically a string
@@ -118,6 +120,7 @@ class HTTPResponse(DiskItem):
 
         self._charset = charset
         self._headers = None
+        self._warned_no_content_type = False
 
         if set_body and isinstance(read, unicode):
             # We use this case for deserialization via from_dict()
@@ -158,6 +161,7 @@ class HTTPResponse(DiskItem):
         self._alias = alias
         self._doc_type = None
         self._debugging_id = debugging_id
+        self._force_parsing = force_parsing
         
         # Internal lock
         self._body_lock = threading.RLock()
@@ -329,6 +333,14 @@ class HTTPResponse(DiskItem):
         dump = '%s%s' % args
 
         return self._quick_hash(dump)
+
+    @property
+    def force_parsing(self):
+        return self._force_parsing
+
+    @force_parsing.setter
+    def force_parsing(self, force_parsing):
+        self._force_parsing = force_parsing
 
     def get_body(self):
         if self._body is not None:
@@ -641,7 +653,8 @@ class HTTPResponse(DiskItem):
             _body = raw_body
             charset = DEFAULT_CHARSET
 
-            if _body:
+            if _body and not self._warned_no_content_type:
+                self._warned_no_content_type = True
                 msg = ('The remote web server failed to send the CONTENT_TYPE'
                        ' header in HTTP response with id %s')
                 om.out.debug(msg % self.id)

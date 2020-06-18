@@ -363,14 +363,13 @@ def remove_using_lower_case(body, body_lower, to_replace):
         index_l = body_lower.find(to_replace, idx)
 
         if index_l == -1:
-            return body, body_lower
+            return body, body.lower()
 
         body = body[:index_l] + body[index_l + to_replace_len:]
-        body_lower = body.lower()
 
-        idx = index_l + 1
+        idx = index_l
 
-    return body, body_lower
+    return body, body.lower()
 
 
 def get_socket_exception_reason(error):

@@ -285,7 +285,12 @@ class TestURLParser(unittest.TestCase):
         
         self.assertEqual(u.url_join('/abc.html').url_string,
                          u'http://w3af.com/abc.html')
-    
+
+    def test_url_join_has_path(self):
+        u = URL('http://w3af.com/foo/')
+        self.assertEqual(u.url_join('abc.html').url_string,
+                         u'http://w3af.com/foo/abc.html')
+
     def test_url_join_case02(self):
         u = URL('http://w3af.com/')
         self.assertEqual(u.url_join('/abc.html').url_string,

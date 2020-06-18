@@ -68,7 +68,8 @@ class CommonAttackMethods(object):
             return False
 
         sequence_matcher = difflib.SequenceMatcher(lambda x: len(x) < 3,
-                                                   body_a, body_b)
+                                                   body_a,
+                                                   body_b)
 
         body_a_len = len(body_a)
         body_b_len = len(body_b)

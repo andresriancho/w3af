@@ -29,6 +29,10 @@ import resource
 import threading
 import multiprocessing
 
+# pylint: disable=E0611
+from setproctitle import setproctitle
+# pylint: enable=E0611
+
 from concurrent.futures import TimeoutError
 from tblib.decorators import Error
 from pebble import ProcessPool
@@ -393,6 +397,7 @@ def init_worker(log_queue, mem_limit):
     log_sink_factory(log_queue)
     start_profiling_no_core()
     limit_memory_usage(mem_limit)
+    setproctitle('html-parser')
 
 
 def limit_memory_usage(mem_limit):

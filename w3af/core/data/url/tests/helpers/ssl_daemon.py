@@ -81,6 +81,8 @@ class SSLServer(threading.Thread):
 
         self.errors = []
 
+        self.should_stop = False
+
     def accept(self):
         self.sock = ssl.wrap_socket(self.sock,
                                     server_side=True,
@@ -94,20 +96,28 @@ class SSLServer(threading.Thread):
 
         try:
             newsocket.do_handshake()
-        except:
+        except Exception, e:
             # The ssl certificate might request a connection with
             # SSL protocol v2 and that will "break" the handshake
             newsocket.close()
+            # print 'SSL do_handshake() failed: "%s"' % e
 
-        #print 'Connection from %s port %s, sending HTTP response' % fromaddr
+        # print 'Connection from %s port %s, sending HTTP response' % fromaddr
         try:
             newsocket.send(self.http_response)
         except Exception, e:
             self.errors.append(e)
-            #print 'Failed to send HTTP response to client: "%s"' % e
+            # print 'Failed to send HTTP response to client: "%s"' % e
         finally:
+            # If we don't sleep here the HTTP client might raise some exceptions
+            # while reading from the socket. This second gives the HTTP client
+            # time to read the HTTP response, process it, and if he wants call
+            # close()
+            time.sleep(1)
+
+            # Close the connection
+            # print 'Closed connection from %s port %s' % fromaddr
             newsocket.close()
-            #print 'Closed connection from %s port %s' % fromaddr
 
     def run(self):
         self.should_stop = False

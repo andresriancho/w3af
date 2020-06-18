@@ -57,6 +57,26 @@ class TestHTTPRequest(unittest.TestCase):
         self.assertEqual(req.__dict__.values(),
                          loaded_req.__dict__.values())
 
+    def test_with_no_data(self):
+        url = URL('http://www.w3af.com')
+        headers = Headers([('Host', 'www.w3af.com')])
+
+        req = HTTPRequest(url,
+                          data='',
+                          headers=headers,
+                          method='GET')
+
+        self.assertEqual(req.get_full_url(), 'http://www.w3af.com/')
+        self.assertEqual(req.get_uri().url_string, 'http://www.w3af.com/')
+        self.assertEqual(req.get_headers(), headers)
+        self.assertEqual(req.get_data(), '')
+
+        expected = '\r\n'.join(['GET http://www.w3af.com/ HTTP/1.1',
+                                'Host: www.w3af.com',
+                                '',
+                                ''])
+        self.assertEqual(req.dump(), expected)
+
     def test_to_dict_msgpack_with_data_token(self):
         token = DataToken('Host', 'www.w3af.com', ('Host',))
         headers = Headers([('Host', token)])

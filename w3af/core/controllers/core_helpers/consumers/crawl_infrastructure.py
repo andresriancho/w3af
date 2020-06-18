@@ -1,5 +1,5 @@
 """
-CrawlInfrastructure.py
+crawl_infrastructure.py
 
 Copyright 2012 Andres Riancho
 
@@ -48,7 +48,9 @@ class CrawlInfrastructure(BaseConsumer):
     again for continuing with the discovery process.
     """
 
-    def __init__(self, crawl_infrastructure_plugins, w3af_core,
+    def __init__(self,
+                 crawl_infrastructure_plugins,
+                 w3af_core,
                  max_discovery_time):
         """
         :param crawl_infrastructure_plugins: Instances of CrawlInfrastructure
@@ -528,10 +530,10 @@ class CrawlInfrastructure(BaseConsumer):
 
         try:
             result = plugin.discover_wrapper(fuzzable_request, debugging_id)
-        except BaseFrameworkException, e:
+        except BaseFrameworkException as e:
             msg = 'An exception was found while running "%s" with "%s": "%s" (did: %s)'
-            args = (plugin.get_name(), fuzzable_request, debugging_id)
-            om.out.error(msg % args, e)
+            args = (plugin.get_name(), fuzzable_request, e, debugging_id)
+            om.out.error(msg % args)
         except RunOnce:
             # Some plugins are meant to be run only once
             # that is implemented by raising a RunOnce

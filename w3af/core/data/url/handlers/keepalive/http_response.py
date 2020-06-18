@@ -186,7 +186,7 @@ class HTTPResponse(httplib.HTTPResponse):
         # do we have a Content-Length?
         # NOTE: RFC 2616, S4.4, #3 says we ignore this if tr_enc is "chunked"
         length = self._get_content_length()
-        if length and not self.chunked:
+        if not self.chunked:
             try:
                 self.length = int(length)
             except (ValueError, TypeError):

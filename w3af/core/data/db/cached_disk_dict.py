@@ -33,6 +33,10 @@ class CachedDiskDict(object):
     It is ideal for situations where a DiskDict is frequently accessed,
     fast read / writes are required, and items can take considerable amounts
     of memory.
+
+    The access count for each dict key is incremented on __getitem__ and __setitem___
+
+    Keys and values are moved to and from memory on __getitem__ and __setitem___
     """
     def __init__(self, max_in_memory=50, table_prefix=None):
         """
@@ -40,15 +44,18 @@ class CachedDiskDict(object):
         """
         assert max_in_memory > 0, 'In-memory items must be > 0'
 
-        table_prefix = self._get_table_prefix(table_prefix)
-
         self._max_in_memory = max_in_memory
-        self._disk_dict = DiskDict(table_prefix=table_prefix)
         self._in_memory = dict()
+
+        table_prefix = self._get_table_prefix(table_prefix)
+        self._disk_dict = DiskDict(table_prefix=table_prefix)
+
         self._access_count = Counter()
 
     def cleanup(self):
         self._disk_dict.cleanup()
+        self._access_count = Counter()
+        self._in_memory = dict()
 
     def _get_table_prefix(self, table_prefix):
         if table_prefix is None:
@@ -78,6 +85,7 @@ class CachedDiskDict(object):
             value = self._disk_dict[key]
 
         self._increase_access_count(key)
+        self._move_keys_to_from_memory()
         return value
 
     def _get_keys_for_memory(self):
@@ -96,12 +104,13 @@ class CachedDiskDict(object):
     def _increase_access_count(self, key):
         self._access_count.update([key])
 
+    def _move_keys_to_from_memory(self):
         keys_for_memory = self._get_keys_for_memory()
 
-        self._move_key_to_disk_if_needed(keys_for_memory)
-        self._move_key_to_memory_if_needed(key, keys_for_memory)
+        self._move_keys_to_disk_if_needed(keys_for_memory)
+        self._move_keys_to_memory_if_needed(keys_for_memory)
 
-    def _move_key_to_disk_if_needed(self, keys_for_memory):
+    def _move_keys_to_disk_if_needed(self, keys_for_memory):
         """
         Analyzes the current access count for the last accessed key and
         checks if any if the keys in memory should be moved to disk.
@@ -110,7 +119,7 @@ class CachedDiskDict(object):
         :return: The name of the key that was moved to disk, or None if
                  all the keys are still in memory.
         """
-        for key in self._in_memory:
+        for key in self._in_memory.keys():
 
             if key in keys_for_memory:
                 continue
@@ -118,63 +127,77 @@ class CachedDiskDict(object):
             try:
                 value = self._in_memory.pop(key)
             except KeyError:
-                return
+                # Another thread removed the key from the in_memory dict
+                # continue with the next key
+                continue
             else:
                 self._disk_dict[key] = value
-                return key
 
-    def _move_key_to_memory_if_needed(self, key, keys_for_memory):
+    def _move_keys_to_memory_if_needed(self, keys_for_memory):
         """
         Analyzes the current access count for the last accessed key and
         checks if any if the keys in disk should be moved to memory.
 
-        :param key: The key that was last accessed
         :param keys_for_memory: The keys that should be in memory
         :return: The name of the key that was moved to memory, or None if
                  all the keys are still on disk.
         """
-        # The key is already in memory, nothing to do here
-        if key in self._in_memory:
-            return
+        for key in keys_for_memory:
 
-        # The key must not be in memory, nothing to do here
-        if key not in keys_for_memory:
-            return
+            # The key is already in memory, nothing to do here
+            if key in self._in_memory:
+                continue
 
-        try:
-            value = self._disk_dict.pop(key)
-        except KeyError:
-            return
-        else:
-            self._in_memory[key] = value
-            return key
+            try:
+                value = self._disk_dict.pop(key)
+            except KeyError:
+                # Another thread removed the key from the disk_dict
+                # continue with the next key
+                continue
+            else:
+                self._in_memory[key] = value
 
     def __setitem__(self, key, value):
         if key in self._in_memory:
             self._in_memory[key] = value
+            self._increase_access_count(key)
+
+            # Not calling self._move_keys_to_from_memory() because
+            # nothing will happen anyways, the key was in memory already
+            # and we just +1 the access count
 
         elif len(self._in_memory) < self._max_in_memory:
             self._in_memory[key] = value
+            self._increase_access_count(key)
+
+            # Not calling self._move_keys_to_from_memory() because
+            # nothing will happen anyways, the key was just stored in memory
+            # and we just +1 the access count
 
         else:
             self._disk_dict[key] = value
+            self._increase_access_count(key)
+            self._move_keys_to_from_memory()
 
-        self._increase_access_count(key)
+            # Called self._move_keys_to_from_memory() because there might
+            # be some keys in memory with lower access counts than the ones
+            # stored on disk
 
     def __delitem__(self, key):
         try:
             del self._in_memory[key]
         except KeyError:
-            # This will raise KeyError if k is not found, and that is OK
-            # because we don't need to increase the access count when the
-            # key doesn't exist
-            del self._disk_dict[key]
-
-        try:
-            del self._access_count[key]
-        except KeyError:
-            # Another thread removed this key
-            pass
+            # This will raise KeyError if key is not found, just in case there
+            # is a race-condition I don't want to have a key in access_count
+            # that does not exist in disk_disk nor in_memory.
+            try:
+                del self._disk_dict[key]
+            finally:
+                try:
+                    del self._access_count[key]
+                except KeyError:
+                    # Another thread removed this key
+                    pass
 
     def __contains__(self, key):
         if key in self._in_memory:
@@ -201,6 +224,12 @@ class CachedDiskDict(object):
             yield key
 
     def iteritems(self):
+        """
+        Decided not to increase the access count when iterating through the
+        items. In most cases the iteration will be performed on all items,
+        thus increasing the access count +1 for each, which will leave all
+        access counts +1, forcing no movements between memory and disk.
+        """
         for key, value in self._in_memory.iteritems():
             yield key, value
 

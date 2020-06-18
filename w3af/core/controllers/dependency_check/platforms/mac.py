@@ -79,12 +79,10 @@ class MacOSX(Platform):
     PIP_PACKAGES = {CORE: MAC_CORE_PIP_PACKAGES,
                     GUI: MAC_GUI_PIP_PACKAGES}
 
-    @staticmethod
-    def is_current_platform():
+    def is_current_platform(self):
         return 'darwin' in platform.dist() or 'mac' in platform.dist()
 
-    @staticmethod
-    def os_package_is_installed(package_name):
+    def os_package_is_installed(self, package_name):
         not_installed = 'None of the specified ports are installed'
         installed = 'The following ports are currently installed'
 
@@ -105,8 +103,7 @@ class MacOSX(Platform):
             else:
                 return None
 
-    @staticmethod
-    def after_hook():
+    def after_hook(self):
         # Is the default python executable the one in macports?
         #
         # We need to warn the user about this situation and let him know how to

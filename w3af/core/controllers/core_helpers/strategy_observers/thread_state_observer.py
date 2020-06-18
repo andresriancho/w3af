@@ -214,10 +214,14 @@ class ThreadStateObserver(StrategyObserver):
             if thread is None:
                 continue
 
-            if not hasattr(thread, 'get_state'):
+            get_state = getattr(thread, 'get_state', None)
+            if get_state is None:
                 continue
 
-            state = thread.get_state()
+            if not callable(get_state):
+                continue
+
+            state = get_state()
             worker_id = state['worker_id']
 
             if worker_id not in workers_to_inspect:

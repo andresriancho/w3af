@@ -1,5 +1,5 @@
 """
-BaseFrameworkException.py
+exceptions.py
 
 Copyright 2006 Andres Riancho
 
@@ -84,6 +84,7 @@ class ScanMustStopException(Exception):
     extensively.
     """
     def __init__(self, msg, errs=()):
+        Exception.__init__(self, msg)
         self.msg = str(msg)
         self.errs = errs
 

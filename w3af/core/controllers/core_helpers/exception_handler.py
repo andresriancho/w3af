@@ -29,6 +29,7 @@ import traceback
 import w3af.core.data.kb.config as cf
 import w3af.core.controllers.output_manager as om
 
+from w3af.core.data.misc.encoding import smart_str_ignore
 from w3af.core.data.fuzzer.utils import rand_alnum
 from w3af.core.controllers.misc.traceback_utils import get_exception_location
 from w3af.core.controllers.core_helpers.status import CoreStatus
@@ -70,10 +71,45 @@ class ExceptionHandler(object):
         self._scan_id = None
 
     def handle_exception_data(self, exception_data):
-        self.handle(exception_data.status,
-                    exception_data.exception,
-                    (_, _, exception_data.traceback),
-                    exception_data.enabled_plugins)
+        #
+        # There are some exceptions, that because of their nature, can't be
+        # handled here. Raise them so that w3afCore.py, most likely to the
+        # except lines around self.strategy.start(), can decide what to do
+        #
+        if isinstance(exception_data.exception, self.NO_HANDLING):
+            raise exception_data.exception, None, exception_data.traceback
+
+        stop_on_first_exception = cf.cf.get('stop_on_first_exception')
+        if stop_on_first_exception:
+            raise exception_data.exception, None, exception_data.traceback
+
+        #
+        # Now we really handle the exception that was produced by the plugin in
+        # the way we want to.
+        #
+        with self._lock:
+            count = 0
+
+            for stored_edata in self._exception_data:
+                if exception_data.plugin == stored_edata.plugin and \
+                   exception_data.phase == stored_edata.phase:
+                    count += 1
+
+            if count < self.MAX_EXCEPTIONS_PER_PLUGIN:
+                self._exception_data.append(exception_data)
+
+                msg = exception_data.get_summary()
+                msg += (' The scan will continue but some vulnerabilities might'
+                        ' not be identified.')
+                om.out.error(msg)
+
+        filename = self.write_crash_file(exception_data)
+
+        args = (exception_data.get_exception_class(), filename)
+        om.out.debug('Logged "%s" to "%s"' % args)
+
+        # Also send to the output plugins so they can store it the right way
+        om.out.log_crash(exception_data.get_details())
 
     def handle(self, current_status, exception, exec_info, enabled_plugins):
         """
@@ -97,46 +133,9 @@ class ExceptionHandler(object):
         :return: None
         """
         except_type, except_class, tb = exec_info
+        exception_data = ExceptionData(current_status, exception, tb, enabled_plugins)
 
-        #
-        # There are some exceptions, that because of their nature, can't be
-        # handled here. Raise them so that w3afCore.py, most likely to the
-        # except lines around self.strategy.start(), can decide what to do
-        #
-        if isinstance(exception, self.NO_HANDLING):
-            raise exception, None, tb
-
-        stop_on_first_exception = cf.cf.get('stop_on_first_exception')
-        if stop_on_first_exception:
-            raise exception, None, tb
-
-        #
-        # Now we really handle the exception that was produced by the plugin in
-        # the way we want to.
-        #
-        with self._lock:
-            edata = ExceptionData(current_status, exception, tb, enabled_plugins)
-
-            count = 0
-            for stored_edata in self._exception_data:
-                if edata.plugin == stored_edata.plugin and \
-                   edata.phase == stored_edata.phase:
-                    count += 1
-
-            if count < self.MAX_EXCEPTIONS_PER_PLUGIN:
-                self._exception_data.append(edata)
-                msg = edata.get_summary()
-                msg += (' The scan will continue but some vulnerabilities might'
-                        ' not be identified.')
-                om.out.error(msg)
-
-        filename = self.write_crash_file(edata)
-
-        args = (edata.get_exception_class(), filename)
-        om.out.debug('Logged "%s" to "%s"' % args)
-
-        # Also send to the output plugins so they can store it the right way
-        om.out.log_crash(edata.get_details())
+        self.handle_exception_data(exception_data)
 
     def write_crash_file(self, edata):
         """
@@ -352,17 +351,20 @@ class ExceptionData(object):
         return self.traceback_str
 
     def get_summary(self):
+        fuzzable_request = smart_str_ignore(self.fuzzable_request)
+
         res = ('A "%s" exception was found while running %s.%s on "%s".'
                ' The exception was: "%s" at %s:%s():%s.')
-        res = res % (self.get_exception_class(),
-                     self.phase,
-                     self.plugin,
-                     self.fuzzable_request,
-                     self.exception_msg,
-                     self.filename,
-                     self.function_name,
-                     self.lineno)
-        return res
+
+        args = (self.get_exception_class(),
+                self.phase,
+                self.plugin,
+                fuzzable_request,
+                self.exception_msg,
+                self.filename,
+                self.function_name,
+                self.lineno)
+        return res % args
 
     def get_exception_class(self):
         return self.exception_class

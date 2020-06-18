@@ -81,7 +81,10 @@ class wsdl_greper(GrepPlugin):
                 desc = ('The URL: "%s" is a DISCO file that contains'
                         ' references to WSDL URLs.')
                 desc %= response.get_url()
-                i = Info('DISCO resource', desc, response.id,
+
+                i = Info('DISCO resource',
+                         desc,
+                         response.id,
                          self.get_name())
                 i.set_url(response.get_url())
                 i.add_to_highlight(disco_string)

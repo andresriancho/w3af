@@ -20,6 +20,8 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import re
+import Queue
+import threading
 import itertools
 
 import w3af.core.controllers.output_manager as om
@@ -31,6 +33,9 @@ from w3af.core.controllers.plugins.crawl_plugin import CrawlPlugin
 from w3af.core.controllers.core_helpers.fingerprint_404 import is_404
 from w3af.core.controllers.misc.itertools_toolset import unique_justseen
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.controllers.chrome.crawler.main import ChromeCrawler
+from w3af.core.controllers.chrome.pool import ChromePool
+from w3af.core.controllers.threads.threadpool import add_traceback_string
 
 from w3af.core.data.parsers.utils.header_link_extract import headers_url_generator
 from w3af.core.data.db.variant_db import VariantDB
@@ -41,7 +46,7 @@ from w3af.core.data.dc.factory import dc_from_form_params
 from w3af.core.data.dc.generic.form import Form
 from w3af.core.data.dc.cookie import Cookie
 from w3af.core.data.options.opt_factory import opt_factory
-from w3af.core.data.options.option_types import BOOL, REGEX, LIST
+from w3af.core.data.options.option_types import BOOL, REGEX, INT, LIST
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
@@ -52,7 +57,8 @@ class web_spider(CrawlPlugin):
 
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
-    UNAUTH_FORBID = {http_constants.UNAUTHORIZED, http_constants.FORBIDDEN}
+    UNAUTH_FORBID = {http_constants.UNAUTHORIZED,
+                     http_constants.FORBIDDEN}
 
     def __init__(self):
         CrawlPlugin.__init__(self)
@@ -73,6 +79,15 @@ class web_spider(CrawlPlugin):
         self._only_forward = False
         self._ignore_extensions = []
         self._compile_re()
+        self._enable_js_crawler = True
+        self._chrome_processes = ChromePool.MIN_INSTANCES
+
+        # Chrome crawler
+        self._chrome_crawler_inst = None
+        self._chrome_crawler_exception = None
+        self._http_traffic_queue = Queue.Queue()
+        self._chrome_identified_http_requests = 0
+        self._queue_handler_thread = None
 
     def crawl(self, fuzzable_request, debugging_id):
         """
@@ -84,29 +99,45 @@ class web_spider(CrawlPlugin):
         """
         self._handle_first_run()
 
+        if not self._should_crawl_fuzzable_request(fuzzable_request):
+            return
+
+        http_response = self._get_http_response(fuzzable_request, debugging_id)
+
+        if not self._should_crawl_http_response(fuzzable_request, http_response):
+            return
+
+        self._crawl_with_chrome(fuzzable_request, http_response, debugging_id)
+
+        doc_parser = self._get_document_parser(http_response, debugging_id)
+
+        self._extract_html_forms(doc_parser, fuzzable_request, debugging_id)
+        self._extract_links_and_verify(doc_parser, fuzzable_request, http_response, debugging_id)
+
+        # raise exceptions in the main thread for better handling
         #
-        # If it is a form, then smart_fill the parameters to send something that
-        # makes sense and will allow us to cover more code.
-        #
+        # raise the exceptions at the end of the method to make sure that all
+        # the other tasks were performed for the current fuzzable_request, which
+        # is most likely not related with the exception
+        self._raise_chrome_crawler_exception()
+
+    def _should_crawl_fuzzable_request(self, fuzzable_request):
         data_container = fuzzable_request.get_raw_data()
         if isinstance(data_container, Form):
 
             if fuzzable_request.get_url() in self._already_filled_form:
-                return
+                return False
 
-            self._already_filled_form.add(fuzzable_request.get_url())
-            data_container.smart_fill()
+        return True
 
-        # Send the HTTP request
-        resp = self._uri_opener.send_mutant(fuzzable_request)
+    def _should_crawl_http_response(self, fuzzable_request, http_response):
+        # Nothing to do here...
+        if http_response.get_code() == http_constants.UNAUTHORIZED:
+            return False
 
         # Nothing to do here...
-        if resp.get_code() == http_constants.UNAUTHORIZED:
-            return
-
-        # Nothing to do here...
-        if resp.is_image():
-            return
+        if http_response.is_image():
+            return False
 
         # And we don't trust what comes from the core, check if 404
         # the only exception is for fuzzable requests which were set by the
@@ -115,12 +146,11 @@ class web_spider(CrawlPlugin):
         # There are some rare cases where the application will answer with
         # the same HTTP response body for `/` and `/foobar`. This triggers an
         # issue in is_404() where `/` is marked as a 404...
-        if is_404(resp):
+        if is_404(http_response):
             if not self._is_target(fuzzable_request):
-                return
+                return False
 
-        self._extract_html_forms(resp, fuzzable_request)
-        self._extract_links_and_verify(resp, fuzzable_request)
+        return True
 
     def _is_target(self, fuzzable_request):
         """
@@ -129,27 +159,54 @@ class web_spider(CrawlPlugin):
         """
         return fuzzable_request.get_uri() in cf.cf.get('targets')
 
-    def _extract_html_forms(self, resp, fuzzable_req):
+    def _get_http_response(self, fuzzable_request, debugging_id):
+        #
+        # If it is a form, then smart_fill the parameters to send something that
+        # makes sense and will allow us to cover more code.
+        #
+        data_container = fuzzable_request.get_raw_data()
+        if isinstance(data_container, Form):
+
+            self._already_filled_form.add(fuzzable_request.get_url())
+            data_container.smart_fill()
+
+        # Send the HTTP request
+        http_response = self._uri_opener.send_mutant(fuzzable_request,
+                                                     debugging_id=debugging_id)
+
+        return http_response
+
+    def _get_document_parser(self, http_response, debugging_id):
+        try:
+            return parser_cache.dpc.get_document_parser_for(http_response)
+        except BaseFrameworkException as e:
+            msg = 'Failed to find a document parser for %s. Exception: "%s" (did: %s)'
+            args = (http_response.get_uri(), e, debugging_id)
+            om.out.debug(msg % args)
+
+            return
+
+    def _extract_html_forms(self, doc_parser, fuzzable_req, debugging_id):
         """
         Parses the HTTP response body and extract HTML forms, resulting forms
         are put() on the output queue.
+
+        :param doc_parser: The document parser for the http_response
+        :param fuzzable_req: The HTTP request that generated the response
         """
-        # Try to find forms in the document
-        try:
-            dp = parser_cache.dpc.get_document_parser_for(resp)
-        except BaseFrameworkException:
-            # Failed to find a suitable parser for the document
+        if doc_parser is None:
             return
 
         # Create one FuzzableRequest for each form variant
         mode = cf.cf.get('form_fuzzing_mode')
-        for form_params in dp.get_forms():
+        for form_params in doc_parser.get_forms():
 
             # Form exclusion #15161
             form_id_json = form_params.get_form_id().to_json()
-            om.out.debug('A new form was found! Form-id is: "%s"' % form_id_json)
+            args = (form_id_json, debugging_id)
+            om.out.debug('A new form was found! Form-id is: "%s" (did: %s)' % args)
 
-            if not self._should_analyze_url(form_params.get_action()):
+            if not self._uri_allowed_by_user_config(form_params.get_action()):
                 continue
 
             headers = fuzzable_req.get_headers()
@@ -167,10 +224,9 @@ class web_spider(CrawlPlugin):
         if not self._first_run:
             return
 
-        self._first_run = False
-
         # I have to set some variables, in order to be able to code
         # the "only_forward" feature
+        self._first_run = False
         self._target_urls = [i.uri2url() for i in cf.cf.get('targets')]
 
         # The following line triggered lots of bugs when the "stop" button
@@ -185,7 +241,7 @@ class web_spider(CrawlPlugin):
 
         self._target_domain = targets[0].get_domain()
                 
-    def _urls_to_verify_generator(self, resp, fuzzable_req):
+    def _urls_to_verify_generator(self, doc_parser, fuzzable_request, http_response, debugging_id):
         """
         Yields tuples containing:
             * Newly found URL
@@ -193,18 +249,30 @@ class web_spider(CrawlPlugin):
             * The HTTPResponse generated by the FuzzableRequest
             * Boolean indicating if we trust this reference or not
 
-        :param resp: HTTP response object
-        :param fuzzable_req: The HTTP request that generated the response
+        :param doc_parser: The document parser for the http_response
+        :param http_response: HTTP response object
+        :param fuzzable_request: The HTTP request that generated the response
         """
-        gen = itertools.chain(self._url_path_url_generator(resp, fuzzable_req),
-                              self._body_url_generator(resp, fuzzable_req),
-                              headers_url_generator(resp, fuzzable_req))
-        
-        for ref, fuzzable_req, original_resp, possibly_broken in gen:
-            if self._should_verify_extracted_url(ref, original_resp):
-                yield ref, fuzzable_req, original_resp, possibly_broken
+        chain = itertools.chain(self._url_path_url_generator(fuzzable_request, http_response),
+                                self._body_url_generator(doc_parser, fuzzable_request, http_response),
+                                headers_url_generator(fuzzable_request, http_response))
 
-    def _url_path_url_generator(self, resp, fuzzable_req):
+        for url, fuzzable_req, original_resp, possibly_broken in chain:
+
+            # Ignore self reference
+            if url == http_response.get_uri():
+                continue
+
+            if not self._should_verify_extracted_url(url):
+                continue
+
+            yield (url,
+                   fuzzable_req,
+                   original_resp,
+                   possibly_broken,
+                   debugging_id)
+
+    def _url_path_url_generator(self, fuzzable_request, http_response):
         """
         Yields tuples containing:
             * Newly found URL
@@ -212,8 +280,8 @@ class web_spider(CrawlPlugin):
             * The HTTPResponse generated by the FuzzableRequest
             * Boolean indicating if we trust this reference or not
 
-        :param resp: HTTP response object
-        :param fuzzable_req: The HTTP request that generated the response
+        :param http_response: HTTP response object
+        :param fuzzable_request: The HTTP request that generated the response
         """
         # Analyze all directories, if the URL w3af just found is:
         #
@@ -227,12 +295,12 @@ class web_spider(CrawlPlugin):
         #   http://localhost/
         #
         # And analyze the responses...
-        dirs = resp.get_url().get_directories()
+        dirs = http_response.get_url().get_directories()
 
         for ref in unique_justseen(dirs):
-            yield ref, fuzzable_req, resp, False
+            yield ref, fuzzable_request, http_response, True
 
-    def _body_url_generator(self, resp, fuzzable_req):
+    def _body_url_generator(self, doc_parser, fuzzable_request, http_response):
         """
         Yields tuples containing:
             * Newly found URL
@@ -243,73 +311,72 @@ class web_spider(CrawlPlugin):
         The newly found URLs are extracted from the http response body using
         one of the framework's parsers.
 
-        :param resp: HTTP response object
-        :param fuzzable_req: The HTTP request that generated the response
+        :param doc_parser: The document parser for the http_response
+        :param fuzzable_request: The HTTP request that generated the response
+        :param http_response: HTTP response object
         """
+        if doc_parser is None:
+            return
+
         #
-        # Note: I WANT to follow links that are in the 404 page.
+        # Notes:
         #
-        try:
-            doc_parser = parser_cache.dpc.get_document_parser_for(resp)
-        except BaseFrameworkException, w3:
-            om.out.debug('Failed to find a suitable document parser. '
-                         'Exception "%s"' % w3)
-        else:
-            # Note:
-            #
-            # - With parsed_refs I'm 100% that it's really
-            #   something in the HTML that the developer intended to add.
-            #
-            # - The re_refs are the result of regular expressions,
-            #   which in some cases are just false positives.
-            parsed_refs, re_refs = doc_parser.get_references()
+        # - I WANT to follow links that are in the 404 page.
+        #
+        # - With parsed_refs I'm 100% that it's really
+        #   something in the HTML that the developer intended to add.
+        #
+        # - The re_refs are the result of regular expressions,
+        #   which in some cases are just false positives.
+        #
+        parsed_refs, re_refs = doc_parser.get_references()
 
-            dirs = resp.get_url().get_directories()
-            only_re_refs = set(re_refs) - set(dirs + parsed_refs)
+        dirs = http_response.get_url().get_directories()
+        only_re_refs = set(re_refs) - set(dirs + parsed_refs)
 
-            all_refs = itertools.chain(parsed_refs, re_refs)
-            resp_is_404 = is_404(resp)
+        all_refs = itertools.chain(parsed_refs, re_refs)
+        resp_is_404 = is_404(http_response)
 
-            for ref in unique_justseen(sorted(all_refs)):
-                possibly_broken = resp_is_404 or (ref in only_re_refs)
-                yield ref, fuzzable_req, resp, possibly_broken
+        for ref in unique_justseen(sorted(all_refs)):
+            possibly_broken = resp_is_404 or (ref in only_re_refs)
+            yield ref, fuzzable_request, http_response, possibly_broken
 
-    def _should_analyze_url(self, ref):
+    def _uri_allowed_by_user_config(self, url):
         """
-        :param ref: A URL instance to match against the user configured filters
+        :param url: A URL instance to match against the user configured filters
         :return: True if we should navigate to this URL
         """
         # I don't want w3af sending requests to 3rd parties!
-        if ref.get_domain() != self._target_domain:
+        if url.get_domain() != self._target_domain:
             msg = 'web_spider will ignore %s (different domain name)'
-            args = (ref.get_domain(),)
+            args = (url.get_domain(),)
             om.out.debug(msg % args)
             return False
 
         # Filter the URL according to the configured regular expressions
-        if not self._compiled_follow_re.match(ref.url_string):
+        if not self._compiled_follow_re.match(url.url_string):
             msg = 'web_spider will ignore %s (not match follow regex)'
-            args = (ref.url_string,)
+            args = (url.url_string,)
             om.out.debug(msg % args)
             return False
 
         if self._compiled_ignore_re is not None:
-            if self._compiled_ignore_re.match(ref.url_string):
+            if self._compiled_ignore_re.match(url.url_string):
                 msg = 'web_spider will ignore %s (match ignore regex)'
-                args = (ref.url_string,)
+                args = (url.url_string,)
                 om.out.debug(msg % args)
                 return False
 
-        if self._has_ignored_extension(ref):
+        if self._has_ignored_extension(url):
             msg = 'web_spider will ignore %s (match ignore extensions)'
-            args = (ref.url_string,)
+            args = (url.url_string,)
             om.out.debug(msg % args)
             return False
 
         # Implementing only forward
-        if self._only_forward and not self._is_forward(ref):
+        if self._only_forward and not self._is_forward(url):
             msg = 'web_spider will ignore %s (is not forward)'
-            args = (ref.url_string,)
+            args = (url.url_string,)
             om.out.debug(msg % args)
             return False
 
@@ -321,19 +388,14 @@ class web_spider(CrawlPlugin):
 
         return new_url.get_extension().lower() in self._ignore_extensions
 
-    def _should_verify_extracted_url(self, ref, resp):
+    def _should_verify_extracted_url(self, url):
         """
-        :param ref: A newly found URL
-        :param resp: The HTTP response where the URL was found
+        :param url: A newly found URL
 
         :return: Boolean indicating if I should send this new reference to the
                  core.
         """
-        # Ignore myself
-        if ref == resp.get_uri():
-            return False
-
-        if not self._should_analyze_url(ref):
+        if not self._uri_allowed_by_user_config(url):
             return False
 
         #
@@ -350,26 +412,208 @@ class web_spider(CrawlPlugin):
         # leads to extra HTTP requests for URLs which we already checked and the
         # core will dismiss anyway
         #
-        fuzzable_request = FuzzableRequest(ref)
+        fuzzable_request = FuzzableRequest(url)
         if self._variant_db.append(fuzzable_request):
             return True
 
         return False
 
-    def _extract_links_and_verify(self, resp, fuzzable_req):
+    def _extract_links_and_verify(self, doc_parser, fuzzable_req, http_response, debugging_id):
         """
         This is a very basic method that will send the work to different
         threads. Work is generated by the _urls_to_verify_generator
 
-        :param resp: HTTP response object
+        :param http_response: HTTP response object
+        :param doc_parser: The document parser for the http_response
         :param fuzzable_req: The HTTP request that generated the response
+        :param debugging_id: A unique identifier for this call to discover()
         """
+        url_to_verify_generator = self._urls_to_verify_generator(doc_parser,
+                                                                 fuzzable_req,
+                                                                 http_response,
+                                                                 debugging_id)
+
         self.worker_pool.map_multi_args(
             self._verify_reference,
-            self._urls_to_verify_generator(resp, fuzzable_req))
+            url_to_verify_generator
+        )
 
-    def _verify_reference(self, reference, original_request,
-                          original_response, possibly_broken,
+    @property
+    def _chrome_crawler(self):
+        if self._chrome_crawler_inst is None:
+            #
+            # The ChromeCrawler instance, only one should be used during the whole
+            # scan. State is stored in the instance to reduce the number of events
+            # being sent
+            #
+            self._chrome_crawler_inst = ChromeCrawler(self._uri_opener,
+                                                      max_instances=self._chrome_processes)
+
+        return self._chrome_crawler_inst
+
+    def _crawl_with_chrome(self, fuzzable_request, http_response, debugging_id):
+        """
+        Crawl the URL using Chrome.
+
+        :param fuzzable_request: The HTTP request to use as starting point
+        :param http_response: The HTTP response for fuzzable_req (retrieved with uri opener)
+        :param debugging_id: A unique identifier for this call to discover()
+        :return: None, new fuzzable requests are written to the output queue
+        """
+        if not self._enable_js_crawler:
+            return
+
+        # Note that this is an async call, tasks will be queued but we don't
+        # wait for the result. The result is processed in _process_chrome_queue
+        self._chrome_crawler.crawl(fuzzable_request,
+                                   http_response,
+                                   self._http_traffic_queue,
+                                   debugging_id=debugging_id,
+                                   _async=True)
+
+        # process _http_traffic_queue data
+        self._start_queue_handler_thread()
+
+    def has_pending_work(self):
+        """
+        Plugins might start tasks in async threads. Those tasks might be running
+        after the call to audit() or discover() exits. This method is called by
+        the framework to check if any of those tasks is still running.
+
+        self._chrome_crawler.crawl(...) does start async threads to crawl the
+        site using Chrome.
+
+        This method needs to return quickly in order to prevent blocking the
+        caller thread in strategy.py
+
+        :return: True if there are async threads started by the plugin still running
+        """
+        if self._chrome_crawler.has_pending_work():
+            return True
+
+        if self._http_traffic_queue.qsize():
+            return True
+
+        return False
+
+    def _start_queue_handler_thread(self):
+        """
+        Starts a thread that will process the data from the http_traffic_queue
+
+        :return: None
+        """
+        if self._queue_handler_thread is not None:
+            return
+
+        self._queue_handler_thread = threading.Thread(target=self._process_chrome_queue,
+                                                      name='QueueHandlerThread')
+        self._queue_handler_thread.daemon = False
+        self._queue_handler_thread.start()
+
+    def _process_chrome_queue(self):
+        """
+        Process HTTP requests and responses that were found by Chrome.
+
+        :return: None
+        """
+        while self._chrome_crawler_inst is not None:
+
+            try:
+                queue_data = self._http_traffic_queue.get(timeout=2.0)
+            except Queue.Empty:
+                continue
+
+            b = queue_data[1]
+
+            if isinstance(b, Exception):
+                handler = self._handle_exception_from_chrome_queue
+            else:
+                handler = self._handle_http_traffic_from_chrome_queue
+
+            try:
+                handler(queue_data)
+            except Exception as e:
+                add_traceback_string(e)
+                om.out.debug('Exception raised while handling data from the HTTP traffic queue: "%s"' % e)
+                self._chrome_crawler_exception = e
+
+    def _handle_http_traffic_from_chrome_queue(self, queue_data):
+        request, response, debugging_id = queue_data
+
+        self._chrome_identified_http_requests += 1
+
+        msg = ('A total of %s HTTP requests have been read by the web_spider'
+               ' from the ChromeCrawler queue')
+        om.out.debug(msg % self._chrome_identified_http_requests)
+
+        # ignore useless responses
+        if response.get_code() in (http_constants.UNAUTHORIZED,
+                                   http_constants.FORBIDDEN,
+                                   http_constants.NOT_FOUND):
+            return
+
+        #
+        # dom_dump renders the HTTP response in Chrome, then compares the DOM
+        # with the static HTML received from the wire. If they are very different
+        # then force_parsing is set in the HTTP response and sent to the queue.
+        #
+        # These HTTP responses need to be parsed here, because if we just send
+        # the fuzzable request that generated it to the core, the rendered DOM
+        # (which is the valuable data) will be lost
+        #
+        if response.force_parsing:
+            if self._uri_allowed_by_user_config(response.get_uri()):
+
+                msg = 'web_spider is parsing chrome-rendered DOM for %s (did: %s)'
+                args = (response.get_uri(), debugging_id)
+                om.out.debug(msg % args)
+
+                doc_parser = self._get_document_parser(response, debugging_id)
+
+                self._extract_html_forms(doc_parser, request, debugging_id)
+                self._extract_links_and_verify(doc_parser, request, response, debugging_id)
+
+        #
+        # All the other traffic captured in the HTTP response queue gets here;
+        # this traffic might contain HTML pages that were rendered but do not
+        # differ from the response received over the wire, javascript, css,
+        # calls to REST APIs performed by SPA, etc.
+        #
+        # Check if they should be sent to the core and then add them to the
+        # plugin's output queue
+        #
+        if not self._should_verify_extracted_url(response.get_uri()):
+            return
+
+        self.output_queue.put(request)
+
+    def _handle_exception_from_chrome_queue(self, queue_data):
+        fuzzable_request, exception, debugging_id = queue_data
+
+        args = (fuzzable_request.get_uri(), exception, debugging_id)
+        msg = 'Failed to crawl %s using chrome crawler: "%s" (did: %s)'
+        om.out.debug(msg % args)
+
+        # Exceptions will be raised in the next call to _raise_chrome_crawler_exception
+        # which is made from the main thread. This allows the framework's
+        # exception handler to do its job
+        self._chrome_crawler_exception = exception
+
+    def _raise_chrome_crawler_exception(self):
+        if self._chrome_crawler_exception is None:
+            return
+
+        # Set to None to only raise once
+        exception = self._chrome_crawler_exception
+        self._chrome_crawler_exception = None
+        raise exception
+
+    def _verify_reference(self,
+                          reference,
+                          original_request,
+                          original_response,
+                          possibly_broken,
+                          debugging_id,
                           be_recursive=True):
         """
         The parameters are:
@@ -398,12 +642,15 @@ class web_spider(CrawlPlugin):
         #       example). If it's not a 404 then we'll push it to the core
         #       and it will come back to this plugin's crawl() where it will
         #       be requested with grep=True
-        resp = self._uri_opener.GET(reference, cache=True, headers=headers,
-                                    grep=False)
+        http_response = self._uri_opener.GET(reference,
+                                             cache=True,
+                                             headers=headers,
+                                             grep=False,
+                                             debugging_id=debugging_id)
 
-        if not is_404(resp):
-            msg = '[web_spider] Found new link "%s" at "%s"'
-            args = (reference, original_response.get_url())
+        if not is_404(http_response):
+            msg = '[web_spider] Found new link "%s" at "%s" (did: %s)'
+            args = (reference, original_response.get_url(), debugging_id)
             om.out.debug(msg % args)
 
             fuzz_req = FuzzableRequest(reference, headers=headers)
@@ -449,26 +696,49 @@ class web_spider(CrawlPlugin):
 
             # Do not use threads here, it will dead-lock (for unknown
             # reasons). This is tested in TestDeadLock unittest.
-            for args in self._urls_to_verify_generator(resp, original_request):
+
+            doc_parser = self._get_document_parser(http_response, debugging_id)
+
+            for args in self._urls_to_verify_generator(doc_parser,
+                                                       original_request,
+                                                       http_response,
+                                                       debugging_id):
                 self._verify_reference(*args, be_recursive=False)
 
         # Store the broken links
-        if not possibly_broken and resp.get_code() not in self.UNAUTH_FORBID:
-            t = (resp.get_url(), original_request.get_uri())
+        if not possibly_broken and http_response.get_code() not in self.UNAUTH_FORBID:
+            t = (http_response.get_url(), original_request.get_uri())
             self._broken_links.add(t)
 
     def end(self):
         """
         Called when the process ends, prints out the list of broken links.
         """
-        if len(self._broken_links):
+        if self._chrome_crawler_inst is not None:
+            self._chrome_crawler_inst.terminate()
+            self._chrome_crawler_inst = None
 
-            om.out.information('The following is a list of broken links that'
-                               ' were found by the web_spider plugin:')
-            for broken, where in unique_justseen(self._broken_links.ordered_iter()):
-                om.out.information('- %s [ referenced from: %s ]' %
-                                   (broken, where))
-        
+        self._log_broken_links()
+
+    def _log_broken_links(self):
+        if not self._broken_links:
+            return
+
+        msg = ('The following is a list of broken links that were found by'
+               ' the web_spider plugin:')
+        om.out.information(msg)
+
+        def sort_by_first(a, b):
+            return cmp(a[0], b[0])
+
+        broken_links = [i for i in self._broken_links]
+        broken_links.sort(sort_by_first)
+
+        for broken, where in broken_links:
+            msg = '- %s [ referenced from: %s ]'
+            args = (broken, where)
+            om.out.information(msg % args)
+
         self._broken_links.cleanup()
 
     def _is_forward(self, reference):
@@ -517,6 +787,18 @@ class web_spider(CrawlPlugin):
         o = opt_factory('ignore_extensions', self._ignore_extensions, d, LIST, help=h)
         ol.add(o)
 
+        d = 'Enable / disable the JavaScript crawler'
+        o = opt_factory('enable_js_crawler', self._enable_js_crawler, d, BOOL)
+        ol.add(o)
+
+        d = 'Control the number of concurrent Chrome (or Chromium) processes'
+        h = ('More Chrome processes will increase the crawling speed, but will'
+             ' also consume more resources (mainly memory).')
+        opt = {'max': ChromePool.MAX_INSTANCES,
+               'min': ChromePool.MIN_INSTANCES}
+        o = opt_factory('chrome_processes', self._chrome_processes, d, INT, help=h, options=opt)
+        ol.add(o)
+
         return ol
 
     def set_options(self, options_list):
@@ -533,6 +815,9 @@ class web_spider(CrawlPlugin):
         self._follow_regex = options_list['follow_regex'].get_value()
         self._compile_re()
         self._save_ignore_regex_to_config()
+
+        self._enable_js_crawler = options_list['enable_js_crawler'].get_value()
+        self._chrome_processes = options_list['chrome_processes'].get_value()
 
         self._ignore_extensions = options_list['ignore_extensions'].get_value()
         self._ignore_extensions = [ext.lower() for ext in self._ignore_extensions]
@@ -586,7 +871,7 @@ class web_spider(CrawlPlugin):
         This plugin is a classic web spider, it will request a URL and extract
         all links and forms from the response.
 
-        Four configurable parameter exist:
+        These configurable parameters control the crawler:
             - only_forward
             - follow_regex
             - ignore_regex
@@ -604,4 +889,17 @@ class web_spider(CrawlPlugin):
         
         The ignore_extensions configuration parameter is commonly used to ignore
         static files such as zip, jpeg and pdf.
+
+        These parameters control the JavaScript crawler:
+            - enable_js_crawler
+            - chrome_processes
+        
+        enable_js_crawler enables and disables the JavaScript crawler. By default
+        the crawler is enabled and allows the scanner to identify more resources
+        in the target web application.
+        
+        chrome_processes controls the number of concurrent Chrome (or Chromium)
+        processes that the scanner will use to crawl the site. More processes
+        will increase the crawl speed, but also consume more resources (mainly
+        memory usage).
         """
