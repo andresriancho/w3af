@@ -26,6 +26,7 @@ from urlparse import parse_qs
 import pytest
 
 from w3af import ROOT_PATH
+from w3af.plugins.auth.autocomplete_js import autocomplete_js
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
@@ -42,9 +43,6 @@ VANILLA_JS_LOGIN_3 = file(VANILLA_JS_LOGIN_3).read()
 
 USER = 'user@mail.com'
 PASS = 'passw0rd'
-
-
-pytestmark = pytest.mark.deprecated
 
 
 class BasicLoginRequestHandler(ExtendedHttpRequestHandler):
@@ -233,3 +231,23 @@ class TestVanillaJavaScript3(TestVanillaJavaScript1):
         self.assertIn('/login_post.py', FakeFormLoginRequestHandler.EVENTS)
         self.assertIn('/admin', FakeFormLoginRequestHandler.EVENTS)
         self.assertIn('ADMIN_REQUEST_SUCCESS', FakeFormLoginRequestHandler.EVENTS)
+
+
+def test_autocomplete_js_reports_if_it_fails_to_use_css_selectors(
+        run_plugin,
+        knowledge_base,
+        js_domain_with_login_form,
+):
+    autocomplete_js_config = {
+        'username': 'test@example.com',
+        'password': 'pass',
+        'check_url': 'http://example.com/me/',
+        'login_form_url': 'http://example.com/login/',
+        'check_string': 'logged as',
+    }
+    run_plugin(
+        autocomplete_js,
+        autocomplete_js_config,
+        mock_domain=js_domain_with_login_form,
+    )
+    assert 'something' in knowledge_base.dump()
