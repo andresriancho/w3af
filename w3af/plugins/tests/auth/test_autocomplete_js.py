@@ -234,7 +234,7 @@ class TestVanillaJavaScript3(TestVanillaJavaScript1):
 
 
 def test_autocomplete_js_reports_if_it_fails_to_use_css_selectors(
-        run_plugin,
+        plugin_runner,
         knowledge_base,
         js_domain_with_login_form,
 ):
@@ -245,9 +245,19 @@ def test_autocomplete_js_reports_if_it_fails_to_use_css_selectors(
         'login_form_url': 'http://example.com/login/',
         'check_string': 'logged as',
     }
-    run_plugin(
-        autocomplete_js,
-        autocomplete_js_config,
-        mock_domain=js_domain_with_login_form,
-    )
-    assert 'something' in knowledge_base.dump()
+    autocomplete_js_plugin = autocomplete_js()
+    for _ in range(3):
+        plugin_runner.run_plugin(
+            autocomplete_js_plugin,
+            autocomplete_js_config,
+            mock_domain=js_domain_with_login_form,
+            do_end_call=False,
+        )
+    autocomplete_js_plugin.end()
+    kb_result = knowledge_base.dump()
+    errors = kb_result.get('authentication').get('error')
+    css_error_count = 0
+    for error in errors:
+        if 'CSS' in error:
+            css_error_count += 1
+    assert css_error_count
