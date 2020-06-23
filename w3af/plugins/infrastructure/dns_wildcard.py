@@ -29,6 +29,8 @@ from w3af.core.controllers.plugins.infrastructure_plugin import InfrastructurePl
 from w3af.core.controllers.exceptions import BaseFrameworkException, RunOnce
 from w3af.core.controllers.misc.decorators import runonce
 from w3af.core.controllers.misc.fuzzy_string_cmp import fuzzy_not_equal, fuzzy_equal
+from w3af.core.data.constants import severity
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.url.helpers import is_no_content_response
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.kb.info import Info
@@ -103,10 +105,12 @@ class dns_wildcard(InfrastructurePlugin):
         args = (modified_response.get_uri(), original_response.get_uri())
         desc %= args
 
-        i = Info('Default virtual host',
+        i = Vuln('Default virtual host',
                  desc,
+                 severity.INFORMATION,
                  modified_response.id,
-                 self.get_name())
+                 self.get_name(),
+                 vulndb_id=10101)
         i.set_url(modified_response.get_url())
 
         kb.kb.append(self, 'dns_wildcard', i)
@@ -133,10 +137,12 @@ class dns_wildcard(InfrastructurePlugin):
                     ' of "%s" differ from the contents of "%s".')
             desc %= (dns_wildcard_url, original_response.get_url())
 
-            i = Info('No DNS wildcard',
+            i = Vuln('No DNS wildcard',
                      desc,
+                     severity.INFORMATION,
                      [original_response.id, modified_response.id],
-                     self.get_name())
+                     self.get_name(),
+                     vulndb_id=10102)
             i.set_url(dns_wildcard_url)
 
             kb.kb.append(self, 'dns_wildcard', i)

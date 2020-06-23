@@ -334,7 +334,7 @@ class rfi(AuditPlugin):
             
             v = Vuln.from_mutant('Remote code execution', desc,
                                  severity.HIGH, response.id, self.get_name(),
-                                 mutant)
+                                 mutant, vulndb_id=42)
 
             self._vulns.append(v)
 
@@ -348,7 +348,7 @@ class rfi(AuditPlugin):
             
             v = Vuln.from_mutant('Remote file inclusion', desc,
                                  severity.MEDIUM, response.id, self.get_name(),
-                                 mutant)
+                                 mutant, vulndb_id=42)
 
             self._vulns.append(v)
 
@@ -365,7 +365,7 @@ class rfi(AuditPlugin):
                     
                     v = Vuln.from_mutant('Potential remote file inclusion',
                                          desc, severity.LOW, response.id,
-                                         self.get_name(), mutant)
+                                         self.get_name(), mutant, vulndb_id=42)
 
                     v.add_to_highlight(error)
                     self._vulns.append(v)

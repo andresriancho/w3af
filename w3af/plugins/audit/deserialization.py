@@ -200,7 +200,8 @@ class deserialization(AuditPlugin):
                              severity.HIGH,
                              [r.id for r in responses],
                              self.get_name(),
-                             mutant)
+                             mutant,
+                             vulndb_id=10113)
 
         self.kb_append_uniq(self, 'deserialization', v)
 

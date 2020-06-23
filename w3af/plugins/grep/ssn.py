@@ -72,7 +72,7 @@ class ssn(GrepPlugin):
                 ' Number: "%s".')
         desc %= (uri, validated_ssn)
         v = Vuln('US Social Security Number disclosure', desc,
-                 severity.LOW, response.id, self.get_name())
+                 severity.LOW, response.id, self.get_name(), vulndb_id=10053)
         v.set_uri(uri)
 
         v.add_to_highlight(found_ssn)

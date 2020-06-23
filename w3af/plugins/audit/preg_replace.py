@@ -78,7 +78,7 @@ class preg_replace(AuditPlugin):
 
             v = Vuln.from_mutant('Unsafe preg_replace usage', desc,
                                  severity.HIGH, response.id,
-                                 self.get_name(), mutant)
+                                 self.get_name(), mutant, vulndb_id=10018)
 
             v.add_to_highlight(preg_error_string)
             self.kb_append_uniq(self, 'preg_replace', v)

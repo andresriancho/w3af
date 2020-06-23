@@ -24,6 +24,8 @@ from itertools import repeat, izip
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.kb.config as cf
+from w3af.core.data.constants import severity
+from w3af.core.data.kb.vuln import Vuln
 
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.parsers.doc.url import URL
@@ -269,10 +271,12 @@ class open_api(CrawlPlugin):
             desc %= (http_response.get_url(),
                      '\n - '.join(parser.get_parsing_errors()))
 
-            i = Info('Failed to parse Open API specification',
+            i = Vuln('Failed to parse Open API specification',
                      desc,
+                     severity.INFORMATION,
                      http_response.id,
-                     self.get_name())
+                     self.get_name(),
+                     vulndb_id=10117)
             i.set_url(http_response.get_url())
 
             kb.kb.append(self, 'open_api', i)

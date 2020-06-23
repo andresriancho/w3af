@@ -107,7 +107,7 @@ class path_disclosure(GrepPlugin):
             desc %= (response.get_url(), match)
 
             v = Vuln('Path disclosure vulnerability', desc, severity.LOW,
-                     response.id, self.get_name())
+                     response.id, self.get_name(), vulndb_id=10023)
             v.add_to_highlight(match)
             v.set_url(real_url)
             v['path'] = match

@@ -127,7 +127,7 @@ class basic_auth(BruteforcePlugin):
                 ' A valid user and password combination is: %s/%s .')
         desc %= (url, user, password_for_report)
         v = Vuln('Guessable credentials', desc,
-                 severity.HIGH, response.id, self.get_name())
+                 severity.HIGH, response.id, self.get_name(), vulndb_id=10114)
         v.set_url(url)
 
         v['user'] = user

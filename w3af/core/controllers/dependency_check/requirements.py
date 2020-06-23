@@ -50,7 +50,7 @@ CORE_PIP_PACKAGES = [PIPDependency('pyclamd', 'pyClamd', '0.4.0'),
                      PIPDependency('Halberd', 'halberd', '0.2.4'),
                      PIPDependency('darts.lib.utils', 'darts.util.lru', '0.5'),
                      PIPDependency('jinja2', 'Jinja2', '2.10'),
-                     PIPDependency('vulndb', 'vulndb', '0.1.1'),
+                     PIPDependency('vulndb', 'vulndb', '0.1.3'),
                      PIPDependency('markdown', 'markdown', '2.6.1'),
 
                      # This was used for testing, but now it's required for

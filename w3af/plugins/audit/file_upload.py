@@ -307,7 +307,7 @@ class file_upload(AuditPlugin):
                              severity.HIGH,
                              [http_response.id, response.id],
                              self.get_name(),
-                             mutant)
+                             mutant, vulndb_id=65)
 
         v['file_dest'] = response.get_url()
         v['file_vars'] = mutant.get_file_vars()

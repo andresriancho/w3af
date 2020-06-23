@@ -135,7 +135,7 @@ class ssi(AuditPlugin):
 
             v = Vuln.from_mutant('Server side include vulnerability', desc,
                                  severity.HIGH, response.id,
-                                 self.get_name(), mutant)
+                                 self.get_name(), mutant, vulndb_id=10016)
 
             v.add_to_highlight(expected_result)
             self.kb_append_uniq(self, 'ssi', v)
@@ -219,7 +219,7 @@ class ssi(AuditPlugin):
 
             v = Vuln.from_mutant('Persistent server side include vulnerability',
                                  desc, severity.HIGH, response.id,
-                                 self.get_name(), mutant)
+                                 self.get_name(), mutant, vulndb_id=10017)
 
             v.add_to_highlight(matched_expected_result)
             self.kb_append(self, 'ssi', v)

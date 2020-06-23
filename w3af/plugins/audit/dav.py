@@ -101,7 +101,7 @@ class dav(AuditPlugin):
                    'directory: "%s".' % domain_path)
                   
             v = Vuln('Insecure DAV configuration', msg, severity.MEDIUM,
-                     res.id, self.get_name())
+                     res.id, self.get_name(), vulndb_id=10081)
 
             v.set_url(res.get_url())
             v.set_method('SEARCH')
@@ -131,7 +131,7 @@ class dav(AuditPlugin):
                    ' directory: "%s".' % domain_path)
 
             v = Vuln('Insecure DAV configuration', msg, severity.MEDIUM,
-                     res.id, self.get_name())
+                     res.id, self.get_name(), vulndb_id=10081)
 
             v.set_url(res.get_url())
             v.set_method('PROPFIND')

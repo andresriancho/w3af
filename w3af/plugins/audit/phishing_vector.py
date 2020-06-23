@@ -116,7 +116,8 @@ class phishing_vector(AuditPlugin):
                 desc %= mutant.found_at()
 
                 v = Vuln.from_mutant('Phishing vector', desc, severity.LOW,
-                                     response.id, self.get_name(), mutant)
+                                     response.id, self.get_name(), mutant,
+                                     vulndb_id=74)
 
                 v.add_to_highlight(src_attr)
                 self.kb_append_uniq(self, 'phishing_vector', v)

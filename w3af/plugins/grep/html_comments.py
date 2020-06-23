@@ -27,6 +27,8 @@ import re
 import w3af.core.controllers.output_manager as om
 import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.data.kb.knowledge_base as kb
+from w3af.core.data.constants import severity
+from w3af.core.data.kb.vuln import Vuln
 
 from w3af.core.data.quick_match.multi_in import MultiIn
 from w3af.core.data.db.disk_dict import DiskDict
@@ -110,11 +112,13 @@ class html_comments(GrepPlugin):
                     ' This could be interesting.')
             desc %= (word, response.get_url())
 
-            i = Info.from_fr('Interesting HTML comment',
+            i = Vuln.from_fr('Interesting HTML comment',
                              desc,
+                             severity.INFORMATION,
                              response.id,
                              self.get_name(),
-                             request)
+                             request,
+                             vulndb_id=10105)
             i.add_to_highlight(word)
             i[HTMLCommentHidesHTMLInfoSet.ITAG] = comment
 
@@ -154,11 +158,13 @@ class html_comments(GrepPlugin):
                 ' This could be interesting.')
         desc %= (comment, response.get_url())
 
-        i = Info.from_fr('HTML comment contains HTML code',
+        i = Vuln.from_fr('HTML comment contains HTML code',
                          desc,
+                         severity.INFORMATION,
                          response.id,
                          self.get_name(),
-                         request)
+                         request,
+                         vulndb_id=10106)
         i.set_uri(response.get_uri())
         i.add_to_highlight(html_in_comment.group(0))
         i[HTMLCommentHidesHTMLInfoSet.ITAG] = comment

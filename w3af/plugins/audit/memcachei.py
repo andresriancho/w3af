@@ -154,7 +154,7 @@ class memcachei(AuditPlugin):
 
         v = Vuln.from_mutant('Memcache injection vulnerability', desc,
                              severity.HIGH, response_ids, 'memcachei',
-                             mutant)
+                             mutant, vulndb_id=10008)
 
         self.kb_append_uniq(self, 'memcachei', v)
 

@@ -100,7 +100,7 @@ class dot_listing(CrawlPlugin):
             desc %= (response.get_url())
 
             v = Vuln('.listing file found', desc, severity.LOW, response.id,
-                     self.get_name())
+                     self.get_name(), vulndb_id=10024)
             v.set_url(response.get_url())
 
             kb.kb.append(self, 'dot_listing', v)
@@ -123,7 +123,7 @@ class dot_listing(CrawlPlugin):
                      ', '.join(real_groups))
 
             v = Vuln('Operating system username and group leak', desc,
-                     severity.LOW, response.id, self.get_name())
+                     severity.LOW, response.id, self.get_name(), 10025)
             v.set_url(response.get_url())
 
             kb.kb.append(self, 'dot_listing', v)

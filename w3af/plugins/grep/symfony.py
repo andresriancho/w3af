@@ -22,8 +22,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import re
 
 import w3af.core.data.parsers.parser_cache as parser_cache
+from w3af.core.data.constants import severity
 
-from w3af.core.data.kb.info import Info
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_list import OptionList
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
@@ -70,8 +71,14 @@ class symfony(GrepPlugin):
                 ' and contains a form that has CSRF protection disabled.')
         desc %= response.get_url()
 
-        i = Info('Symfony Framework with CSRF protection disabled',
-                 desc, response.id, self.get_name())
+        i = Vuln(
+            'Symfony Framework with CSRF protection disabled',
+            desc,
+            severity.MEDIUM,
+            response.id,
+            self.get_name(),
+            vulndb_id=10071,
+        )
         i.set_url(response.get_url())
         self.kb_append_uniq(self, 'symfony', i, 'URL')
 

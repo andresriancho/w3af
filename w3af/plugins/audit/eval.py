@@ -167,7 +167,7 @@ class eval(AuditPlugin):
 
             v = Vuln.from_mutant('eval() input injection vulnerability',
                                  desc, severity.HIGH, response_ids,
-                                 self.get_name(), mutant)
+                                 self.get_name(), mutant, vulndb_id=6)
 
             self.kb_append_uniq(self, 'eval', v)
 
@@ -186,7 +186,7 @@ class eval(AuditPlugin):
 
                 v = Vuln.from_mutant('eval() input injection vulnerability',
                                      desc, severity.HIGH, response.id,
-                                     self.get_name(), mutant)
+                                     self.get_name(), mutant, vulndb_id=6)
 
                 self.kb_append_uniq(self, 'eval', v)
 

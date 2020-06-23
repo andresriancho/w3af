@@ -135,7 +135,8 @@ class ssl_certificate(AuditPlugin):
                      desc,
                      severity.LOW,
                      1,
-                     self.get_name())
+                     self.get_name(),
+                     vulndb_id=10079)
             v.set_url(self._url_from_parts(domain, port))
 
             self.kb_append(self, 'ssl_v2', v)
@@ -333,7 +334,7 @@ class ssl_certificate(AuditPlugin):
         desc %= args
 
         v = Vuln('Invalid SSL certificate', desc,
-                 severity.LOW, 1, self.get_name())
+                 severity.LOW, 1, self.get_name(), vulndb_id=10080)
 
         v.set_url(self._url_from_parts(domain, port))
         self.kb_append(self, 'invalid_ssl_cert', v)

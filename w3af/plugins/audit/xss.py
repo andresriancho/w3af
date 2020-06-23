@@ -138,7 +138,7 @@ class xss(AuditPlugin):
         
         v = Vuln.from_mutant('Cross site scripting vulnerability', desc,
                              vuln_severity, response.id, self.get_name(),
-                             mutant)
+                             mutant, vulndb_id=55)
         v.add_to_highlight(mod_value) 
         
         self.kb_append_uniq(self, 'xss', v)
@@ -337,7 +337,7 @@ class xss(AuditPlugin):
                     
         v = Vuln.from_mutant(name, desc, vuln_severity,
                              response_ids, self.get_name(),
-                             mutant)
+                             mutant, vulndb_id=56)
         
         v['persistent'] = True
         v['write_payload'] = mutant

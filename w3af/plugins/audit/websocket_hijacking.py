@@ -124,7 +124,8 @@ class websocket_hijacking(AuditPlugin):
         msg %= web_socket_url
 
         v = Vuln.from_fr('Open WebSocket', msg, severity.LOW,
-                         upgrade_response.id, self.get_name(), upgrade_request)
+                         upgrade_response.id, self.get_name(), upgrade_request,
+                         vulndb_id=10004)
         self.kb_append_uniq(self, 'websocket_hijacking', v)
         return True
 
@@ -173,7 +174,7 @@ class websocket_hijacking(AuditPlugin):
 
             v = Vuln.from_fr('Insecure WebSocket Origin filter', msg,
                              severity.MEDIUM, upgrade_response.id,
-                             self.get_name(), upgrade_request)
+                             self.get_name(), upgrade_request, vulndb_id=10005)
             self.kb_append_uniq(self, 'websocket_hijacking', v)
             return True
 
@@ -219,7 +220,7 @@ class websocket_hijacking(AuditPlugin):
 
             v = Vuln.from_fr('Origin restricted WebSocket', msg, severity.LOW,
                              upgrade_response.id, self.get_name(),
-                             upgrade_request)
+                             upgrade_request, vulndb_id=10006)
             self.kb_append_uniq(self, 'websocket_hijacking', v)
             return True
 
@@ -264,7 +265,7 @@ class websocket_hijacking(AuditPlugin):
 
         v = Vuln.from_fr('Websockets CSRF vulnerability', msg,
                          severity.HIGH, upgrade_response.id,
-                         self.get_name(), upgrade_request)
+                         self.get_name(), upgrade_request, vulndb_id=10007)
         self.kb_append_uniq(self, 'websocket_hijacking', v)
         return True
 
@@ -307,7 +308,7 @@ class websocket_hijacking(AuditPlugin):
 
         v = Vuln.from_fr('Websockets CSRF vulnerability', msg,
                          severity.HIGH, upgrade_response.id,
-                         self.get_name(), upgrade_request)
+                         self.get_name(), upgrade_request, vulndb_id=10007)
         self.kb_append_uniq(self, 'websocket_hijacking', v)
         return True
 

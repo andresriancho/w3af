@@ -768,6 +768,7 @@ class Finding(XMLNode):
         context = dotdict({})
 
         context.id_list = info.get_id()
+        context.vulndb_id = info.get_vulndb_id()
         context.http_method = info.get_method()
         context.name = info.get_name()
         context.plugin_name = info.get_plugin_name()

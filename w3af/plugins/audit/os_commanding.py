@@ -126,7 +126,7 @@ class os_commanding(AuditPlugin):
             # Create the vuln obj
             v = Vuln.from_mutant('OS commanding vulnerability', desc,
                                  severity.HIGH, response.id,
-                                 self.get_name(), mutant)
+                                 self.get_name(), mutant, vulndb_id=36)
 
             v['os'] = sent_os
             v['separator'] = sent_separator
@@ -201,7 +201,7 @@ class os_commanding(AuditPlugin):
 
         v = Vuln.from_mutant('OS commanding vulnerability', desc,
                              severity.HIGH, [r.id for r in responses],
-                             self.get_name(), mutant)
+                             self.get_name(), mutant, vulndb_id=36)
 
         v['os'] = delay_obj.get_OS()
         v['separator'] = delay_obj.get_separator()

@@ -80,7 +80,7 @@ class response_splitting(AuditPlugin):
         desc = 'Response splitting was found at: %s' % mutant.found_at()
         v = Vuln.from_mutant('Response splitting vulnerability', desc,
                              severity.MEDIUM, response.id,
-                             self.get_name(), mutant)
+                             self.get_name(), mutant, vulndb_id=41)
 
         self.kb_append_uniq(self, 'response_splitting', v)
 
@@ -96,9 +96,15 @@ class response_splitting(AuditPlugin):
                     ' testing for response splitting: "%s".')
             args = (mutant.get_token_name(), mutant.get_url(), error)
             desc %= args
-            i = Info.from_mutant('Parameter modifies response headers',
-                                 desc, response.id, self.get_name(),
-                                 mutant)
+            i = Vuln.from_mutant(
+                'Parameter modifies response headers',
+                desc,
+                severity.LOW,
+                response.id,
+                self.get_name(),
+                mutant,
+                vulndb_id=10078,
+            )
 
             self.kb_append_uniq(self, 'response_splitting', i)
             break

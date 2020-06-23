@@ -475,7 +475,7 @@ class form_auth(BruteforcePlugin):
             desc %= (freq_url, password_for_report)
 
         v = Vuln.from_mutant('Guessable credentials', desc, severity.HIGH,
-                             resp.id, self.get_name(), mutant)
+                             resp.id, self.get_name(), mutant, 10115)
         v['user'] = user
         v['pass'] = password
         v['response'] = resp

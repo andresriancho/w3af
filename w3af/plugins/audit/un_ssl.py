@@ -122,7 +122,7 @@ class un_ssl(AuditPlugin):
 
                 v = Vuln.from_fr('Secure content over insecure channel',
                                  desc, severity.MEDIUM, response_ids,
-                                 self.get_name(), freq)
+                                 self.get_name(), freq, vulndb_id=10001)
 
                 self.kb_append(self, 'un_ssl', v)
 

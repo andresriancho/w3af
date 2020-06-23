@@ -26,8 +26,9 @@ import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.kb.config as cf
 
 from w3af.core.controllers.plugins.plugin import Plugin
-from w3af.core.data.kb.info import Info
+from w3af.core.data.constants import severity
 from w3af.core.data.fuzzer.utils import rand_alnum
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.url.helpers import is_no_content_response
 
 
@@ -278,10 +279,12 @@ class AuthPlugin(Plugin):
                        '%s')
             desc = msg_fmt % args
 
-        i = Info(title,
+        i = Vuln(title,
                  desc,
+                 severity.INFORMATION,
                  self._http_response_ids,
-                 self.get_name())
+                 self.get_name(),
+                 vulndb_id=10116)
 
         i.set_uri(self._get_main_authentication_url())
 

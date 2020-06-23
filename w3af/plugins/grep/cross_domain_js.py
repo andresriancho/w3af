@@ -26,8 +26,9 @@ import w3af.core.data.parsers.parser_cache as parser_cache
 
 from w3af import ROOT_PATH
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.kb.info import Info
+from w3af.core.data.constants import severity
 from w3af.core.data.kb.info_set import InfoSet
+from w3af.core.data.kb.vuln import Vuln
 from w3af.core.data.options.opt_factory import opt_factory
 from w3af.core.data.options.option_types import INPUT_FILE
 from w3af.core.data.options.option_list import OptionList
@@ -114,8 +115,8 @@ class cross_domain_js(GrepPlugin):
         desc %= (smart_str_ignore(response_url),
                  smart_str_ignore(script_domain))
 
-        i = Info('Cross-domain javascript source', desc,
-                 response.id, self.get_name())
+        i = Vuln('Cross-domain javascript source', desc, severity.INFORMATION,
+                 response.id, self.get_name(), vulndb_id=10107)
         i.set_url(response_url)
         i.add_to_highlight(to_highlight)
         i[CrossDomainInfoSet.ITAG] = script_domain

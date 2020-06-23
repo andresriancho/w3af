@@ -206,7 +206,7 @@ class phpinfo(CrawlPlugin):
         desc %= (response.get_url(), php_version.group(2), sysinfo.group(1))
 
         v = Vuln('phpinfo() file found', desc, severity.MEDIUM,
-                 response.id, self.get_name())
+                 response.id, self.get_name(), 10027)
         v.set_url(response.get_url())
 
         kb.kb.append(self, 'phpinfo', v)

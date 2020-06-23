@@ -90,7 +90,7 @@ class mx_injection(AuditPlugin):
 
             v = Vuln.from_mutant('MX injection vulnerability', desc,
                                  severity.MEDIUM, response.id,
-                                 self.get_name(), mutant)
+                                 self.get_name(), mutant, vulndb_id=10002)
 
             v.add_to_highlight(mx_error)
             self.kb_append_uniq(self, 'mx_injection', v)

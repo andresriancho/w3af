@@ -22,12 +22,14 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import w3af.core.data.kb.knowledge_base as kb
 
 from w3af.core.controllers.plugins.grep_plugin import GrepPlugin
-from w3af.core.data.kb.info import Info
+from w3af.core.data.constants import severity
 from w3af.core.data.kb.info_set import InfoSet
 
 
 # Remember that this headers are only the ones SENT BY THE SERVER TO THE
 # CLIENT. Headers must be uppercase in order to compare them
+from w3af.core.data.kb.vuln import Vuln
+
 COMMON_HEADERS = {'ACCEPT-RANGES',
                   'AGE',
                   'ALLOW',
@@ -120,7 +122,14 @@ class strange_headers(GrepPlugin):
                     ' requires manual analysis.')
             desc %= (header_name, hvalue)
 
-            i = Info('Strange header', desc, response.id, self.get_name())
+            i = Vuln(
+                'Strange header',
+                desc,
+                severity.INFORMATION,
+                response.id,
+                self.get_name(),
+                vulndb_id=10108,
+            )
             i.add_to_highlight(hvalue, header_name)
             i.set_url(response.get_url())
             i[StrangeHeaderInfoSet.ITAG] = header_name
@@ -151,8 +160,8 @@ class strange_headers(GrepPlugin):
         desc %= (response.get_url(),
                  header_value,
                  response.get_code())
-        i = Info('Content-Location HTTP header anomaly', desc,
-                 response.id, self.get_name())
+        i = Vuln('Content-Location HTTP header anomaly', desc, severity.INFORMATION,
+                 response.id, self.get_name(), vulndb_id=10109)
         i.set_url(response.get_url())
         i.add_to_highlight('content-location')
 
