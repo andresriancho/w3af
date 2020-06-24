@@ -120,6 +120,7 @@ class BasicLoginRequestHandler(ExtendedHttpRequestHandler):
         return self.send_response_to_client(302, 'Success', headers)
 
 
+@pytest.mark.deprecated
 class TestVanillaJavaScript1(PluginTest):
 
     SERVER_HOST = '127.0.0.1'
@@ -236,6 +237,31 @@ class TestVanillaJavaScript3(TestVanillaJavaScript1):
 def test_autocomplete_js_reports_if_it_fails_to_use_css_selectors(
         plugin_runner,
         knowledge_base,
+):
+    autocomplete_js_config = {
+        'username': 'test@example.com',
+        'password': 'pass',
+        'check_url': 'http://example.com/me/',
+        'login_form_url': 'http://example.com/login/',
+        'check_string': 'logged as',
+        'username_field_css_selector': '#username',
+        'login_button_css_selector': '#login',
+        'login_form_activator_css_selector': '#activator',
+    }
+    autocomplete_js_plugin = autocomplete_js()
+    plugin_runner.run_plugin(autocomplete_js_plugin, autocomplete_js_config)
+    kb_result = knowledge_base.dump()
+    errors = kb_result.get('authentication').get('error')
+    css_error_count = 0
+    for error in errors:
+        if 'CSS selectors failed' in error.get_name():
+            css_error_count += 1
+    assert css_error_count
+
+
+def test_autocomplete_js_doesnt_report_if_it_can_find_css_selectors(
+        plugin_runner,
+        knowledge_base,
         js_domain_with_login_form,
 ):
     autocomplete_js_config = {
@@ -244,20 +270,17 @@ def test_autocomplete_js_reports_if_it_fails_to_use_css_selectors(
         'check_url': 'http://example.com/me/',
         'login_form_url': 'http://example.com/login/',
         'check_string': 'logged as',
+        'username_field_css_selector': '#username',
+        'login_button_css_selector': '#login',
     }
     autocomplete_js_plugin = autocomplete_js()
-    for _ in range(3):
+    for _ in range(1):
         plugin_runner.run_plugin(
             autocomplete_js_plugin,
             autocomplete_js_config,
             mock_domain=js_domain_with_login_form,
             do_end_call=False,
         )
-    autocomplete_js_plugin.end()
+    plugin_runner.plugin_last_ran.end()
     kb_result = knowledge_base.dump()
-    errors = kb_result.get('authentication').get('error')
-    css_error_count = 0
-    for error in errors:
-        if 'CSS' in error:
-            css_error_count += 1
-    assert css_error_count
+    assert not kb_result.get('authentication', {}).get('error')

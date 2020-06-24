@@ -1,8 +1,10 @@
 import inspect
 
 import pytest
+from mock import patch
 
 from w3af.core.controllers.plugins.auth_plugin import AuthPlugin
+from w3af.core.data.url.HTTPResponse import HTTPResponse
 
 
 class TestPluginError(Exception):
@@ -17,6 +19,7 @@ class TestPluginRunner:
     def __init__(self):
         self.plugin_last_ran = None  # last plugin instance used at self.run_plugin().
         # Useful for debugging.
+        self.mocked_server = None
 
     def run_plugin(self, plugin, plugin_config=None, mock_domain=None, do_end_call=True):
         """
@@ -26,6 +29,21 @@ class TestPluginRunner:
         specific domain
         :param bool do_end_call: if False plugin.end() won't be called
         """
+        # PATCHING
+        self.mocked_server = MockedServer(url_mapping=mock_domain)
+        patcher = patch(
+            'w3af.core.data.url.extended_urllib.ExtendedUrllib.GET',
+            self.mocked_server.mocked_GET,
+        )
+        patcher.start()
+        chrome_patcher = patch(
+            'w3af.core.controllers.chrome.instrumented.main.InstrumentedChrome.load_url',
+            self.mocked_server.mocked_chrome_load_url(),
+        )
+        chrome_patcher.start()
+        # patcher.stop()
+        # END OF PATCHING
+
         if inspect.isclass(plugin):
             plugin_instance = plugin()
         else:
@@ -43,7 +61,7 @@ class TestPluginRunner:
             did_plugin_run = True
 
         if do_end_call:
-            plugin.end()
+            plugin_instance.end()
 
         if not did_plugin_run:
             raise TestPluginError(
@@ -84,12 +102,78 @@ def plugin_runner():
     return TestPluginRunner()
 
 
-@pytest.fixture
-def knowledge_base():
-    from w3af.core.data.kb.knowledge_base import kb
-    return kb
+def mocked_resp(url, text_resp, *args, **kwargs):
+    return HTTPResponse(
+        code=200,
+        read=text_resp,
+        headers={},
+        geturl=url,
+        original_url=url,
+    )
 
+
+class MockedServer:
+    def __init__(self, url_mapping=None):
+        self.url_mapping = url_mapping or {}
+        self.default_content = '<html><body class="default">example.com</body></html>'
+        self.response_count = 0
+        self.urls_requested = []
+
+    def mocked_GET(self, url, *args, **kwargs):
+        if url in self.url_mapping:
+            return mocked_resp(url, self.match_response(url))
+        return self.default_content
+
+    def mocked_chrome_load_url(self, *args, **kwargs):
+        def real_mock(self_, url, *args, **kwargs):
+            self_.chrome_conn.Page.reload()  # this enabled dom_analyzer.js
+            response_content = self.match_response(url)
+            result = self_.chrome_conn.Runtime.evaluate(
+                expression='document.write(`{}`)'.format(response_content)
+            )
+            if result['result'].get('exceptionDetails'):
+                error_text = (
+                    "Can't mock the response for url\n"
+                    "URL: {}\n"
+                    "response_content: {}\n"
+                    "JavaScript exception: {}"
+                )
+                raise TestPluginError(error_text.format(
+                    url,
+                    response_content,
+                    result['result']['exceptionDetails']
+                ))
+            return None
+        return real_mock
+
+    def match_response(self, url):
+        current_response_count = self.response_count
+        self.response_count += 1
+        self.urls_requested.append(url)
+        if self.url_mapping.get(current_response_count):
+            return self.url_mapping[current_response_count]
+        if self.url_mapping.get(url.path):
+            return self.url_mapping[url.path]
+        return self.default_content
 
 @pytest.fixture
 def js_domain_with_login_form():
-    return None
+    mapping = {
+        0: '<div>example</div>',
+        '/login/': (
+            '<div>'
+            '<input id="username"></input>'
+            '<input type="password"></input>'
+            '<button id="login">login</button>'
+            '</div>'
+        ),
+        '/me/': '<div>logged as</div>',
+    }
+    return mapping
+
+
+@pytest.fixture
+def knowledge_base():
+    from w3af.core.data.kb.knowledge_base import kb
+    kb.cleanup()
+    return kb
