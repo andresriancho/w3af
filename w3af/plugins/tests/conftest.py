@@ -1,4 +1,5 @@
 import pytest
+
 from w3af.plugins.tests.plugin_testing_tools import TestPluginRunner
 
 
@@ -32,6 +33,6 @@ def js_domain_with_login_form():
 
 @pytest.fixture
 def knowledge_base():
-    from w3af.core.data.kb.knowledge_base import kb
-    kb.cleanup()
+    from w3af.core.data.kb import knowledge_base
+    kb = knowledge_base.kb = knowledge_base.DBKnowledgeBase()  # create new kb instance
     return kb
