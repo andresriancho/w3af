@@ -12,8 +12,10 @@ class TestPluginError(Exception):
 
 class TestPluginRunner:
     """
-    This class prepares everything needed to run w3af plugin, offers special
-    mocking (like mock_domain). The main method is `run_plugin`.
+    This class prepares everything needed to run w3af plugin, offers network
+    mocking (like mock_domain). The main method is `run_plugin` and it should
+    be used in tests. Also it exposes `plugin_last_ran` and `mocked_server`
+    as parameters.
     """
     def __init__(self):
         self.plugin_last_ran = None  # last plugin instance used at self.run_plugin().
@@ -90,7 +92,24 @@ class TestPluginRunner:
 
 
 class MockedServer:
+    """
+    This is class used to mock whole network for TestPluginRunner. It provides
+    `mocked_GET` and `mocked_chrome_load_url` which are methods to monkey-patch
+    the real w3af methods.
+    """
     def __init__(self, url_mapping=None):
+        """
+        :param dict or None url_mapping: url_mapping should be a dict with data
+        formatted in following way: {'url_path': 'response_content'} or
+        {request_number: 'response_content'}. So for example:
+        {
+          1: '<div>first response</div>',
+          2: '<div>second response</div>',
+          7: '<div>seventh response</div>',
+          '/login/': '<input type"password">'
+          '/me/': '<span>user@example.com</span>'
+        }
+        """
         self.url_mapping = url_mapping or {}
         self.default_content = '<html><body class="default">example.com</body></html>'
         self.response_count = 0
@@ -98,13 +117,13 @@ class MockedServer:
 
     def mocked_GET(self, url, *args, **kwargs):
         if url in self.url_mapping:
-            return self._mocked_resp(url, self.match_response(url))
+            return self._mocked_resp(url, self._match_response(url))
         return self.default_content
 
     def mocked_chrome_load_url(self, *args, **kwargs):
         def real_mock(self_, url, *args, **kwargs):
             self_.chrome_conn.Page.reload()  # this enabled dom_analyzer.js
-            response_content = self.match_response(url)
+            response_content = self._match_response(url)
             result = self_.chrome_conn.Runtime.evaluate(
                 expression='document.write(`{}`)'.format(response_content)
             )
@@ -123,7 +142,7 @@ class MockedServer:
             return None
         return real_mock
 
-    def match_response(self, url):
+    def _match_response(self, url):
         current_response_count = self.response_count
         self.response_count += 1
         self.urls_requested.append(url)
