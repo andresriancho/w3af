@@ -26,6 +26,7 @@ from urlparse import parse_qs
 import pytest
 
 from w3af import ROOT_PATH
+from w3af.plugins.auth.autocomplete_js import autocomplete_js
 from w3af.plugins.tests.helper import PluginTest, PluginConfig
 from w3af.core.controllers.daemons.webserver import start_webserver_any_free_port
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
@@ -42,9 +43,6 @@ VANILLA_JS_LOGIN_3 = file(VANILLA_JS_LOGIN_3).read()
 
 USER = 'user@mail.com'
 PASS = 'passw0rd'
-
-
-pytestmark = pytest.mark.deprecated
 
 
 class BasicLoginRequestHandler(ExtendedHttpRequestHandler):
@@ -122,6 +120,7 @@ class BasicLoginRequestHandler(ExtendedHttpRequestHandler):
         return self.send_response_to_client(302, 'Success', headers)
 
 
+@pytest.mark.deprecated
 class TestVanillaJavaScript1(PluginTest):
 
     SERVER_HOST = '127.0.0.1'
@@ -233,3 +232,55 @@ class TestVanillaJavaScript3(TestVanillaJavaScript1):
         self.assertIn('/login_post.py', FakeFormLoginRequestHandler.EVENTS)
         self.assertIn('/admin', FakeFormLoginRequestHandler.EVENTS)
         self.assertIn('ADMIN_REQUEST_SUCCESS', FakeFormLoginRequestHandler.EVENTS)
+
+
+def test_autocomplete_js_reports_if_it_fails_to_use_css_selectors(
+        plugin_runner,
+        knowledge_base,
+):
+    autocomplete_js_config = {
+        'username': 'test@example.com',
+        'password': 'pass',
+        'check_url': 'http://example.com/me/',
+        'login_form_url': 'http://example.com/login/',
+        'check_string': 'logged as',
+        'username_field_css_selector': '#username',
+        'login_button_css_selector': '#login',
+        'login_form_activator_css_selector': '#activator',
+    }
+    autocomplete_js_plugin = autocomplete_js()
+    plugin_runner.run_plugin(autocomplete_js_plugin, autocomplete_js_config)
+    kb_result = knowledge_base.dump()
+    errors = kb_result.get('authentication').get('error')
+    css_error_count = 0
+    for error in errors:
+        if 'CSS selectors failed' in error.get_name():
+            css_error_count += 1
+    assert css_error_count
+
+
+def test_autocomplete_js_doesnt_report_if_it_can_find_css_selectors(
+        plugin_runner,
+        knowledge_base,
+        js_domain_with_login_form,
+):
+    autocomplete_js_config = {
+        'username': 'test@example.com',
+        'password': 'pass',
+        'check_url': 'http://example.com/me/',
+        'login_form_url': 'http://example.com/login/',
+        'check_string': 'logged as',
+        'username_field_css_selector': '#username',
+        'login_button_css_selector': '#login',
+    }
+    autocomplete_js_plugin = autocomplete_js()
+    for _ in range(1):
+        plugin_runner.run_plugin(
+            autocomplete_js_plugin,
+            autocomplete_js_config,
+            mock_domain=js_domain_with_login_form,
+            do_end_call=False,
+        )
+    plugin_runner.plugin_last_ran.end()
+    kb_result = knowledge_base.dump()
+    assert not kb_result.get('authentication', {}).get('error')

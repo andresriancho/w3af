@@ -43,6 +43,7 @@ class autocomplete_js(autocomplete):
         self.username_field_css_selector = ''
         self.login_button_css_selector = ''
         self.login_form_activator_css_selector = ''
+        self._did_css_selectors_work = False
 
         self._login_form = None
         self._http_traffic_queue = None
@@ -115,6 +116,17 @@ class autocomplete_js(autocomplete):
                 login_urls.add(request.get_url())
 
         self._configure_audit_blacklist(*login_urls)
+
+    def end(self):
+        super(autocomplete_js, self).end()
+        if not self._did_css_selectors_work:
+            message = (
+                "The `{}` authentication plugin was never able to find "
+                "one or more CSS selectors specified in options."
+            )
+            message = message.format(self.get_name())
+            self._log_info_to_kb(title='CSS selectors failed', message=message)
+            self._log_error(message)
 
     def _do_login(self, chrome):
         """
@@ -232,6 +244,8 @@ class autocomplete_js(autocomplete):
             msg = 'Found potential login form: %s'
             args = (form,)
             self._log_debug(msg % args)
+
+            self._did_css_selectors_work = True
 
             yield form
 
