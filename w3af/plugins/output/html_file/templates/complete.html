@@ -23,6 +23,25 @@
             text-overflow: ellipsis;
             padding: 2px;
         }
+        summary::-webkit-details-marker {
+          display: none
+        }
+        summary:after {
+          border-radius: 5px; 
+          content: "+"; 
+          color: black; 
+          float: left; 
+          font-size: 1.5em; 
+          font-weight: bold; 
+          margin: -5px 10px 0 0; 
+          padding: 0; 
+          text-align: center; 
+          width: 20px;
+        }
+        details[open] summary:after {
+          content: "-";
+        }
+
     </style>
 </head>
 
@@ -55,22 +74,30 @@
                 </div>
 
                 <div class="col-md-3">
-                    <h4>Enabled plugins</h4>
+                    <details>
+                    <summary class="btn btn-default btn-sm btn-block">Enabled plugins</summary>
                     <ul>
-                    {% for plugin_type in enabled_plugins %}
-                        <li> <h5>{{ plugin_type }}</h5>
-                            <ul>
-                            {% for plugin_name in enabled_plugins[plugin_type] %}
-                                <li>{{ plugin_name }}</li>
-                            {% endfor %}
-                            </ul>
-                        </li>
-                    {% endfor %}
+                        {% for plugin_type in enabled_plugins %}
+                            <li> 
+                            <h5>{{ plugin_type }}</h5>
+                                <ul>
+                                {% for plugin_name in enabled_plugins[plugin_type] %}
+                                    <li>{{ plugin_name }}</li>
+                                {% endfor %}
+                                </ul>
+                            </li>
+                        {% endfor %}
                     </ul>
+                    </details>
                 </div>
                 <div class="col-md-1"></div>
             </div>
         </div>
+    <div class='row'>
+      <div class="col-md-2"></div>
+      <div class="col-md-8"><h1 class="text-center">Results</h2></div>
+      <div class="col-md-2"></div>
+    </div>
     {% for finding in findings %}
         <div class="thumbnail">
             <div class="row">
@@ -147,9 +174,13 @@
                     <div class="row">
                         <div class="col-md-2"></div>
                         <div class="col-md-8">
-                            <pre>{{ id|response }}</pre>
+                            <details>
+                              <summary class="btn btn-default btn-block">response</summary>
+                                <pre>{{ id|response }}</pre>
+                            </details>
+                            
                         </div>
-                        <div class="col-md-2"></div>
+                        <div class="col-md-2"></div>  
                     </div>
                 {% endfor %}
             {% endif %}
