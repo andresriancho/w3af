@@ -39,8 +39,8 @@ class OptionList(object):
         """
         DANGEROUS!!
         You will probably want to deepcopy the OptionList instance before
-        modifying it with this method to don't block the user from accessing options
-        again.
+        modifying it with this method. If you'll modify the original OptionList
+        then user will have to set this option again.
         """
         if not isinstance(option, int):
             option_names = [item.get_name() for item in self._internal_opt_list]
