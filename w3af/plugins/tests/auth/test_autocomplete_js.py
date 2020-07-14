@@ -274,13 +274,12 @@ def test_autocomplete_js_doesnt_report_if_it_can_find_css_selectors(
         'login_button_css_selector': '#login',
     }
     autocomplete_js_plugin = autocomplete_js()
-    for _ in range(1):
-        plugin_runner.run_plugin(
-            autocomplete_js_plugin,
-            autocomplete_js_config,
-            mock_domain=js_domain_with_login_form,
-            do_end_call=False,
-        )
+    plugin_runner.run_plugin(
+        autocomplete_js_plugin,
+        autocomplete_js_config,
+        mock_domain=js_domain_with_login_form,
+        do_end_call=False,
+    )
     plugin_runner.plugin_last_ran.end()
     kb_result = knowledge_base.dump()
     assert not kb_result.get('authentication', {}).get('error')

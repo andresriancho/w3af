@@ -18,7 +18,7 @@ def plugin_runner():
 @pytest.fixture
 def js_domain_with_login_form():
     mapping = {
-        0: '<div>example</div>',
+        1: '<div>example</div>',
         '/login/': (
             '<div>'
             '<input id="username"></input>'
