@@ -22,6 +22,6 @@ document in our wiki. All contributions, no matter how small, are welcome.
 ## Sponsors
 
 [Holm Security](https://www.holmsecurity.com/) sponsors the project and uses [w3af](http://w3af.org/)
-as part of their amazing [automated and continuous vulnerability assessment platform](https://www.holmsecurity.com/vulnerability-assessment).
+as part of their amazing [automated and continuous vulnerability assessment platform](https://www.holmsecurity.com/vulnerability-assessment-1).
 
 Found this project useful? Donations are accepted via [ethereum](https://www.ethereum.org/) at `0xb1B56F04E6cc5F4ACcB19678959800824DA8DE82`
