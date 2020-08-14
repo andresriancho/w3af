@@ -325,9 +325,7 @@ class TestMPDocumentParser(unittest.TestCase):
         p.join()
 
         got_assertion_error = queue.get(timeout=10)
-        if got_assertion_error:
-            self.assertTrue(False, 'daemonic processes are not allowed'
-                                   ' to have children')
+        self.assertFalse(got_assertion_error)
 
     def test_non_daemon_child_ok(self):
         """
@@ -342,9 +340,7 @@ class TestMPDocumentParser(unittest.TestCase):
         p.join()
 
         got_assertion_error = queue.get(timeout=10)
-        if got_assertion_error:
-            self.assertTrue(False, 'daemonic processes are not allowed'
-                                   ' to have children')
+        self.assertFalse(got_assertion_error)
 
     @pytest.mark.deprecated
     def test_dictproxy_pickle_8748(self):
@@ -390,13 +386,8 @@ class TestMPDocumentParser(unittest.TestCase):
 
 def daemon_child(queue):
     dpc = MultiProcessingDocumentParser()
-
-    try:
-        dpc.start_workers()
-    except AssertionError:
-        queue.put(True)
-    else:
-        queue.put(False)
+    dpc.start_workers()
+    queue.put(False)
 
 
 class DelayedParser(object):

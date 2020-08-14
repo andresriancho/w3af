@@ -50,7 +50,7 @@ from w3af.core.controllers.profiling.core_stats import core_profiling_is_enabled
 from w3af.core.controllers.profiling.memory_usage import user_wants_memory_profiling
 from w3af.core.controllers.profiling.pytracemalloc import user_wants_pytracemalloc
 from w3af.core.controllers.profiling.cpu_usage import user_wants_cpu_profiling
-from w3af.core.data.parsers.document_parser import DocumentParser
+from w3af.core.data.parsers.document_parser import DocumentParser, get_parser_class
 from w3af.core.data.parsers.ipc.serialization import (write_object_to_temp_file,
                                                       write_http_response_to_temp_file,
                                                       write_tags_to_temp_file,
@@ -120,10 +120,12 @@ class MultiProcessingDocumentParser(object):
 
                 # Start the process pool
                 log_queue = om.manager.get_in_queue()
-                self._pool = ProcessPool(self.MAX_WORKERS,
-                                         max_tasks=20,
-                                         initializer=init_worker,
-                                         initargs=(log_queue, self.MEMORY_LIMIT))
+                self._pool = ProcessPool(
+                    self.MAX_WORKERS,
+                    max_tasks=20,
+                    initializer=init_worker,
+                    initargs=(log_queue, self.MEMORY_LIMIT),
+                )
 
         return self._pool
 
@@ -154,7 +156,7 @@ class MultiProcessingDocumentParser(object):
 
         filename = write_http_response_to_temp_file(http_response)
 
-        apply_args = (process_document_parser,
+        apply_args = (create_document_parser_class,
                       filename,
                       self.DEBUG)
 
@@ -179,6 +181,7 @@ class MultiProcessingDocumentParser(object):
 
         try:
             process_result = future.result()
+            document_parser = DocumentParser(http_response, process_result)
         except TimeoutError:
             msg = ('[timeout] The parser took more than %s seconds'
                    ' to complete parsing of "%s", killed it!')
@@ -210,17 +213,8 @@ class MultiProcessingDocumentParser(object):
 
             process_result.reraise()
 
-        try:
-            parser_output = load_object_from_temp_file(process_result)
-        except Exception, e:
-            msg = 'Failed to deserialize sub-process result. Exception: "%s"'
-            args = (e,)
-            raise Exception(msg % args)
-        finally:
-            remove_file_if_exists(process_result)
-
         # Success!
-        return parser_output
+        return document_parser
 
     def get_tags_by_filter(self, http_response, tags, yield_text=False):
         """
@@ -344,11 +338,7 @@ def process_get_tags_by_filter(filename, tags, yield_text, debug):
     return result_filename
 
 
-def process_document_parser(filename, debug):
-    """
-    Simple wrapper to get the current process id and store it in a shared object
-    so we can kill the process if needed.
-    """
+def create_document_parser_class(filename, debug):
     http_resp = load_http_response_from_temp_file(filename)
     pid = multiprocessing.current_process().pid
 
@@ -359,7 +349,7 @@ def process_document_parser(filename, debug):
 
     try:
         # Parse
-        document_parser = DocumentParser(http_resp)
+        document_parser_class = get_parser_class(http_resp)
     except Exception, e:
         if debug:
             msg = ('[mp_document_parser] PID %s finished parsing %s with'
@@ -373,10 +363,7 @@ def process_document_parser(filename, debug):
                    ' exception')
             args = (pid, http_resp.get_url())
             om.out.debug(msg % args)
-
-    result_filename = write_object_to_temp_file(document_parser)
-
-    return result_filename
+    return document_parser_class
 
 
 @atexit.register

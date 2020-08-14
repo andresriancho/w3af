@@ -29,6 +29,7 @@ from concurrent.futures import TimeoutError
 # pylint: disable=E0401
 from darts.lib.utils.lru import SynchronizedLRUDict
 # pylint: enable=E0401
+from future.utils import raise_from
 
 import w3af.core.controllers.output_manager as om
 
@@ -108,10 +109,7 @@ class ParserCache(CacheStats):
         #
         try:
             can_parse = DocumentParser.can_parse(http_response)
-        except:
-            # We catch all the exceptions here and just return False because
-            # the real parsing procedure will (most likely) fail to parse
-            # this response too.
+        except NotImplementedError:
             can_parse = False
 
         self._can_parse_cache[can_parse] = can_parse
@@ -210,10 +208,10 @@ class ParserCache(CacheStats):
             except ScanMustStopException, e:
                 msg = 'The document parser is in an invalid state! %s'
                 raise ScanMustStopException(msg % e)
-            except:
+            except Exception as e:
                 # Act just like when there is no parser
                 msg = 'There is no parser for "%s".' % http_response.get_url()
-                raise BaseFrameworkException(msg)
+                raise_from(BaseFrameworkException(msg), e)
             else:
                 save_to_cache = self.should_cache(http_response) and cache
                 if save_to_cache:

@@ -11,6 +11,7 @@ import w3af.core.data.kb.knowledge_base as kb
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.request.fuzzable_request import FuzzableRequest
 from w3af.core.data.url.HTTPResponse import HTTPResponse
+from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 
 class TestPluginError(Exception):
@@ -29,24 +30,41 @@ class TestPluginRunner:
         self.plugin_last_ran = None  # last plugin instance used at self.run_plugin().
         self.mocked_server = None  # mocked_server holds e.g. info which urls were hit.
 
-    def run_plugin(self, plugin, plugin_config=None, mock_domain=None, do_end_call=True):
+    def run_plugin(
+        self,
+        plugin,
+        plugin_config=None,
+        mock_domain=None,
+        do_end_call=True,
+        extra_options=None,
+    ):
         """
         This is the main method you'll probably use in your tests.
 
         :param Plugin plugin: plugin class or instance
-        :param dict plugin_config:
+        :param dict plugin_config: dict which will be used to pass options with plugin.set_options
         :param pytest.fixture mock_domain: pytest fixture to mock requests to
         specific domain
         :param bool do_end_call: if False plugin.end() won't be called
+        :param dict extra_options: extra options for plugin runner used in certain
+        TestPluginRunner's methods.
+        For example (for web_spider plugin):
+            {
+                'target_domain': [
+                    'https://example.com/',
+                    'https://example.com/somethings',
+                ],
+            }
         :return: Any result which returns the executed plugin. In most cases
         it's just None
         """
-        self._patch_network(mock_domain)
 
         if inspect.isclass(plugin):
             plugin_instance = plugin()
         else:
             plugin_instance = plugin
+
+        self._patch_network(mock_domain, plugin_instance)
 
         self.plugin_last_ran = plugin_instance
 
@@ -59,9 +77,8 @@ class TestPluginRunner:
         if isinstance(plugin_instance, AuthPlugin):
             result = run_auth_plugin(plugin_instance)
             did_plugin_run = True
-
         if isinstance(plugin_instance, CrawlPlugin):
-            result = run_crawl_plugin(plugin_instance)
+            result = run_crawl_plugin(plugin_instance, extra_options)
             did_plugin_run = True
 
         if do_end_call:
@@ -87,7 +104,7 @@ class TestPluginRunner:
             option.set_value(option_value)
         plugin.set_options(options_list)
 
-    def _patch_network(self, mock_domain):
+    def _patch_network(self, mock_domain, plugin_instance):
         """
         No patcher.stop() call here because _patch_network should run only inside
         test functions, so it's cleared automatically after test.
@@ -110,10 +127,22 @@ class TestPluginRunner:
 
         # for soap plugin
         soap_patcher = patch(
-            'w3af.plugins.crawl.soap.zeep.transports.Transport._load_remote_data',
+            'w3af.core.data.parsers.doc.wsdl.zeep.transports.Transport._load_remote_data',
             self.mocked_server.mock_response,
         )
         soap_patcher.start()
+
+        # for web_spider plugin
+        from w3af.plugins.crawl.web_spider import web_spider
+        from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
+        if isinstance(plugin_instance, web_spider):
+            plugin_instance._target_domain = 'example.com'
+            plugin_instance._first_run = False
+            mocked_404_singleton = fingerprint_404_singleton(cleanup=True)
+            mocked_404_singleton.set_url_opener(ExtendedUrllib())
+            plugin_instance.set_url_opener(ExtendedUrllib())
+            from w3af.core.controllers.threads.threadpool import Pool
+            plugin_instance.set_worker_pool(Pool())
 
 
 def run_auth_plugin(plugin):
@@ -122,10 +151,17 @@ def run_auth_plugin(plugin):
     return False
 
 
-def run_crawl_plugin(plugin_instance):
+def run_crawl_plugin(plugin_instance, extra_options=None):
+    extra_options = extra_options or {}
     initial_request_url = URL('http://example.com/')
     initial_request = FuzzableRequest(initial_request_url)
     requests_to_crawl = [initial_request]
+    if extra_options.get('target_domain'):
+        requests_to_crawl += [
+            FuzzableRequest(URL(url))
+            for url in
+            extra_options['target_domain']
+        ]
     plugin_instance.crawl(initial_request, debugging_id=MagicMock())
     while requests_to_crawl:
         request = requests_to_crawl.pop()
@@ -133,7 +169,7 @@ def run_crawl_plugin(plugin_instance):
             break
         plugin_instance.crawl(request, debugging_id=MagicMock())
         for _ in range(plugin_instance.output_queue.qsize()):
-            request = plugin_instance.output_queue.get_nowait()
+            request = plugin_instance.output_queue.get(block=True)
             kb.kb.add_fuzzable_request(request)
             requests_to_crawl.append(request)
     return True
@@ -167,9 +203,10 @@ class MockedServer:
         """
         Mock for all places where w3af uses extended urllib.
 
+        :param URL url: w3af.core.data.parsers.doc.url.URL instance
         :return: w3af.core.data.url.HTTPResponse.HTTPResponse instance
         """
-        return self._mocked_resp(url, self.match_response(url))
+        return self._mocked_resp(url, self.match_response(str(url)))
 
     def mock_chrome_load_url(self, *args, **kwargs):
         def real_mock(self_, url, *args, **kwargs):
@@ -225,8 +262,7 @@ class MockedServer:
         return self.default_content
 
     @staticmethod
-    def _mocked_resp(url_address, text_resp, *args, **kwargs):
-        url = URL(url_address)
+    def _mocked_resp(url, text_resp, *args, **kwargs):
         return HTTPResponse(
             code=200,
             read=text_resp,
