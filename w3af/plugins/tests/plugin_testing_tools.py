@@ -43,7 +43,7 @@ class TestPluginRunner:
 
         :param Plugin plugin: plugin class or instance
         :param dict plugin_config: dict which will be used to pass options with plugin.set_options
-        :param pytest.fixture mock_domain: pytest fixture to mock requests to
+        :param dict mock_domain: pytest fixture to mock requests to
         specific domain
         :param bool do_end_call: if False plugin.end() won't be called
         :param dict extra_options: extra options for plugin runner used in certain
@@ -63,34 +63,37 @@ class TestPluginRunner:
             plugin_instance = plugin()
         else:
             plugin_instance = plugin
-
-        self._patch_network(mock_domain, plugin_instance)
-
         self.plugin_last_ran = plugin_instance
 
-        if plugin_config:
-            self.set_options_to_plugin(plugin_instance, plugin_config)
+        self.mocked_server = MockedServer(url_mapping=mock_domain)
+        with NetworkPatcher(
+            mock_domain,
+            mocked_server=self.mocked_server,
+            plugin_instance=plugin_instance,
+        ):
+            if plugin_config:
+                self.set_options_to_plugin(plugin_instance, plugin_config)
 
-        result = None
-        did_plugin_run = False
+            result = None
+            did_plugin_run = False
 
-        if isinstance(plugin_instance, AuthPlugin):
-            result = run_auth_plugin(plugin_instance)
-            did_plugin_run = True
-        if isinstance(plugin_instance, CrawlPlugin):
-            result = run_crawl_plugin(plugin_instance, extra_options)
-            did_plugin_run = True
+            if isinstance(plugin_instance, AuthPlugin):
+                result = run_auth_plugin(plugin_instance)
+                did_plugin_run = True
+            if isinstance(plugin_instance, CrawlPlugin):
+                result = run_crawl_plugin(plugin_instance, extra_options)
+                did_plugin_run = True
 
-        if do_end_call:
-            plugin_instance.end()
+            if do_end_call:
+                plugin_instance.end()
 
-        if not did_plugin_run:
-            raise TestPluginError(
-                "Can't find any way to run plugin {}. Is it already implemented?".format(
-                    plugin_instance,
+            if not did_plugin_run:
+                raise TestPluginError(
+                    "Can't find any way to run plugin {}. Is it already implemented?".format(
+                        plugin_instance,
+                    )
                 )
-            )
-        return result
+            return result
 
     @staticmethod
     def set_options_to_plugin(plugin, options):
@@ -103,46 +106,6 @@ class TestPluginRunner:
             option = options_list[option_name]
             option.set_value(option_value)
         plugin.set_options(options_list)
-
-    def _patch_network(self, mock_domain, plugin_instance):
-        """
-        No patcher.stop() call here because _patch_network should run only inside
-        test functions, so it's cleared automatically after test.
-        """
-        self.mocked_server = MockedServer(url_mapping=mock_domain)
-
-        # all non-js plugins
-        patcher = patch(
-            'w3af.core.data.url.extended_urllib.ExtendedUrllib.GET',
-            self.mocked_server.mock_GET,
-        )
-        patcher.start()
-
-        # all chrome (js) plugins
-        chrome_patcher = patch(
-            'w3af.core.controllers.chrome.instrumented.main.InstrumentedChrome.load_url',
-            self.mocked_server.mock_chrome_load_url(),
-        )
-        chrome_patcher.start()
-
-        # for soap plugin
-        soap_patcher = patch(
-            'w3af.core.data.parsers.doc.wsdl.zeep.transports.Transport._load_remote_data',
-            self.mocked_server.mock_response,
-        )
-        soap_patcher.start()
-
-        # for web_spider plugin
-        from w3af.plugins.crawl.web_spider import web_spider
-        from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
-        if isinstance(plugin_instance, web_spider):
-            plugin_instance._target_domain = 'example.com'
-            plugin_instance._first_run = False
-            mocked_404_singleton = fingerprint_404_singleton(cleanup=True)
-            mocked_404_singleton.set_url_opener(ExtendedUrllib())
-            plugin_instance.set_url_opener(ExtendedUrllib())
-            from w3af.core.controllers.threads.threadpool import Pool
-            plugin_instance.set_worker_pool(Pool())
 
 
 def run_auth_plugin(plugin):
@@ -162,7 +125,7 @@ def run_crawl_plugin(plugin_instance, extra_options=None):
             for url in
             extra_options['target_domain']
         ]
-    plugin_instance.crawl(initial_request, debugging_id=MagicMock())
+    plugin_instance.crawl(initial_request, debugging_id='test')
     while requests_to_crawl:
         request = requests_to_crawl.pop()
         if request == POISON_PILL:
@@ -247,6 +210,7 @@ class MockedServer:
     def match_response(self, url):
         """
         :param str url: string representing url like: https://example.com/test/
+        :return str: the content of matched response
         """
         self.response_count += 1
         self.urls_requested.append(url)
@@ -271,3 +235,66 @@ class MockedServer:
             original_url=url,
         )
 
+
+class NetworkPatcher:
+    """
+    Context manager used for mocking the whole network. It uses MockedServer
+    for patching.
+    """
+    def __init__(self, mock_domain=None, mocked_server=None, plugin_instance=None):
+        """
+        :param dict mock_domain: pytest fixture to mock requests to
+        specific domain
+        :param MockedServer mocked_server:
+        :param Plugin plugin_instance: the plugin instance
+        """
+        self.mock_domain = mock_domain
+        self.mocked_server = mocked_server or MockedServer(url_mapping=mock_domain)
+        self.plugin_instance = plugin_instance
+        self.patchers = []
+
+    def __enter__(self):
+        # all non-js plugins
+        patcher = patch(
+            'w3af.core.data.url.extended_urllib.ExtendedUrllib.GET',
+            self.mocked_server.mock_GET,
+        )
+        patcher.start()
+        self.patchers.append(patcher)
+
+        # all chrome (js) plugins
+        chrome_patcher = patch(
+            'w3af.core.controllers.chrome.instrumented.main.InstrumentedChrome.load_url',
+            self.mocked_server.mock_chrome_load_url(),
+        )
+        chrome_patcher.start()
+        self.patchers.append(chrome_patcher)
+
+        # for soap plugin
+        soap_patcher = patch(
+            'w3af.core.data.parsers.doc.wsdl.zeep.transports.Transport._load_remote_data',
+            self.mocked_server.mock_response,
+        )
+        soap_patcher.start()
+        self.patchers.append(soap_patcher)
+        from w3af.plugins.crawl.web_spider import web_spider
+        if self.plugin_instance and isinstance(self.plugin_instance, web_spider):
+            self._handle_web_spider_plugin()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        for patcher in self.patchers:
+            try:
+                patcher.stop()
+            except RuntimeError:
+                pass
+        return False
+
+    def _handle_web_spider_plugin(self):
+        from w3af.core.controllers.core_helpers.fingerprint_404 import fingerprint_404_singleton
+        self.plugin_instance._target_domain = 'example.com'
+        self.plugin_instance._first_run = False
+        mocked_404_singleton = fingerprint_404_singleton(cleanup=True)
+        mocked_404_singleton.set_url_opener(ExtendedUrllib())
+        self.plugin_instance.set_url_opener(ExtendedUrllib())
+        from w3af.core.controllers.threads.threadpool import Pool
+        self.plugin_instance.set_worker_pool(Pool())
