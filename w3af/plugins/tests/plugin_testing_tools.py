@@ -280,6 +280,7 @@ class NetworkPatcher:
         from w3af.plugins.crawl.web_spider import web_spider
         if self.plugin_instance and isinstance(self.plugin_instance, web_spider):
             self._handle_web_spider_plugin()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         for patcher in self.patchers:
@@ -298,3 +299,13 @@ class NetworkPatcher:
         self.plugin_instance.set_url_opener(ExtendedUrllib())
         from w3af.core.controllers.threads.threadpool import Pool
         self.plugin_instance.set_worker_pool(Pool())
+
+
+def patch_network(func):
+    """
+    NetworkPatcher decorator
+    """
+    def decorating_function(*args, **kwargs):
+        with NetworkPatcher():
+            return func(*args, **kwargs)
+    return decorating_function

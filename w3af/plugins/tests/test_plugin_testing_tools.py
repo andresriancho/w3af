@@ -1,8 +1,8 @@
 import pytest
-from mock import MagicMock, call
+from mock import MagicMock, call, patch
 
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
-from w3af.plugins.tests.plugin_testing_tools import NetworkPatcher
+from w3af.plugins.tests.plugin_testing_tools import NetworkPatcher, patch_network
 
 """
 Unit tests for plugin_testing_tools.py
@@ -39,3 +39,22 @@ class TestNetworkPatcher:
         with network_patcher:
             for patcher in network_patcher.patchers:
                 patcher.stop()  # no error here
+
+    def test_with_as_works(self):
+        with NetworkPatcher() as network_patcher:
+            assert isinstance(network_patcher, NetworkPatcher)
+
+    def test_it_works_as_a_decorator(self):
+        mocked_server = MagicMock()
+        network_patcher_from_class = (
+            lambda *args, **kwargs: NetworkPatcher(mocked_server=mocked_server)
+        )
+        with patch(
+            'w3af.plugins.tests.plugin_testing_tools.NetworkPatcher',
+            network_patcher_from_class,
+        ):
+            @patch_network
+            def decorated_function():
+                self.url_opener.GET(MagicMock())
+            decorated_function()
+        assert mocked_server.mock_GET.called
