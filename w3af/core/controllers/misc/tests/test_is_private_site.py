@@ -40,6 +40,6 @@ class TestIsPrivateSite(unittest.TestCase):
     def test_is_private_site_false_case01(self):
         self.assertFalse(is_private_site('192.1.0.1'))
 
+    @pytest.mark.skip('uses internet')
     def test_is_private_site_false_case02(self):
         self.assertFalse(is_private_site('www.w3af.org'))
-        

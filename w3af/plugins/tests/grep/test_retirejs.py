@@ -140,6 +140,7 @@ class TestRetireJSClass(unittest.TestCase):
         rjs = retirejs()
         self.assertTrue(rjs._get_is_valid_retire_version())
 
+    @pytest.mark.skip('uses internet')
     def test_retire_smoke_test(self):
         rjs = retirejs()
         self.assertTrue(rjs._retire_smoke_test())

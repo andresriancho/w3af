@@ -23,6 +23,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 import urllib2
 import unittest
 
+import pytest
 from mock import patch, Mock, _Call
 
 from w3af.core.data.url.HTTPRequest import HTTPRequest
@@ -93,6 +94,7 @@ class TestCacheHandler(unittest.TestCase):
 
 
 class CacheIntegrationTest(unittest.TestCase):
+    @pytest.mark.skip('uses internet')
     def test_cache_http_errors(self):
         settings = opener_settings.OpenerSettings()
         settings.build_openers()
