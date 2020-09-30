@@ -21,21 +21,60 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import contextlib
 import sys
-import xml.parsers.expat as expat
 from cStringIO import StringIO
 
-import SOAPpy
 import zeep
 from requests import HTTPError
 from zeep.exceptions import XMLSyntaxError
 
-import w3af.core.controllers.output_manager as om
 import w3af.core.data.kb.knowledge_base as kb
-from w3af.core.controllers.exceptions import BaseFrameworkException
 from w3af.core.data.kb.info import Info
 from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers import output_manager
+
+
+class ZeepTransport(zeep.Transport):
+    """
+    Custom Zeep Transport class which overrides it's methods to use w3af's HTTP client.
+    We don't call super() on any overwritten method as we want to force Zeep to use
+    our client, not their.
+
+    Tradeoff:
+    As WSDLParser has to be tight coupled to Zeep by design we have to also
+    make tight coupling between WSDLParser and ExtendedUrllib. And that's because
+    parser by design is not intended to perform any requests by itself. Although
+    Zeep is constructed in this specific way that it performs request when it's
+    instantiated.
+    As parsers are not intended to make requests there's also no obvious way to
+    pass uri_opener into parser.
+    """
+    def __init__(self):
+        super(ZeepTransport, self).__init__()
+        from w3af.core.data.url.extended_urllib import ExtendedUrllib
+        self.uri_opener = ExtendedUrllib()
+        self.uri_opener.setup(disable_cache=True)
+
+    def get(self, address, params, headers):
+        return self.uri_opener.GET(address, params, headers=headers)
+
+    def post(self, address, message, headers):
+        return self.uri_opener.POST(address, data=message, headers=headers)
+
+    def post_xml(self, address, envelope, headers):
+        from zeep.wsdl.utils import etree_to_string
+        message = etree_to_string(envelope)
+        return self.uri_opener.POST(address, data=message, headers=headers)
+
+    def load(self, url):
+        response = self.uri_opener.GET(url)
+        return response.body
+
+
+class ZeepClientAdapter(zeep.Client):
+    def __init__(self, url, transport=None, *args, **kwargs):
+        transport = transport or ZeepTransport()
+        super(ZeepClientAdapter, self).__init__(url, transport=transport, *args, **kwargs)
 
 
 class WSDLParser(BaseParser):
@@ -48,7 +87,8 @@ class WSDLParser(BaseParser):
     def __init__(self, http_response):
         self._proxy = None
         super(WSDLParser, self).__init__(http_response)
-        self._wsdl_client = zeep.Client(str(http_response.get_uri()))
+        wsdl_url = str(http_response.get_uri())
+        self._wsdl_client = ZeepClientAdapter(wsdl_url)
         self._discovered_urls = set()
 
     def __getstate__(self):
@@ -58,13 +98,13 @@ class WSDLParser(BaseParser):
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-        self._wsdl_client = zeep.Client(str(self._http_response.get_uri()))
+        self._wsdl_client = ZeepClientAdapter(str(self._http_response.get_uri()))
 
     @staticmethod
     def can_parse(http_resp):
         url = http_resp.get_uri()
         try:
-            wsdl_client = zeep.Client(str(url))
+            wsdl_client = ZeepClientAdapter(str(url))
         except (XMLSyntaxError, HTTPError):
             exception_description = (
                 "The result of url: {} seems not to be valid XML.".format(

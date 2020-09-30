@@ -41,7 +41,7 @@ from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.doc.html import HTMLParser
 from w3af.core.data.parsers.tests.test_document_parser import _build_http_response
-from w3af.plugins.tests.plugin_testing_tools import NetworkPatcher
+from w3af.plugins.tests.plugin_testing_tools import NetworkPatcher, patch_network
 
 
 @pytest.fixture
@@ -388,6 +388,7 @@ class TestMPDocumentParser:
         parser = self.mpdoc.get_document_parser_for(resp)
         assert isinstance(parser._parser, HTMLParser)
 
+    @patch_network
     def test_get_tags_by_filter(self):
         body = '<html><a href="/abc">foo</a><b>bar</b></html>'
         url = URL('http://www.w3af.com/')
@@ -399,6 +400,7 @@ class TestMPDocumentParser:
 
         assert [Tag('a', {'href': '/abc'}, 'foo'), Tag('b', {}, 'bar')] == tags
 
+    @patch_network
     def test_get_tags_by_filter_empty_tag(self):
         body = '<html><script src="foo.js"></script></html>'
         url = URL('http://www.w3af.com/')
@@ -413,7 +415,7 @@ class TestMPDocumentParser:
 
     def test_it_doesnt_silence_type_error_from_document_parser(self, html_response):
         self.mpdoc._document_parser_class = MockedDamagedDocumentParser
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError), NetworkPatcher():
             self.mpdoc.get_document_parser_for(html_response)
 
 

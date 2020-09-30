@@ -25,6 +25,13 @@ class TestNetworkPatcher:
             self.url_opener.GET(MagicMock())
         assert call.mock_GET in mocked_server.method_calls
 
+    def test_it_works_for_post_requests(self):
+        mocked_server = MagicMock()
+        network_patcher = NetworkPatcher(mocked_server=mocked_server)
+        with network_patcher:
+            self.url_opener.POST('http://example.com/', 'data')
+        assert mocked_server.mock_POST.called
+
     def test_it_stops_all_patchers(self, network_patcher):
         with network_patcher:
             pass

@@ -28,6 +28,8 @@ from w3af.core.controllers.misc.number_generator import (consecutive_number_gene
 # TODO: Why not POST? Why don't we perform real caching and respect
 # the cache headers/meta tags?
 # @see: https://bitbucket.org/jaraco/jaraco.net/src/65af6e442d21/jaraco/net/http/caching.py
+from w3af.core.data.url.handlers.cache_backend.no_chache import NoCachedResponse
+
 CACHE_METHODS = ('GET', 'HEAD')
 
 
@@ -42,14 +44,17 @@ class CacheHandler(urllib2.BaseHandler):
     :author: Version 0.2 by Andres Riancho
     :author: Version 0.3 by Javier Andalia <jandalia =at= gmail.com>
     """
-    def __init__(self):
-        CacheClass.init()
+    def __init__(self, disable_cache=False):
+        self._cache_class = DefaultCacheClass
+        if disable_cache:
+            self._cache_class = NoCachedResponse
+        self._cache_class.init()
 
     def clear(self):
         """
         Clear the cache (remove all files and directories associated with it).
         """
-        return CacheClass.clear()
+        return self._cache_class.clear()
 
     def default_open(self, request):
         """
@@ -64,11 +69,11 @@ class CacheHandler(urllib2.BaseHandler):
         if not request.get_from_cache:
             return None
 
-        if not CacheClass.exists_in_cache(request):
+        if not self._cache_class.exists_in_cache(request):
             return None
 
         try:
-            cache_response_obj = CacheClass(request)
+            cache_response_obj = self._cache_class(request)
         except Exception:
             # Sometimes the cache gets corrupted, or the initial HTTP
             # request that's saved to disk doesn't completely respect the
@@ -105,11 +110,11 @@ class CacheHandler(urllib2.BaseHandler):
         #       above) to decide if the response should be returned from the
         #       cache
         #
-        CacheClass.store_in_cache(request, response)
+        self._cache_class.store_in_cache(request, response)
         return response
 
     https_response = http_response
 
 
 # This is the default implementation
-CacheClass = SQLCachedResponse
+DefaultCacheClass = SQLCachedResponse

@@ -166,10 +166,21 @@ class MockedServer:
         """
         Mock for all places where w3af uses extended urllib.
 
-        :param URL url: w3af.core.data.parsers.doc.url.URL instance
+        :param URL or str url: w3af.core.data.parsers.doc.url.URL instance or str
         :return: w3af.core.data.url.HTTPResponse.HTTPResponse instance
         """
-        return self._mocked_resp(url, self.match_response(str(url)))
+        url = str(url)
+        return self._mocked_resp(URL(url), self.match_response(url))
+
+    def mock_POST(self, url, *args, **kwargs):
+        """
+        Mock for all places where w3af uses extended urllib.
+
+        :param URL or str url: w3af.core.data.parsers.doc.url.URL instance or str
+        :return: w3af.core.data.url.HTTPResponse.HTTPResponse instance
+        """
+        url = str(url)
+        return self._mocked_resp(URL(url), self.match_response(url))
 
     def mock_chrome_load_url(self, *args, **kwargs):
         def real_mock(self_, url, *args, **kwargs):
@@ -270,13 +281,13 @@ class NetworkPatcher:
         chrome_patcher.start()
         self.patchers.append(chrome_patcher)
 
-        # for soap plugin
-        soap_patcher = patch(
-            'w3af.core.data.parsers.doc.wsdl.zeep.transports.Transport._load_remote_data',
-            self.mocked_server.mock_response,
+        post_patcher = patch(
+            'w3af.core.data.url.extended_urllib.ExtendedUrllib.POST',
+            self.mocked_server.mock_POST,
         )
-        soap_patcher.start()
-        self.patchers.append(soap_patcher)
+        self.patchers.append(post_patcher)
+        post_patcher.start()
+
         from w3af.plugins.crawl.web_spider import web_spider
         if self.plugin_instance and isinstance(self.plugin_instance, web_spider):
             self._handle_web_spider_plugin()

@@ -313,7 +313,7 @@ class TestDeadLock(PluginTest):
     MOCK_RESPONSES = [MockResponse('http://mock/', INDEX_HTML),
                       MockResponse('http://mock/', 'Thanks.', method='POST')]
 
-    @pytest.mark.deprecated
+    @pytest.mark.slow
     def test_no_lock(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])

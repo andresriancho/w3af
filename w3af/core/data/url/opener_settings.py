@@ -370,11 +370,11 @@ class OpenerSettings(Configurable):
             self._ka_https
         }
 
-    def build_openers(self):
+    def build_openers(self, disable_cache=False):
         # Instantiate the handlers passing the proxy as parameter
         self._ka_http = HTTPHandler()
         self._ka_https = HTTPSHandler(self.get_proxy())
-        self._cache_handler = CacheHandler()
+        self._cache_handler = CacheHandler(disable_cache=disable_cache)
 
         # Prepare the list of handlers
         handlers = []

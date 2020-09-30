@@ -21,7 +21,6 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
 import unittest
-import time
 import os
 
 from w3af import ROOT_PATH
@@ -33,6 +32,7 @@ from w3af.core.data.parsers.doc.pdf import PDFParser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.parsers.document_parser import (document_parser_factory,
                                                     DocumentParser)
+from w3af.plugins.tests.plugin_testing_tools import patch_network
 
 
 def _build_http_response(body_content, content_type):
@@ -44,6 +44,7 @@ def _build_http_response(body_content, content_type):
     return HTTPResponse(200, body_content, headers, url, url, charset='utf-8')
 
 
+@patch_network
 class TestDocumentParserFactory(unittest.TestCase):
 
     PDF_FILE = os.path.join(ROOT_PATH, 'core', 'data', 'parsers', 'doc',

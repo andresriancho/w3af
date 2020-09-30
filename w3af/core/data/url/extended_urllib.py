@@ -528,10 +528,10 @@ class ExtendedUrllib(object):
     def restart(self):
         self.end()
 
-    def setup(self):
+    def setup(self, disable_cache=False):
         if self.settings.need_update or self._opener is None:
             self.settings.need_update = False
-            self.settings.build_openers()
+            self.settings.build_openers(disable_cache=disable_cache)
             self._opener = self.settings.get_custom_opener()
 
             self.clear_timeout()
@@ -674,12 +674,25 @@ class ExtendedUrllib(object):
 
         return res
 
-    def GET(self, uri, data=None, headers=None, cache=False,
-            grep=True, cookies=True, session=None,
-            respect_size_limit=True, new_connection=False,
-            error_handling=True, timeout=None, follow_redirects=False,
-            use_basic_auth=True, use_proxy=True, debugging_id=None,
-            binary_response=False):
+    def GET(
+        self,
+        uri,
+        data=None,
+        headers=None,
+        cache=False,
+        grep=True,
+        cookies=True,
+        session=None,
+        respect_size_limit=True,
+        new_connection=False,
+        error_handling=True,
+        timeout=None,
+        follow_redirects=False,
+        use_basic_auth=True,
+        use_proxy=True,
+        debugging_id=None,
+        binary_response=False,
+    ):
         """
         HTTP GET a URI using a proxy, user agent, and other settings
         that where previously set in opener_settings.py .
@@ -702,15 +715,7 @@ class ExtendedUrllib(object):
 
         :return: An HTTPResponse object.
         """
-        headers = headers or Headers()
-
-        if not isinstance(uri, URL):
-            raise TypeError('The uri parameter of ExtendedUrllib.GET() must be'
-                            ' of url.URL type.')
-
-        if not isinstance(headers, Headers):
-            raise TypeError('The header parameter of ExtendedUrllib.GET() must'
-                            ' be of Headers type.')
+        uri, headers = self._parse_uri_and_headers(uri, headers, method_name='GET')
 
         # Validate what I'm sending, init the library (if needed)
         self.setup()
@@ -738,12 +743,25 @@ class ExtendedUrllib(object):
         with raise_size_limit(respect_size_limit):
             return self.send(req, grep=grep)
 
-    def POST(self, uri, data='', headers=None, grep=True, cache=False,
-             cookies=True, session=None, error_handling=True, timeout=None,
-             follow_redirects=None, use_basic_auth=True, use_proxy=True,
-             debugging_id=None, new_connection=False,
-             respect_size_limit=None,
-             binary_response=False):
+    def POST(
+        self,
+        uri,
+        data='',
+        headers=None,
+        grep=True,
+        cache=False,
+        cookies=True,
+        session=None,
+        error_handling=True,
+        timeout=None,
+        follow_redirects=None,
+        use_basic_auth=True,
+        use_proxy=True,
+        debugging_id=None,
+        new_connection=False,
+        respect_size_limit=None,
+        binary_response=False,
+    ):
         """
         POST's data to a uri using a proxy, user agents, and other settings
         that where set previously.
@@ -755,15 +773,7 @@ class ExtendedUrllib(object):
         :see: The GET() for documentation on the other parameters
         :return: An HTTPResponse object.
         """
-        headers = headers or Headers()
-
-        if not isinstance(uri, URL):
-            raise TypeError('The uri parameter of ExtendedUrllib.POST() must'
-                            ' be of url.URL type. Got %s instead.' % type(uri))
-
-        if not isinstance(headers, Headers):
-            raise TypeError('The header parameter of ExtendedUrllib.POST() must'
-                            ' be of Headers type.')
+        uri, headers = self._parse_uri_and_headers(uri, headers, method_name='POST')
 
         #    Validate what I'm sending, init the library (if needed)
         self.setup()
@@ -791,6 +801,38 @@ class ExtendedUrllib(object):
         req = self.add_headers(req, headers)
 
         return self.send(req, grep=grep)
+
+    def _parse_uri_and_headers(self, uri, headers, method_name):
+        """
+        If uri or headers comes in primitive format then make sure they're
+        instantiated to proper ones.
+        """
+        if isinstance(headers, dict):
+            new_headers = []
+            for key, value in headers.items():
+                new_headers.append((key, value))
+            headers = Headers(new_headers)
+        headers = headers or Headers()
+
+        if not isinstance(headers, Headers):
+            error_message = (
+                'The header parameter of ExtendedUrllib.{}() must be of dict Headers type.'
+            )
+            raise TypeError(
+                error_message.format(method_name)
+            )
+
+        if isinstance(uri, str):
+            uri = URL(uri)
+        if not isinstance(uri, URL):
+            error_message = (
+                'The uri parameter of ExtendedUrllib.{}() must be of str or url.URL type.'
+            )
+            raise TypeError(
+                error_message.format(method_name)
+            )
+
+        return uri, headers
 
     def get_remote_file_size(self, req, cache=True):
         """
