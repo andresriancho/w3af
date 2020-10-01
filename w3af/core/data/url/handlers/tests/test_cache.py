@@ -82,39 +82,29 @@ class TestCacheHandler:
         assert Headers(cached_response.info().items()) == self.response.info()
         assert cached_response.geturl() == self.response.geturl()
 
-    def test_cache_handler_with_enabled_cache(self):
-        default_cache = MagicMock()
-        with patch(
-            'w3af.core.data.url.handlers.cache.DefaultCacheClass', default_cache
-        ):
-            cache_handler = CacheHandler(disable_cache=False)
-            assert cache_handler.default_open(self.request)
-            # cache_handler.http_response(self.request, self.response)
-            # assert default_cache.store_in_cache.call_count == 1
-            # assert cache_handler.http_response(self.request, self.response)
-            # assert default_cache.store_in_cache.call_count == 1
-
-    def test_cache_handler_with_disabled_cache(self):
-        with patch(
-            'w3af.core.data.url.handlers.cache.DefaultCacheClass', MagicMock()
-        ):
-            cache_handler = CacheHandler(disable_cache=True)
-            assert not cache_handler.default_open(self.request)
-
     def test_no_cache(self):
         url = URL('http://www.w3af.org')
         request = HTTPRequest(url, cache=False)
-        
+
         cache = CacheHandler()
         assert cache.default_open(request) is None
-        
+
         response = FakeHttplibHTTPResponse(200, 'OK', 'spameggs', Headers(),
                                            url.url_string)
         cache.http_response(request, response)
         assert cache.default_open(request) is None
 
 
-class CacheIntegrationTest(unittest.TestCase):
+class TestCacheIntegration:
+    def setup_method(self):
+        self.http_response = FakeHttplibHTTPResponse(
+            200,
+            'OK',
+            '<body></body>',
+            Headers(),
+            'http://example.com/'
+        )
+
     @pytest.mark.skip('uses internet')
     def test_cache_http_errors(self):
         settings = opener_settings.OpenerSettings()
@@ -136,11 +126,23 @@ class CacheIntegrationTest(unittest.TestCase):
 
             # Make sure the right call was made
             _call = _Call(('store_in_cache', (request, response)))
-            self.assertEqual(cc_mock.mock_calls, [_call])
+            assert cc_mock.mock_calls == [_call]
             cc_mock.reset_mock()
 
             # And make sure the response was a 404
-            self.assertEqual(response.status, 404)
+            assert response.status == 404
+
+    def test_cache_handler_with_enabled_cache(self, http_request):
+        http_request.get_from_cache = True
+        cache_handler = CacheHandler(disable_cache=False)
+        cache_handler.http_response(http_request, self.http_response)
+        assert cache_handler.default_open(http_request)
+
+    def test_cache_handler_with_disabled_cache(self, http_request):
+        http_request.get_from_cache = True
+        cache_handler = CacheHandler(disable_cache=True)
+        cache_handler.http_response(http_request, self.http_response)
+        assert not cache_handler.default_open(http_request)
 
 
 class FakeHttplibHTTPResponse(object):
