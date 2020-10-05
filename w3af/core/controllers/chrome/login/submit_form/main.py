@@ -25,7 +25,6 @@ from w3af.core.controllers import output_manager as om
 
 from w3af.core.controllers.chrome.login.submit_form.strategies.press_enter import PressEnterStrategy
 from w3af.core.controllers.chrome.login.submit_form.strategies.press_tab_enter import PressTabEnterStrategy
-from w3af.core.controllers.chrome.login.submit_form.strategies.form_input_submit import FormInputSubmitStrategy
 
 
 class FormSubmitter(object):
@@ -93,4 +92,4 @@ class FormSubmitter(object):
                 e,
                 self.debugging_id)
         om.out.debug(msg % args)
-        om.out.error(traceback.format_exc())
+        om.out.debug(traceback.format_exc())
