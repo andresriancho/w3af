@@ -145,6 +145,9 @@ class BaseParser(object):
         """
         raise NotImplementedError(NOT_IMPLEMENTED_FMT % 'get_references')
 
+    def get_fuzzable_requests(self):
+        return []
+
     def get_emails(self, domain=None):
         """
         :return: A set with email addresses

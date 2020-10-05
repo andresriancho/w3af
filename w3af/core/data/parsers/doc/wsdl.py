@@ -21,6 +21,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
 import contextlib
 import sys
+import urllib
 from cStringIO import StringIO
 
 import zeep
@@ -32,6 +33,7 @@ from w3af.core.data.kb.info import Info
 from w3af.core.data.parsers.doc.baseparser import BaseParser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers import output_manager
+from w3af.core.data.request.fuzzable_request import FuzzableRequest
 
 
 class ZeepTransport(zeep.Transport):
@@ -54,21 +56,37 @@ class ZeepTransport(zeep.Transport):
         from w3af.core.data.url.extended_urllib import ExtendedUrllib
         self.uri_opener = ExtendedUrllib()
         self.uri_opener.setup(disable_cache=True)
+        self.requests_performed = []
 
     def get(self, address, params, headers):
+        self._save_request(address, method='GET', params=params, headers=headers)
         return self.uri_opener.GET(address, params, headers=headers)
 
     def post(self, address, message, headers):
+        self._save_request(address, method='POST', data=message, headers=headers)
         return self.uri_opener.POST(address, data=message, headers=headers)
 
     def post_xml(self, address, envelope, headers):
         from zeep.wsdl.utils import etree_to_string
         message = etree_to_string(envelope)
+        self._save_request(address, method='POST', data=message, headers=headers)
         return self.uri_opener.POST(address, data=message, headers=headers)
 
     def load(self, url):
+        self._save_request(address=url, method='GET')
         response = self.uri_opener.GET(url)
         return response.body
+
+    def _save_request(self, address, method, params=None, headers=None, data=None):
+        uri = address
+        if params:
+            uri += '?{}'.format(urllib.urlencode(params))
+        self.requests_performed.append({
+            'url': uri,
+            'method': method,
+            'headers': headers,
+            'data': data,
+        })
 
 
 class ZeepClientAdapter(zeep.Client):
@@ -140,6 +158,17 @@ class WSDLParser(BaseParser):
     def get_references(self):
         self._report_wsdl_dump()
         return list(self._discovered_urls), []
+
+    def get_fuzzable_requests(self):
+        fuzzable_requests = []
+        for request_performed in self._wsdl_client.transport.requests_performed:
+            fuzzable_requests.append(FuzzableRequest(
+                URL(request_performed['url']),
+                request_performed['method'],
+                headers=request_performed['headers'],
+                post_data=request_performed['data'],
+            ))
+        return fuzzable_requests
 
     @contextlib.contextmanager
     def _redirect_stdout(self, new_stdout):

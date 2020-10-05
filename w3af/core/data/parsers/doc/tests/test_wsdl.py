@@ -38,6 +38,9 @@ def http_response():
 
 
 class TestZeepTransport:
+    def setup_method(self):
+        self.url = 'http://example.com/'
+
     def test_it_implements_all_needed_methods(self):
         zeep_transport = ZeepTransport()
         required_methods = [
@@ -50,16 +53,16 @@ class TestZeepTransport:
             assert hasattr(zeep_transport, method)
 
     def test_it_calls_http_client_on_get_method(self, zeep_transport, mocked_http_client):
-        zeep_transport.get('https://example.com/', '', {})
+        zeep_transport.get(self.url, '', {})
         assert mocked_http_client.GET.called
 
     def test_it_calls_http_client_on_post_method(self, zeep_transport, mocked_http_client):
-        zeep_transport.post('https://example.com/', 'some data', {})
+        zeep_transport.post(self.url, 'some data', {})
         assert mocked_http_client.POST.called
 
     def test_it_calls_http_client_on_post_xml_method(self, zeep_transport, mocked_http_client):
         from lxml import etree  # feeding Zeep dependencies
-        zeep_transport.post_xml('https://example.com/', etree.Element('test'), {})
+        zeep_transport.post_xml(self.url, etree.Element('test'), {})
         assert mocked_http_client.POST.called
 
     def test_it_loads_the_response_content(self, zeep_transport, mocked_http_client):
@@ -67,8 +70,40 @@ class TestZeepTransport:
         mocked_response.body = 'test'
         mocked_http_client.GET = MagicMock(return_value=mocked_response)
 
-        result = zeep_transport.load('http://example.com/')
+        result = zeep_transport.load(self.url)
         assert result == 'test'
+
+    def test_it_reports_requests_performed(self, zeep_transport):
+        assert not zeep_transport.requests_performed
+        zeep_transport.get(self.url, '', {})
+        logged_request = {
+            'url': self.url,
+            'method': 'GET',
+            'headers': {},
+            'data': None,
+        }
+        assert logged_request in zeep_transport.requests_performed
+
+    def test_it_reports_proper_url_if_url_params_are_passed(self, zeep_transport):
+        params = {'test': True, 'some_val': 5}
+        zeep_transport.get(self.url, params, {})
+        logged_request = {
+            'url': '{}?test=True&some_val=5'.format(self.url),
+            'method': 'GET',
+            'headers': {},
+            'data': None,
+        }
+        assert logged_request in zeep_transport.requests_performed
+
+    def test_it_reports_headers_properly(self, zeep_transport):
+        zeep_transport.get(self.url, '', {'test': True})
+        logged_request = {
+            'url': self.url,
+            'method': 'GET',
+            'headers': {'test': True},
+            'data': None,
+        }
+        assert logged_request in zeep_transport.requests_performed
 
 
 class TestZeepTransportIntegration:
@@ -109,3 +144,10 @@ class TestWSDLParserIntegration:
         with patch('w3af.core.data.parsers.doc.wsdl.ZeepTransport', zeep_transport_from_class):
             WSDLParser(http_response=http_response)
         assert mocked_http_client.GET.called
+
+    def test_it_produces_fuzzable_requests(self, http_response):
+        with NetworkPatcher():
+            wsdl_parser = WSDLParser(http_response=http_response)
+        fuzzable_requests = wsdl_parser.get_fuzzable_requests()
+        assert len(fuzzable_requests) == 1
+        assert fuzzable_requests[0].get_url() == http_response.get_url()
