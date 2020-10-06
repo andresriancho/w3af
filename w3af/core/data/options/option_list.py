@@ -35,6 +35,18 @@ class OptionList(object):
         self._internal_opt_list.append(option)
     append = add
 
+    def pop(self, option):
+        """
+        DANGEROUS!!
+        You will probably want to deepcopy the OptionList instance before
+        modifying it with this method. If you'll modify the original OptionList
+        then user will have to set this option again.
+        """
+        if not isinstance(option, int):
+            option_names = [item.get_name() for item in self._internal_opt_list]
+            option = option_names.index(option)
+        return self._internal_opt_list.pop(option)
+
     def __len__(self):
         return len(self._internal_opt_list)
 

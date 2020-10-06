@@ -20,6 +20,7 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import json
 import unittest
 
 from w3af.core.data.parsers.doc.url import URL
@@ -311,6 +312,24 @@ class TestRequests(unittest.TestCase):
         self.assertEqual(fuzzable_request.get_uri().url_string, e_url)
         self.assertEqual(fuzzable_request.get_headers(), e_headers)
         self.assertEqual(fuzzable_request.get_data(), e_data)
+
+    def test_array_param_not_required_in_json(self):
+        """
+        Regression test when param type is array and param is not required.
+        Param must be in query, not in body.
+        """
+        test_spec_filename = (
+            'w3af/core/data/parsers/doc/open_api/tests/data/array_not_required_model_items.json'
+        )
+        with open(test_spec_filename, 'r') as file_:
+            specification_as_string = file_.read()
+
+        http_response = self.generate_response(specification_as_string)
+        handler = SpecificationHandler(http_response)
+        data = [item for item in handler.get_api_information()]
+        for spec_obj in data:
+            factory = RequestFactory(*spec_obj)
+            req = factory.get_fuzzable_request()
 
     def test_model_param_nested_allOf_in_json(self):
         specification_as_string = NestedModel().get_specification()

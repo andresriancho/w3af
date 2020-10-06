@@ -23,6 +23,7 @@ import pytest
 from w3af.core.controllers.chrome.crawler.tests.base import BaseChromeCrawlerTest
 
 
+@pytest.mark.skip('uses internet')
 class ReactBasicTest(BaseChromeCrawlerTest):
     def test_react_hello_world_app(self):
         url = 'http://react-hello-world-app.surge.sh/'

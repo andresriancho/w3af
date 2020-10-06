@@ -19,12 +19,11 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+from w3af.core.controllers.chrome.login.find_form.strategies.base_find_form_strategy import \
+    BaseFindFormStrategy
 
 
-class PasswordAndParentStrategy(object):
-    def __init__(self, chrome, debugging_id):
-        self.chrome = chrome
-        self.debugging_id = debugging_id
+class PasswordAndParentStrategy(BaseFindFormStrategy):
 
     def find_forms(self):
         """
@@ -32,8 +31,9 @@ class PasswordAndParentStrategy(object):
 
         :return: Yield forms which are identified by the strategy algorithm
         """
-        for login_form in self.chrome.get_login_forms_without_form_tags():
+        for login_form in self.chrome.get_login_forms_without_form_tags(self.exact_css_selectors):
             yield login_form
 
-    def get_name(self):
+    @staticmethod
+    def get_name():
         return 'PasswordAndParent'

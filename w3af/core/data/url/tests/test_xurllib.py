@@ -31,7 +31,7 @@ from multiprocessing.dummy import Process
 
 import httpretty
 from nose.plugins.attrib import attr
-from mock import patch
+from mock import patch, MagicMock
 
 from w3af import ROOT_PATH
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
@@ -52,7 +52,10 @@ from w3af.core.controllers.exceptions import (ScanMustStopByUserRequest,
 
 @attr('moth')
 @attr('smoke')
-class TestXUrllib(unittest.TestCase):
+class TestXUrllibUnittest(unittest.TestCase):
+    """
+    Pytest style is preferred for newer tests
+    """
 
     MOTH_MESSAGE = '<title>moth: vulnerable web application</title>'
     MOCK_URL = 'http://www.w3af.org/'
@@ -64,7 +67,7 @@ class TestXUrllib(unittest.TestCase):
         self.uri_opener.end()
         httpretty.reset()
         
-    @pytest.mark.deprecated
+    @pytest.mark.skip('uses internet')
     def test_basic(self):
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url, cache=False)
@@ -86,7 +89,7 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False)
         self.assertEqual(http_response.get_code(), 301)
 
-    @pytest.mark.deprecated
+    @pytest.mark.skip('uses internet')
     def test_basic_ssl(self):
         url = URL(get_moth_https())
         http_response = self.uri_opener.GET(url, cache=False)
@@ -96,6 +99,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertGreaterEqual(http_response.id, 1)
         self.assertNotEqual(http_response.id, None)
 
+    @pytest.mark.skip('uses internet')
     def test_github_ssl(self):
         url = URL('https://raw.githubusercontent.com/RetireJS/retire.js/master/repository/jsrepository.json')
 
@@ -106,7 +110,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertGreaterEqual(http_response.id, 1)
         self.assertNotEqual(http_response.id, None)
 
-    @pytest.mark.deprecated
+    @pytest.mark.skip('uses internet')
     def test_cache(self):
         url = URL(get_moth_http())
         http_response = self.uri_opener.GET(url)
@@ -116,7 +120,7 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
 
-    @pytest.mark.deprecated
+    @pytest.mark.skip('uses internet')
     def test_qs_params(self):
         url = URL(get_moth_http('/audit/xss/simple_xss.py?text=123456abc'))
         http_response = self.uri_opener.GET(url, cache=False)
@@ -173,7 +177,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual(httpretty.last_request().body, data)
         self.assertEqual(httpretty.last_request().path, '/' + qs)
 
-    @pytest.mark.deprecated
+    @pytest.mark.skip('uses internet')
     def test_post(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
 
@@ -183,7 +187,7 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn('123456abc', http_response.body)
 
-    @pytest.mark.deprecated
+    @pytest.mark.skip('uses internet')
     def test_post_special_chars(self):
         url = URL(get_moth_http('/audit/xss/simple_xss_form.py'))
         test_data = u'abc<def>"-á-'
@@ -194,7 +198,6 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.POST(url, data, cache=False)
         self.assertIn(test_data, http_response.body)
 
-    @pytest.mark.deprecated
     def test_unknown_domain(self):
         url = URL('http://longsitethatdoesnotexistfoo.com/')
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
@@ -203,13 +206,12 @@ class TestXUrllib(unittest.TestCase):
         url = URL('file://foo/bar.txt')
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
 
-    @pytest.mark.deprecated
     def test_url_port_closed(self):
         # TODO: Change 2312 by an always closed/non-http port
         url = URL('http://127.0.0.1:2312/')
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
 
-    @pytest.mark.deprecated
+    @pytest.mark.skip('uses internet')
     def test_url_port_not_http(self):
         upper_daemon = UpperDaemon(EmptyTCPHandler)
         upper_daemon.start()
@@ -226,7 +228,6 @@ class TestXUrllib(unittest.TestCase):
         else:
             self.assertTrue(False, 'Expected HTTPRequestException.')
 
-    @pytest.mark.deprecated
     def test_url_port_not_http_many(self):
         upper_daemon = UpperDaemon(EmptyTCPHandler)
         upper_daemon.start()
@@ -255,7 +256,7 @@ class TestXUrllib(unittest.TestCase):
         self.assertEqual(scan_must_stop_e, 1)
         self.assertEqual(http_request_e, 9)
 
-    @pytest.mark.deprecated
+    @pytest.mark.skip('uses internet')
     def test_get_wait_time(self):
         """
         Asserts that all the responses coming out of the extended urllib have a
@@ -323,7 +324,6 @@ class TestXUrllib(unittest.TestCase):
         resp = self.uri_opener.GET(url)
         self.assertIn('<strong>Great!', resp.get_body())
 
-    @pytest.mark.deprecated
     def test_ssl_fail_when_requesting_http(self):
         http_daemon = UpperDaemon(Ok200Handler)
         http_daemon.start()
@@ -337,7 +337,6 @@ class TestXUrllib(unittest.TestCase):
 
         self.assertRaises(HTTPRequestException, self.uri_opener.GET, url)
 
-    @pytest.mark.deprecated
     def test_ssl_fail_when_requesting_moth_http(self):
         """
         https://github.com/andresriancho/w3af/issues/7989
@@ -415,8 +414,8 @@ class TestXUrllib(unittest.TestCase):
         
         self.assertEqual(http_response.get_code(), 200)
         self.assertIn(self.MOTH_MESSAGE, http_response.body)
-    
-    @pytest.mark.deprecated
+
+    @pytest.mark.skip('uses internet')
     def test_removes_cache(self):
         url = URL(get_moth_http())
         self.uri_opener.GET(url, cache=False)
@@ -434,8 +433,8 @@ class TestXUrllib(unittest.TestCase):
             test_trace_path = os.path.join(temp_dir, trace_fmt % i)
             self.assertFalse(os.path.exists(test_db_path), test_db_path)
             self.assertFalse(os.path.exists(test_trace_path), test_trace_path)
-    
-    @pytest.mark.deprecated
+
+    @pytest.mark.skip('uses internet')
     def test_special_char_header(self):
         url = URL(get_moth_http('/core/headers/echo-headers.py'))
         header_content = u'name=ábc'
@@ -443,7 +442,6 @@ class TestXUrllib(unittest.TestCase):
         http_response = self.uri_opener.GET(url, cache=False, headers=headers)
         self.assertIn(header_content, http_response.body)
 
-    @pytest.mark.deprecated
     def test_bad_file_descriptor_8125_local(self):
         """
         8125 is basically an issue with the way HTTP SSL connections handle the
@@ -503,6 +501,48 @@ class TestXUrllib(unittest.TestCase):
         elapsed_time = end_time - start_time
         self.assertGreaterEqual(elapsed_time, _min)
         self.assertLessEqual(elapsed_time, _max)
+
+
+@pytest.fixture
+def blind_extended_urllib():
+    """
+    It's blind. It doesn't send real request and it returns MagicMock instead of
+    HTTPResponse instance, so mock's implementation stays easy.
+    """
+    extended_urllib = ExtendedUrllib()
+    extended_urllib.setup()
+    extended_urllib._opener = MagicMock()
+    with patch('w3af.core.data.url.extended_urllib.HTTPResponse', MagicMock()):
+        yield extended_urllib
+
+
+class TestXUrllib:
+    def test_get_method_can_be_called_with_url_as_string(self, blind_extended_urllib):
+        blind_extended_urllib.GET('http://example.com/')  # no error
+
+    def test_get_method_can_be_called_with_headers_as_dict(self, blind_extended_urllib):
+        headers = {
+            'origin': 'example.com',
+            'authorization': 'some token',
+        }
+        # no error
+        blind_extended_urllib.GET('http://example.com/', headers=headers)
+
+    def test_post_method_can_be_called_with_url_as_string(self, blind_extended_urllib):
+        # no error
+        blind_extended_urllib.POST('http://example.com/', data='some data')
+
+    def test_post_method_can_be_called_with_headers_as_dict(self, blind_extended_urllib):
+        headers = {
+            'origin': 'example.com',
+            'authorization': 'some token',
+        }
+        # no error
+        blind_extended_urllib.POST(
+            'http://example.com/',
+            data='some data',
+            headers=headers,
+        )
 
 
 class EmptyTCPHandler(SocketServer.BaseRequestHandler):

@@ -30,73 +30,83 @@ from w3af.core.data.parsers.doc.sgml import Tag
 from w3af.core.controllers.misc.temp_dir import get_temp_dir
 
 
-def write_http_response_to_temp_file(http_response):
-    """
-    Write an HTTPResponse instance to a temp file using msgpack
+class FileSerializer:
+    def __init__(self, file_directory=None):
+        self.file_directory = file_directory or get_temp_dir()
+        # binding module level function for clearer interface
+        self.remove_if_exists = remove_if_exists
 
-    :param http_response: The HTTP response
-    :return: The name of the file
-    """
-    temp = get_temp_file('http')
-    data = http_response.to_dict()
-    msgpack.dump(data, temp, use_bin_type=True)
-    temp.close()
-    return temp.name
+    def save_http_response(self, http_response):
+        """
+        Write an HTTPResponse instance to a temp file using msgpack
 
+        :param HTTPResponse http_response: The HTTP response
+        :return str: The id which will make it possible to read the data again
+        (it's the name of the file, but it does not matter at higher abstractions)
+        """
+        data_to_save = http_response.to_dict()
+        http_response_id = self._dump_data_to_file(data_to_save, 'w3af-http-')
+        return http_response_id
 
-def load_http_response_from_temp_file(filename, remove=True):
-    """
-    :param filename: The filename that holds the HTTP response as msgpack
-    :param remove: Remove the file after reading
-    :return: An HTTP response instance
-    """
-    # Importing here to prevent import cycle
-    from w3af.core.data.url.HTTPResponse import HTTPResponse
+    def load_http_response(self, http_response_id):
+        from w3af.core.data.url.HTTPResponse import HTTPResponse
+        data = self._load_data_from_file(http_response_id)
+        return HTTPResponse.from_dict(data)
 
-    try:
-        data = msgpack.load(file(filename, 'rb'), raw=False)
-        result = HTTPResponse.from_dict(data)
-    except:
-        if remove:
-            remove_file_if_exists(filename)
-        raise
-    else:
-        if remove:
-            remove_file_if_exists(filename)
-        return result
+    def save_tags(self, tag_list):
+        """
+        Write an Tag list to a temp file using msgpack
 
+        :param tag_list: The Tag list
+        :return: The name of the file
+        """
+        data = [t.to_dict() for t in tag_list]
+        tags_id = self._dump_data_to_file(data, filename_prefix='w3af-tags-')
+        return tags_id
 
-def write_tags_to_temp_file(tag_list):
-    """
-    Write an Tag list to a temp file using msgpack
-
-    :param tag_list: The Tag list
-    :return: The name of the file
-    """
-    temp = get_temp_file('tags')
-    data = [t.to_dict() for t in tag_list]
-    msgpack.dump(data, temp, use_bin_type=True)
-    temp.close()
-    return temp.name
-
-
-def load_tags_from_temp_file(filename, remove=True):
-    """
-    :param filename: The filename that holds the Tags as msgpack
-    :param remove: Remove the file after reading
-    :return: A list containing tags
-    """
-    try:
-        data = msgpack.load(file(filename, 'rb'), raw=False)
+    def load_tags(self, tags_id):
+        data = self._load_data_from_file(tags_id)
         result = [Tag.from_dict(t) for t in data]
-    except:
-        if remove:
-            remove_file_if_exists(filename)
-        raise
-    else:
-        if remove:
-            remove_file_if_exists(filename)
         return result
+
+    def _load_data_from_file(self, filename, should_remove_file=True):
+        try:
+            data = msgpack.load(file(filename))
+        finally:
+            if should_remove_file:
+                self.remove_if_exists(filename)
+        return data
+
+    def _dump_data_to_file(self, data, filename_prefix=''):
+        """
+        Tight coupled to tempfile and msgpack
+
+        :param any data: data which will be saved to disk
+        :return str: filename
+        """
+        temporary_file = tempfile.NamedTemporaryFile(
+            prefix=filename_prefix,
+            suffix='.pebble',
+            delete=False,
+            dir=self.file_directory,
+        )
+        msgpack.dump(data, temporary_file, use_bin_type=True)
+        temporary_file.close()
+        return temporary_file.name
+
+
+def remove_if_exists(filename):
+    """
+    Remove the file if it exists
+
+    :param filename: The filename to remove
+    :return: True if file did exist
+    """
+    try:
+        os.remove(filename)
+        return True
+    except OSError:
+        return False
 
 
 def get_temp_file(_type):
@@ -133,24 +143,11 @@ def load_object_from_temp_file(filename, remove=True):
     """
     try:
         result = cPickle.load(file(filename, 'rb'))
-    except:
+    except cPickle.PicklingError:
         if remove:
-            remove_file_if_exists(filename)
+            remove_if_exists(filename)
         raise
     else:
         if remove:
-            remove_file_if_exists(filename)
+            remove_if_exists(filename)
         return result
-
-
-def remove_file_if_exists(filename):
-    """
-    Remove the file if it exists
-
-    :param filename: The file to remove
-    :return: None
-    """
-    try:
-        os.remove(filename)
-    except:
-        pass

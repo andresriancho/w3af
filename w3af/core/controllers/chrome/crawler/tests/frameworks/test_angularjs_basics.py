@@ -24,6 +24,7 @@ from w3af.core.controllers.chrome.crawler.tests.base import BaseChromeCrawlerTes
 from w3af.core.controllers.chrome.tests.helpers import ExtendedHttpRequestHandler
 
 
+@pytest.mark.skip('uses internet')
 class AngularBasicTest(BaseChromeCrawlerTest):
     def test_angular_click(self):
         self._unittest_setup(AngularButtonClickRequestHandler)

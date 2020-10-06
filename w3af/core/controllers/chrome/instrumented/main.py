@@ -23,6 +23,7 @@ import time
 import json
 
 import w3af.core.controllers.output_manager as om
+from w3af.core.controllers.chrome.devtools.exceptions import ChromeScriptRuntimeException
 
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.controllers.chrome.instrumented.instrumented_base import InstrumentedChromeBase
@@ -297,11 +298,20 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
         return True
 
-    def get_login_forms(self):
+    def get_login_forms(self, exact_css_selectors):
         """
+        :param dict exact_css_selectors: Optional parameter containing css selectors
+        for part of form like username input or login button.
         :return: Yield LoginForm instances
         """
-        result = self.js_runtime_evaluate('window._DOMAnalyzer.getLoginForms()')
+        func = (
+            'window._DOMAnalyzer.getLoginForms("{}", "{}")'
+        )
+        func = func.format(
+            exact_css_selectors.get('username_input', '').replace('"', '\\"'),
+            exact_css_selectors.get('login_button', '').replace('"', '\\"'),
+        )
+        result = self.js_runtime_evaluate(func)
 
         if result is None:
             raise EventTimeout('The event execution timed out')
@@ -316,11 +326,20 @@ class InstrumentedChrome(InstrumentedChromeBase):
 
             yield login_form
 
-    def get_login_forms_without_form_tags(self):
+    def get_login_forms_without_form_tags(self, exact_css_selectors):
         """
+        :param dict exact_css_selectors: Optional parameter containing css selectors
+        for part of form like username input or login button.
         :return: Yield LoginForm instances
         """
-        result = self.js_runtime_evaluate('window._DOMAnalyzer.getLoginFormsWithoutFormTags()')
+        func = (
+            'window._DOMAnalyzer.getLoginFormsWithoutFormTags("{}", "{}")'
+        )
+        func = func.format(
+            exact_css_selectors.get('username_input', '').replace('"', '\\"'),
+            exact_css_selectors.get('login_button', '').replace('"', '\\"'),
+        )
+        result = self.js_runtime_evaluate(func)
 
         if result is None:
             raise EventTimeout('The event execution timed out')
@@ -406,9 +425,9 @@ class InstrumentedChrome(InstrumentedChromeBase):
         if result is None:
             return None
 
-        node_ids = result.get('result', {}).get('nodeIds', None)
+        node_ids = result.get('result', {}).get('nodeIds')
 
-        if node_ids is None:
+        if not node_ids:
             msg = ('The call to chrome.focus() failed.'
                    ' CSS selector "%s" returned no nodes (did: %s)')
             args = (selector, self.debugging_id)
@@ -589,19 +608,13 @@ class InstrumentedChrome(InstrumentedChromeBase):
                                                    timeout=timeout)
 
         # This is a rare case where the DOM is not present
-        if result is None:
-            return None
-
-        if 'result' not in result:
-            return None
-
-        if 'result' not in result['result']:
-            return None
-
-        if 'value' not in result['result']['result']:
-            return None
-
-        return result['result']['result']['value']
+        runtime_exception = result.get('result', {}).get('exceptionDetails')
+        if runtime_exception:
+            raise ChromeScriptRuntimeException(
+                runtime_exception,
+                function_called=expression
+            )
+        return result.get('result', {}).get('result', {}).get('value', None)
 
     def get_js_variable_value(self, variable_name):
         """

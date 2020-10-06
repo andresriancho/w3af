@@ -595,6 +595,18 @@ class TestSpecification(unittest.TestCase):
         handler = SpecificationHandler(http_response)
         self.check_parameter_setting(handler)
 
+    def test_specification_handler_can_handle_spec_with_non_ascii_chars(self):
+        with open(
+                'w3af/core/data/parsers/doc/open_api/tests/data/swagger-special-chars.json',
+        ) as file_:
+            spec_as_string = file_.read()
+        http_response = self.generate_response(spec_as_string)
+        spec_handler = SpecificationHandler(http_response)
+        result = spec_handler.get_api_information()
+        for _ in result:
+            pass
+        self.assertFalse(spec_handler._parsing_errors)
+
     def check_parameter_setting(self, spec_handler):
         data = [d for d in spec_handler.get_api_information()]
         self.assertIsNotNone(data)

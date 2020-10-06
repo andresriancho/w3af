@@ -25,6 +25,20 @@ from w3af.core.data.parsers.doc.swf import SWFParser
 from w3af.core.data.parsers.doc.wml_parser import WMLParser
 from w3af.core.data.parsers.doc.javascript import JavaScriptParser
 from w3af.core.controllers.exceptions import BaseFrameworkException
+from w3af.core.data.parsers.doc.wsdl import WSDLParser
+
+
+def get_parser_class(http_resp):
+    if http_resp.is_image():
+        msg = 'There is no parser for images.'
+        raise BaseFrameworkException(msg)
+
+    for parser in DocumentParser.PARSERS:
+        if parser.can_parse(http_resp):
+            return parser
+
+    msg = 'There is no parser for "%s".' % http_resp.get_url()
+    raise BaseFrameworkException(msg)
 
 
 class DocumentParser(object):
@@ -34,13 +48,16 @@ class DocumentParser(object):
     :author: Andres Riancho (andres.riancho@gmail.com)
     """
     # WARNING! The order of this list is important. See note below
-    PARSERS = [WMLParser,
-               JavaScriptParser,
-               PDFParser,
-               SWFParser,
-               HTMLParser]
+    PARSERS = [
+        WMLParser,
+        WSDLParser,
+        JavaScriptParser,
+        PDFParser,
+        SWFParser,
+        HTMLParser,
+    ]
 
-    def __init__(self, http_resp):
+    def __init__(self, http_resp, parser_class):
         """
         Create the proper parser instance, please note that the order in which
         we ask for the type is not random, first we discard the images which
@@ -57,16 +74,9 @@ class DocumentParser(object):
             msg = 'There is no parser for images.'
             raise BaseFrameworkException(msg)
 
-        for parser in self.PARSERS:
-            if parser.can_parse(http_resp):
-                self._parser = parser(http_resp)
-                self._parser.parse()
-                self._response_repr = repr(http_resp)
-                break
-
-        if self._parser is None:
-            msg = 'There is no parser for "%s".' % http_resp.get_url()
-            raise BaseFrameworkException(msg)
+        self._parser = parser_class(http_resp)
+        self._parser.parse()
+        self._response_repr = repr(http_resp)
 
     @staticmethod
     def can_parse(http_resp):
@@ -78,6 +88,9 @@ class DocumentParser(object):
                 return True
 
         return False
+
+    def get_fuzzable_requests(self):
+        return self._parser.get_fuzzable_requests()
 
     def get_forms(self):
         """
@@ -176,7 +189,8 @@ class DocumentParser(object):
 
 
 def document_parser_factory(http_resp):
-    return DocumentParser(http_resp)
+    parser_class = get_parser_class(http_resp)
+    return DocumentParser(http_resp, parser_class)
 
 
 def sort_by_url(url_a, url_b):

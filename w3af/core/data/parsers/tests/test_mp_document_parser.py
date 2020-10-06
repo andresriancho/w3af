@@ -19,62 +19,106 @@ along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
 """
+import shutil
+import tempfile
+
 import pytest
 import os
 import time
 import random
-import unittest
 import multiprocessing
 
-from mock import patch, PropertyMock
+from mock import patch, PropertyMock, MagicMock
 from nose.plugins.skip import SkipTest
 from concurrent.futures import TimeoutError
 
 from w3af import ROOT_PATH
 from w3af.core.data.parsers.doc.sgml import Tag
+from w3af.core.data.parsers.ipc.serialization import FileSerializer
 from w3af.core.data.parsers.mp_document_parser import MultiProcessingDocumentParser
 from w3af.core.data.parsers.doc.url import URL
 from w3af.core.data.url.HTTPResponse import HTTPResponse
 from w3af.core.data.dc.headers import Headers
 from w3af.core.data.parsers.doc.html import HTMLParser
 from w3af.core.data.parsers.tests.test_document_parser import _build_http_response
+from w3af.plugins.tests.plugin_testing_tools import NetworkPatcher, patch_network
 
 
-class TestMPDocumentParser(unittest.TestCase):
+@pytest.fixture
+def html_response():
+    from w3af.core.data.parsers.tests.test_document_parser import _build_http_response
+    return _build_http_response('<body></body>', 'text/html')
 
-    def setUp(self):
-        self.url = URL('http://w3af.com')
+
+class MockedSerializer:
+    """
+    If you wonder why on earth do we use MockedSerializer instead of something
+    as simple as MagicMock then it's because mp_document_parser goes crazy with
+    ProcessPool and Pickling and MagicMock brings a lot of troubles if you want
+    to pickle it.
+    """
+    def __init__(self):
+        self.saved_data = {}
+
+    def save_http_response(self, http_response):
+        self.saved_data[id(http_response)] = http_response.to_dict()
+        return id(http_response)
+
+    def load_http_response(self, id_):
+        return HTTPResponse.from_dict(self.saved_data[id_])
+
+    def save_tags(self, tag_list):
+        data = [t.to_dict() for t in tag_list]
+        self.saved_data[id(data)] = data
+        return id(data)
+
+    def load_tags(self, id_):
+        result = [Tag.from_dict(t) for t in self.saved_data[id_]]
+        return result
+
+    def remove_if_exists(self, id_):
+        if id_ in self.saved_data:
+            self.saved_data.pop(id_)
+
+
+class TestMPDocumentParser:
+    """
+    If you wonder why on earth do we use FileSerializer(temp_dir) instead of
+    something as simple as MagicMock then it's because mp_document_parser
+    goes crazy with ProcessPool and Pickling MagicMock brings a lot of trouble.
+    """
+    def setup_method(self):
         self.headers = Headers([(u'content-type', u'text/html')])
         self.mpdoc = MultiProcessingDocumentParser()
+        self.temp_directory = tempfile.gettempdir() + '/w3af-test'
+        os.mkdir(self.temp_directory)
+        serializer = FileSerializer(file_directory=self.temp_directory)
+        self.mpdoc._serializer = serializer
 
-    def tearDown(self):
-        self.mpdoc.stop_workers()
+    def teardown_method(self):
+        shutil.rmtree(self.temp_directory)
 
-    @pytest.mark.deprecated
     def test_basic(self):
+        url = URL('http://localhost')
         resp = HTTPResponse(200, '<a href="/abc">hello</a>',
-                            self.headers, self.url, self.url)
+                            self.headers, url, url)
 
-        parser = self.mpdoc.get_document_parser_for(resp)
+        with NetworkPatcher():
+            parser = self.mpdoc.get_document_parser_for(resp)
 
         parsed_refs, _ = parser.get_references()
-        self.assertEqual([URL('http://w3af.com/abc')], parsed_refs)
+        assert [URL('http://localhost/abc')] == parsed_refs
 
-    @pytest.mark.deprecated
     def test_no_parser_for_images(self):
         body = ''
         url = URL('http://w3af.com/foo.jpg')
         headers = Headers([(u'content-type', u'image/jpeg')])
         resp = HTTPResponse(200, body, headers, url, url)
 
-        try:
+        with pytest.raises(Exception) as e:
             self.mpdoc.get_document_parser_for(resp)
-        except Exception, e:
-            self.assertEqual(str(e), 'There is no parser for images.')
-        else:
-            self.assertTrue(False, 'Expected exception!')
+            assert str(e) == 'There is no parser for images.'
 
-    @pytest.mark.deprecated
     def test_parser_timeout(self):
         """
         Test to verify fix for https://github.com/andresriancho/w3af/issues/6723
@@ -99,12 +143,9 @@ class TestMPDocumentParser(unittest.TestCase):
             max_workers_mock.return_value = 1
             parsers_mock.return_value = [DelayedParser, HTMLParser]
 
-            try:
+            with pytest.raises(TimeoutError) as toe:
                 self.mpdoc.get_document_parser_for(http_resp)
-            except TimeoutError, toe:
                 self._is_timeout_exception_message(toe, om_mock, http_resp)
-            else:
-                self.assertTrue(False)
 
             #
             #   We now want to make sure that after we kill the process the Pool
@@ -116,7 +157,7 @@ class TestMPDocumentParser(unittest.TestCase):
             http_resp = _build_http_response(html, u'text/html')
 
             doc_parser = self.mpdoc.get_document_parser_for(http_resp)
-            self.assertIsInstance(doc_parser._parser, HTMLParser)
+            assert isinstance(doc_parser._parser, HTMLParser)
 
     @pytest.mark.slow
     def test_many_parsers_timing_out(self):
@@ -153,12 +194,9 @@ class TestMPDocumentParser(unittest.TestCase):
             for i in xrange(ITERATIONS):
                 http_resp = _build_http_response(html_trigger_delay % i, u'text/html')
 
-                try:
+                with pytest.raises(TimeoutError) as toe:
                     self.mpdoc.get_document_parser_for(http_resp)
-                except TimeoutError, toe:
                     self._is_timeout_exception_message(toe, om_mock, http_resp)
-                else:
-                    self.assertTrue(False)
 
             #
             # Lets timeout randomly
@@ -172,7 +210,7 @@ class TestMPDocumentParser(unittest.TestCase):
                 except TimeoutError, toe:
                     self._is_timeout_exception_message(toe, om_mock, http_resp)
                 else:
-                    self.assertIsInstance(parser._parser, HTMLParser)
+                    assert isinstance(parser._parser, HTMLParser)
 
             #
             # Lets parse things we know should work
@@ -180,7 +218,7 @@ class TestMPDocumentParser(unittest.TestCase):
             for i in xrange(ITERATIONS):
                 http_resp = _build_http_response(html_ok % i, u'text/html')
                 parser = self.mpdoc.get_document_parser_for(http_resp)
-                self.assertIsInstance(parser._parser, HTMLParser)
+                assert isinstance(parser._parser, HTMLParser)
 
     def test_parser_with_large_attr_killed_when_sending_to_queue(self):
         """
@@ -227,12 +265,9 @@ class TestMPDocumentParser(unittest.TestCase):
             for i in xrange(ITERATIONS):
                 http_resp = _build_http_response(html_trigger_delay % i, u'text/html')
 
-                try:
+                with pytest.raises(TimeoutError) as toe:
                     self.mpdoc.get_document_parser_for(http_resp)
-                except TimeoutError, toe:
                     self._is_timeout_exception_message(toe, om_mock, http_resp)
-                else:
-                    self.assertTrue(False)
 
             #
             # Lets timeout randomly
@@ -246,7 +281,7 @@ class TestMPDocumentParser(unittest.TestCase):
                 except TimeoutError, toe:
                     self._is_timeout_exception_message(toe, om_mock, http_resp)
                 else:
-                    self.assertIsInstance(parser._parser, HTMLParser)
+                    assert isinstance(parser._parser, HTMLParser)
 
             #
             # Lets parse things we know should work
@@ -254,9 +289,8 @@ class TestMPDocumentParser(unittest.TestCase):
             for i in xrange(ITERATIONS):
                 http_resp = _build_http_response(html_ok % i, u'text/html')
                 parser = self.mpdoc.get_document_parser_for(http_resp)
-                self.assertIsInstance(parser._parser, HTMLParser)
+                assert isinstance(parser._parser, HTMLParser)
 
-    @pytest.mark.deprecated
     def test_parser_memory_usage_exceeded(self):
         """
         This makes sure that we stop parsing a document that exceeds our memory
@@ -281,12 +315,9 @@ class TestMPDocumentParser(unittest.TestCase):
             max_workers_mock.return_value = 1
             parsers_mock.return_value = [UseMemoryParser, HTMLParser]
 
-            try:
+            with pytest.raises(MemoryError) as me:
                 self.mpdoc.get_document_parser_for(http_resp)
-            except MemoryError, me:
-                self.assertIn('OOM issues', str(me))
-            else:
-                self.assertTrue(False)
+                assert 'OOM issues' in str(me)
 
             #
             # We now want to make sure that after we stop because of a memory issue
@@ -296,7 +327,7 @@ class TestMPDocumentParser(unittest.TestCase):
             http_resp = _build_http_response(html, u'text/html')
 
             doc_parser = self.mpdoc.get_document_parser_for(http_resp)
-            self.assertIsInstance(doc_parser._parser, HTMLParser)
+            assert isinstance(doc_parser._parser, HTMLParser)
 
     def _is_timeout_exception_message(self, toe, om_mock, http_resp):
         msg = ('[timeout] The parser took more than %s seconds to '
@@ -305,7 +336,7 @@ class TestMPDocumentParser(unittest.TestCase):
         error = msg % (MultiProcessingDocumentParser.PARSER_TIMEOUT,
                        http_resp.get_url())
 
-        self.assertEquals(str(toe), error)
+        assert str(toe) == error
 
     def test_daemon_child(self):
         """
@@ -325,9 +356,7 @@ class TestMPDocumentParser(unittest.TestCase):
         p.join()
 
         got_assertion_error = queue.get(timeout=10)
-        if got_assertion_error:
-            self.assertTrue(False, 'daemonic processes are not allowed'
-                                   ' to have children')
+        assert not got_assertion_error
 
     def test_non_daemon_child_ok(self):
         """
@@ -342,11 +371,9 @@ class TestMPDocumentParser(unittest.TestCase):
         p.join()
 
         got_assertion_error = queue.get(timeout=10)
-        if got_assertion_error:
-            self.assertTrue(False, 'daemonic processes are not allowed'
-                                   ' to have children')
+        assert not got_assertion_error
 
-    @pytest.mark.deprecated
+    @pytest.mark.deprecated  # this test uses internet!!
     def test_dictproxy_pickle_8748(self):
         """
         MaybeEncodingError - PicklingError: Can't pickle dictproxy #8748
@@ -359,9 +386,9 @@ class TestMPDocumentParser(unittest.TestCase):
         resp = HTTPResponse(200, html_body, self.headers, url, url)
 
         parser = self.mpdoc.get_document_parser_for(resp)
-        self.assertIsInstance(parser._parser, HTMLParser)
+        assert isinstance(parser._parser, HTMLParser)
 
-    @pytest.mark.deprecated
+    @patch_network
     def test_get_tags_by_filter(self):
         body = '<html><a href="/abc">foo</a><b>bar</b></html>'
         url = URL('http://www.w3af.com/')
@@ -371,10 +398,9 @@ class TestMPDocumentParser(unittest.TestCase):
 
         tags = self.mpdoc.get_tags_by_filter(resp, ('a', 'b'), yield_text=True)
 
-        self.assertEqual([Tag('a', {'href': '/abc'}, 'foo'),
-                          Tag('b', {}, 'bar')], tags)
+        assert [Tag('a', {'href': '/abc'}, 'foo'), Tag('b', {}, 'bar')] == tags
 
-    @pytest.mark.deprecated
+    @patch_network
     def test_get_tags_by_filter_empty_tag(self):
         body = '<html><script src="foo.js"></script></html>'
         url = URL('http://www.w3af.com/')
@@ -385,18 +411,23 @@ class TestMPDocumentParser(unittest.TestCase):
         tags = self.mpdoc.get_tags_by_filter(resp, ('script',), yield_text=True)
 
         # Note that lxml returns None for this tag text:
-        self.assertEqual([Tag('script', {'src': 'foo.js'}, None)], tags)
+        assert [Tag('script', {'src': 'foo.js'}, None)] == tags
+
+    def test_it_doesnt_silence_type_error_from_document_parser(self, html_response):
+        self.mpdoc._document_parser_class = MockedDamagedDocumentParser
+        with pytest.raises(TypeError), NetworkPatcher():
+            self.mpdoc.get_document_parser_for(html_response)
 
 
 def daemon_child(queue):
     dpc = MultiProcessingDocumentParser()
+    dpc.start_workers()
+    queue.put(False)
 
-    try:
-        dpc.start_workers()
-    except AssertionError:
-        queue.put(True)
-    else:
-        queue.put(False)
+
+class MockedDamagedDocumentParser:
+    def __init__(self):
+        raise TypeError('unit-test')
 
 
 class DelayedParser(object):

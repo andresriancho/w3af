@@ -330,7 +330,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         if( !_DOMAnalyzer.eventIsValidForTagName( tag_name, type ) ) return false;
 
         let selector = OptimalSelect.getSingleSelector(element);
-        
+
         // node_type is https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType#Node_type_constants
         _DOMAnalyzer.event_listeners.push({"tag_name": tag_name,
                                            "node_type": element.nodeType,
@@ -866,6 +866,48 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     },
 
     /**
+     * This is naive function which takes parentElement (the login form) and
+     * tries to find username input field within it.
+     * @param {Node} parentElement - parent element to scope to document.querySelectorAll()
+     * @param {String} exactSelector - optional CSS selector. If provided prevents
+     * using standard selectors
+     * @returns {NodeList} - result of querySelectorAll()
+     */
+    _getUsernameInput(parentElement, exactSelector = '') {
+        if (exactSelector) {
+            return document.querySelectorAll(exactSelector, parentElement);
+        }
+        result = document.querySelectorAll("input[type='email']", parentElement);
+        if (!result.length) {
+            result = document.querySelectorAll("input[type='text']", parentElement);
+        }
+        return result;
+    },
+
+    /**
+     * This is naive function which takes parentElement (the login form) and tries
+     * to find submit button within it.
+     * @param {Node} parentElement - parent element to scope to document.querySelectorAll()
+     * @param {String} exactSelector - optional CSS selector. If provided prevents
+     * using standard selectors
+     * @returns {NodeList} - result of querySelectorAll()
+     */
+    _getSubmitButton(parentElement, exactSelector = '') {
+        if (exactSelector) {
+            return document.querySelectorAll(exactSelector, parentElement);
+        }
+        result = document.querySelectorAll("input[type='submit']", parentElement);
+        if (!result.length) {
+            result = document.querySelectorAll("button[type='submit']", parentElement);
+        }
+        // Maybe it's just normal button without type="submit"...
+        if (!result.length) {
+            result = document.querySelectorAll('button', parentElement);
+        }
+        return result;
+    },
+
+    /**
     * Return the CSS selector for the login forms which exist in the DOM.
     *
     * For this method login forms are defined as:
@@ -874,8 +916,12 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     *       - <input type=text>, and
     *       - <input type=password>
     *
+    * @param {String} usernameCssSelector - CSS selector for username input. If
+    * provided we won't try to find username input automatically.
+    * @param {String} submitButtonCssSelector - CSS selector for submit button. If
+    * provided we won't try to find submit button autmatically.
     */
-    getLoginForms: function () {
+    getLoginForms: function (usernameCssSelector = '', submitButtonCssSelector = '') {
         let login_forms = [];
 
         // First we identify the forms with a password field using a descendant Selector
@@ -898,7 +944,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             let form = forms[0];
 
             // Finally we confirm that the form has a type=text input
-            let text_fields = document.querySelectorAll("input[type='text']", form)
+            let text_fields = this._getUsernameInput(form, usernameCssSelector);
 
             // Zero text fields is most likely a password-only login form
             // Two text fields or more is most likely a registration from
@@ -906,7 +952,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
             if (text_fields.length !== 1) continue;
 
             // And if there is a submit button I want that selector too
-            let submit_fields = document.querySelectorAll("input[type='submit']", form)
+            let submit_fields = this._getSubmitButton(form, submitButtonCssSelector);
             let submit_selector = null;
 
             if (submit_fields.length !== 0) {
@@ -936,8 +982,12 @@ var _DOMAnalyzer = _DOMAnalyzer || {
     *       - <input type=text>, and
     *       - <input type=password>
     *
+    * @param {String} usernameCssSelector - CSS selector for username input. If
+    * provided we won't try to find username input automatically.
+    * @param {String} submitButtonCssSelector - CSS selector for submit button. If
+    * provided we won't try to find submit button autmatically.
     */
-    getLoginFormsWithoutFormTags: function () {
+    getLoginFormsWithoutFormTags: function (usernameCssSelector = '', submitButtonCssSelector = '') {
         let login_forms = [];
 
         // First we identify the password fields
@@ -962,7 +1012,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 // go up one more level, and so one.
                 //
                 // Find if this parent has a type=text input
-                let text_fields = document.querySelectorAll("input[type='text']", parent)
+                let text_fields = this._getUsernameInput(parent, usernameCssSelector);
 
                 // Zero text fields is most likely a password-only login form
                 // Two text fields or more is most likely a registration from
@@ -974,7 +1024,7 @@ var _DOMAnalyzer = _DOMAnalyzer || {
                 }
 
                 // And if there is a submit button I want that selector too
-                let submit_fields = document.querySelectorAll("input[type='submit']", parent)
+                let submit_fields = this._getSubmitButton(parent, submitButtonCssSelector)
                 let submit_selector = null;
 
                 if (submit_fields.length !== 0) {
@@ -997,6 +1047,12 @@ var _DOMAnalyzer = _DOMAnalyzer || {
         }
 
         return JSON.stringify(login_forms);
+    },
+
+    clickOnSelector(exactSelector) {
+        let element = document.querySelector(exactSelector);
+        element.click();
+        return 'success'
     },
 
     sliceAndSerialize: function (filtered_event_listeners, start, count) {

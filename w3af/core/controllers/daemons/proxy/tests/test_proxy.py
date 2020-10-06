@@ -54,7 +54,6 @@ class TestProxy(unittest.TestCase):
         self.proxy_opener = urllib2.build_opener(proxy_handler,
                                                  urllib2.HTTPHandler)
 
-    @pytest.mark.deprecated
     def tearDown(self):
         # Shutdown the proxy server
         self._proxy.stop()

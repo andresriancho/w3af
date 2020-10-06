@@ -18,10 +18,13 @@ You should have received a copy of the GNU General Public License
 along with w3af; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 """
+import pytest
+
 from w3af.core.controllers.chrome.crawler.tests.base import BaseChromeCrawlerTest
 
 
 class ReactBasicTest(BaseChromeCrawlerTest):
+    @pytest.mark.skip('uses internet')
     def test_vue_todo_list(self):
         url = 'http://vue-todo-test.surge.sh'
         found_uris = self._crawl(url)

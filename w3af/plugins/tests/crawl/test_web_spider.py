@@ -30,6 +30,7 @@ from nose.plugins.skip import SkipTest
 from nose.plugins.attrib import attr
 
 from w3af import ROOT_PATH
+from w3af.plugins.crawl.web_spider import web_spider
 from w3af.plugins.tests.helper import PluginTest, PluginConfig, MockResponse
 from w3af.core.controllers.ci.moth import get_moth_http
 from w3af.core.controllers.ci.wivet import get_wivet_http
@@ -312,7 +313,7 @@ class TestDeadLock(PluginTest):
     MOCK_RESPONSES = [MockResponse('http://mock/', INDEX_HTML),
                       MockResponse('http://mock/', 'Thanks.', method='POST')]
 
-    @pytest.mark.deprecated
+    @pytest.mark.slow
     def test_no_lock(self):
         cfg = self._run_configs['cfg']
         self._scan(cfg['target'], cfg['plugins'])
@@ -369,3 +370,112 @@ class TestFormExclusions(PluginTest):
         # revert any changes to the default so we don't affect other tests
         cf.cf.save('form_id_list', FormIDMatcherList('[]'))
         cf.cf.save('form_id_action', EXCLUDE)
+
+
+class TestSoap:
+    def setup_class(self):
+        self.extra_options = {
+            'target_domain': ['http://example.com/webservice.asmx?WSDL']
+        }
+        self.plugin_options = {
+            'enable_js_crawler': False,
+        }
+
+    def test_soap_plugin_finds_all_endpoints(
+        self,
+        plugin_runner,
+        knowledge_base,
+        soap_domain,
+    ):
+        plugin_runner.run_plugin(
+            web_spider,
+            plugin_config=self.plugin_options,
+            mock_domain=soap_domain,
+            extra_options=self.extra_options,
+        )
+        urls_discovered = [str(url) for url in knowledge_base.get_all_known_urls()]
+        assert 'http://example.com/webservicesserver/NumberConversion.wso' in urls_discovered
+
+    def test_wsdl_parser_will_handle_wsdl_if_it_is_crawled_by_web_spider_accidentally(
+        self,
+        plugin_runner,
+        soap_domain,
+        knowledge_base,
+    ):
+        """
+        by default plugin runner will order web_spider to crawl http://example.com/
+        first. soap_domain keeps under http://example.com/ two URLs, one of them is
+        WSDL file.
+        """
+        plugin_runner.run_plugin(
+            web_spider,
+            plugin_config=self.plugin_options,
+            mock_domain=soap_domain,
+            do_end_call=False,
+        )
+        urls_discovered = [str(url) for url in knowledge_base.get_all_known_urls()]
+        assert 'http://example.com/webservicesserver/NumberConversion.wso' in urls_discovered
+
+    def test_soap_can_parse_wsdl_with_both_kinds_of_syntax(
+            self,
+            plugin_runner,
+            soap_domain,
+            soap_domain_2,
+            knowledge_base,
+    ):
+        plugin_runner.run_plugin(
+            web_spider,
+            plugin_config=self.plugin_options,
+            mock_domain=soap_domain,
+            extra_options=self.extra_options,
+        )
+        urls_discovered = [str(url) for url in knowledge_base.get_all_known_urls()]
+
+        knowledge_base.cleanup()
+
+        assert 'http://example.com/webservicesserver/NumberConversion.wso' in urls_discovered
+        plugin_runner.run_plugin(
+            web_spider,
+            plugin_config=self.plugin_options,
+            mock_domain=soap_domain_2,
+            extra_options=self.extra_options,
+        )
+        urls_discovered = [str(url) for url in knowledge_base.get_all_known_urls()]
+        assert 'http://example.com/webservicesserver/NumberConversion.wso' in urls_discovered
+
+    def test_web_spider_reports_wsdl_description(
+            self,
+            plugin_runner,
+            soap_domain,
+            knowledge_base,
+    ):
+        plugin_runner.run_plugin(
+            web_spider,
+            plugin_config=self.plugin_options,
+            mock_domain=soap_domain,
+            extra_options=self.extra_options,
+        )
+        result = knowledge_base.dump()
+        assert result['wsdl_parser']['soap_actions']
+        assert any([
+            'Service: NumberConversion' in str(info) and
+            'NumberToDollars' in str(info) and
+            'NumberToWords' in str(info)
+            for info in result['wsdl_parser']['soap_actions']
+        ])
+
+    def test_scanning_soap_adds_fuzzable_request_to_output_queue(
+        self,
+        plugin_runner,
+        soap_domain,
+        knowledge_base,
+    ):
+        web_spider_instance = web_spider()
+        plugin_runner.run_plugin(
+            web_spider_instance,
+            plugin_config=self.plugin_options,
+            mock_domain=soap_domain,
+            extra_options=self.extra_options,
+        )
+        # normally web_spider produces 4 known fuzzable request. SOAP parser adds another one.
+        assert len(knowledge_base.get_all_known_fuzzable_requests()) == 5

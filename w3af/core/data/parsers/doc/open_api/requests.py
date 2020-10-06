@@ -184,6 +184,8 @@ class RequestFactory(object):
                 continue
 
             if param_def.param_spec['type'] == 'array':
+                if not parameters[param_name] and not param_def.required:
+                    continue
                 parameters[param_name] = parameters[param_name][0]
 
         if parameters:

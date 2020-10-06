@@ -36,7 +36,7 @@ from w3af.core.controllers.chrome.proxy.main import LoggingProxy
 from w3af.core.data.url.extended_urllib import ExtendedUrllib
 
 
-pytestmarks = pytest.mark.deprecated
+pytestmark = pytest.mark.deprecated
 
 
 class TestProxy(unittest.TestCase):
