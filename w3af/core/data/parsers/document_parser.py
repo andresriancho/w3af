@@ -89,6 +89,9 @@ class DocumentParser(object):
 
         return False
 
+    def get_fuzzable_requests(self):
+        return self._parser.get_fuzzable_requests()
+
     def get_forms(self):
         """
         :return: A list of forms.

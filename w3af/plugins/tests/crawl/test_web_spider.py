@@ -463,3 +463,19 @@ class TestSoap:
             'NumberToWords' in str(info)
             for info in result['wsdl_parser']['soap_actions']
         ])
+
+    def test_scanning_soap_adds_fuzzable_request_to_output_queue(
+        self,
+        plugin_runner,
+        soap_domain,
+        knowledge_base,
+    ):
+        web_spider_instance = web_spider()
+        plugin_runner.run_plugin(
+            web_spider_instance,
+            plugin_config=self.plugin_options,
+            mock_domain=soap_domain,
+            extra_options=self.extra_options,
+        )
+        # normally web_spider produces 4 known fuzzable request. SOAP parser adds another one.
+        assert len(knowledge_base.get_all_known_fuzzable_requests()) == 5

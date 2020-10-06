@@ -25,6 +25,7 @@ import threading
 import itertools
 
 import w3af.core.controllers.output_manager as om
+import w3af.core.data.kb.knowledge_base as kb
 import w3af.core.data.kb.config as cf
 import w3af.core.data.parsers.parser_cache as parser_cache
 import w3af.core.data.constants.response_codes as http_constants
@@ -113,6 +114,9 @@ class web_spider(CrawlPlugin):
 
         self._extract_html_forms(doc_parser, fuzzable_request, debugging_id)
         self._extract_links_and_verify(doc_parser, fuzzable_request, http_response, debugging_id)
+        for fuzzable_request_ in doc_parser.get_fuzzable_requests():
+            if fuzzable_request_ not in kb.kb.get_all_known_fuzzable_requests():
+                self.output_queue.put(fuzzable_request_)
 
         # raise exceptions in the main thread for better handling
         #
