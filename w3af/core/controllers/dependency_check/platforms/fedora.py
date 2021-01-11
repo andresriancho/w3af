@@ -29,9 +29,9 @@ from ..requirements import CORE, GUI
 class Fedora(Platform):
     SYSTEM_NAME = 'fedora'
     PKG_MANAGER_CMD = 'sudo yum install'
-    PIP_CMD = 'python-pip'
+    PIP_CMD = 'pip'
 
-    CORE_SYSTEM_PACKAGES = ['python-pip', 'npm', 'python-devel', 'python2-setuptools',
+    CORE_SYSTEM_PACKAGES = ['python2-pip', 'npm', 'python2-devel', 'python2-setuptools',
                             'libsqlite3x-devel', 'git', 'libxml2-devel', 'gcc-c++',
                             'libxslt-devel', 'openssl-devel', 'libffi-devel']
 
