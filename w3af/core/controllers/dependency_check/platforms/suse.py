@@ -33,7 +33,7 @@ class SuSE(Platform):
 
     CORE_SYSTEM_PACKAGES = ['python-pip','npm', 'python-devel', 'sqlite3-devel',
                             'git', 'libxml2-devel', 'libxslt-devel',
-                            'python-webkitgtk', 'libffi-devel']
+                            'python-webkitgtk', 'libffi-devel-gcc5']
 
     GUI_SYSTEM_PACKAGES = CORE_SYSTEM_PACKAGES[:]
     GUI_SYSTEM_PACKAGES.extend(['graphviz', 'python-gtksourceview',

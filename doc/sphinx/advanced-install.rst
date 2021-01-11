@@ -93,6 +93,30 @@ Or,
     (venv)$ . /tmp/w3af_dependency_install.sh
 
 
+
+If you use OpenSuse:
+
+.. code-block:: console
+
+    $ cd w3af
+    $ sudo zypper install python-gtksourceview python-gtk
+    $ virtualenv venv
+    $ mkdir -p venv/lib/python2.7/dist-packages/
+    $ cd venv/lib/python2.7/dist-packages/
+    $ ln -s /usr/lib64/python2.7/site-packages/glib/ glib
+    $ ln -s /usr/lib64/python2.7/site-packages/gobject/ gobject
+    $ ln -s /usr/lib64/python2.7/site-packages/gtk-2.0* gtk-2.0
+    $ ln -s /usr/lib64/python2.7/site-packages/pygtk.pth pygtk.pth
+    $ ln -s /usr/lib64/python2.7/site-packages/cairo cairo
+    $ ln -s /usr/lib64/python2.7/site-packages/webkit/ webkit
+    $ ln -s /usr/lib64/python2.7/site-packages/pygtk.pth pygtk.pth
+    $ ln -s /usr/lib64/python2.7/site-packages/gtksourceview2.so gtksourceview2.so
+    $ cd -
+    $ . venv/bin/activate
+    (venv)$ ./w3af_gui
+    (venv)$ . /tmp/w3af_dependency_install.sh
+
+
 Each time you want to run ``w3af`` in a new console you'll have to activate the
 virtualenv:
 
