@@ -20,7 +20,7 @@ requests>=2.7.0
 mock==1.0.1
 psutil==2.2.1
 SOAPpy==0.12.5
-Pillow==6.2.0
+Pillow==8.1.1
 SimpleCV==1.3
 futures==2.1.5
 fabric==1.8.0
