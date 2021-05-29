@@ -31,11 +31,8 @@ docker-tag-naming>=1.0.3
 # Most test servers are run inside docker containers
 docker-compose==1.2.0
 
-#
-# Need to use this until this PR is merged into upstream:
-# https://github.com/gabrielfalcao/HTTPretty/pull/333
-#
--e git://github.com/andresriancho/HTTPretty.git@f25ab56d1d613ec2531ade9bb955d36deae84e2f#egg=httpretty
+# HTTPretty
+httpretty>=0.9.7
 
 # Testing open api parser
 apispec==0.31.0
