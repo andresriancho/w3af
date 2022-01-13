@@ -101,7 +101,7 @@ class file_upload(AuditPlugin):
         for file_parameter in freq.get_file_vars():
             for extension in self._extensions:
 
-                _, file_content, file_name = get_template_with_payload(extension, payload)
+                success, file_content, file_name = get_template_with_payload(extension, payload)
 
                 # Only file handlers are passed to the create_mutants functions
                 named_stringio = NamedStringIO(file_content, file_name)
@@ -113,7 +113,7 @@ class file_upload(AuditPlugin):
                     mutant.uploaded_file_name = file_name
                     mutant.extension = extension
                     mutant.file_content = file_content
-                    mutant.file_payload = payload
+                    mutant.file_payload = payload if success else file_content # If the specified extension does not have a template, use the generated file contents as a payload instead
                     mutant.debugging_id = debugging_id
 
                 self._send_mutants_in_threads(self._uri_opener.send_mutant,
