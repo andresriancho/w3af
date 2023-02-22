@@ -59,8 +59,8 @@ class keys(GrepPlugin):
             ('ecdsa-sha2-nistp256', ('EC-PUBLIC', PUBLIC)),
             
             # SSH2
-            ('---- BEGIN SSH2 PUBLIC KEY ----', ('SSH2-PRIVATE', PRIVATE)),
-            ('---- BEGIN SSH2 PRIVATE KEY ----', ('SSH2-PUBLIC', PUBLIC)),
+            ('---- BEGIN SSH2 PRIVATE KEY ----', ('SSH2-PRIVATE', PRIVATE)),
+            ('---- BEGIN SSH2 PUBLIC KEY ----', ('SSH2-PUBLIC', PUBLIC)),
 
             # ed25519 (OpenSSH)
             ('-----BEGIN OPENSSH PRIVATE KEY-----', ('ED25519-SSH-PRIVATE', PRIVATE)),
