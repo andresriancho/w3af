@@ -6,3 +6,8 @@ What does the coverage library do?
 Why should I use a venv
 I only want the total coverage not the whole report because the rest is too long how do i print only this?
 How do I ignore syntax warnings coming from inside the project
+
+GPT was used as reference only, and my work is original. Here are my prompts for the Cyclomatic Complexity:
+
+Explain me what is Cyclomatic Complexity
+Which libraries I can use to obtain this metric
